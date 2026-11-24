@@ -3,8 +3,9 @@ import type { IstqbAiTestingSource } from "../istqb-ai-testing/sources";
 export type CertificationSource = IstqbAiTestingSource & { checkedAt: string };
 
 const checkedAt = "2026-11-23";
+const reviewedAt = "2026-11-24";
 
-export const claudeCertificationSources: CertificationSource[] = [
+const claudeSourceLibrary: CertificationSource[] = [
   {
     id: "anthropic-certification-faq",
     title: "Claude Certification program FAQ",
@@ -122,7 +123,185 @@ export const claudeCertificationSources: CertificationSource[] = [
     role: "Specification for MCP servers, clients, resources, tools and transports.",
     checkedAt,
   },
+  {
+    id: "claude-code-101-coursera",
+    title: "Claude Code 101 on Coursera",
+    url: "https://www.coursera.org/learn/claude-code-101",
+    publisher: "Coursera",
+    kind: "course-listing",
+    role: "Coursera listing of the same Anthropic Academy course; states about two hours to complete.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-projects-help",
+    title: "What are projects?",
+    url: "https://support.claude.com/en/articles/9517075-what-are-projects",
+    publisher: "Anthropic",
+    kind: "official-help",
+    role: "Projects, project knowledge and instructions, the Free-plan limit of five projects, RAG mode and sharing roles.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-artifacts-help",
+    title: "What are artifacts and how do I use them?",
+    url: "https://support.claude.com/en/articles/9487310-what-are-artifacts-and-how-do-i-use-them",
+    publisher: "Anthropic",
+    kind: "official-help",
+    role: "What artifacts are and where you can create, edit and share them.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-artifacts-sharing-help",
+    title: "Share artifacts",
+    url: "https://support.claude.com/en/articles/9547008-share-artifacts",
+    publisher: "Anthropic",
+    kind: "official-help",
+    role: "Artifacts start private; sharing options by plan.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-skills-help",
+    title: "What are skills?",
+    url: "https://support.claude.com/en/articles/12512176-what-are-skills",
+    publisher: "Anthropic",
+    kind: "official-help",
+    role: "Skills, progressive disclosure, plan availability, the code execution requirement, and skills compared with projects and MCP.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-connectors-help",
+    title: "Use connectors to extend Claude's capabilities",
+    url: "https://support.claude.com/en/articles/11176164",
+    publisher: "Anthropic",
+    kind: "official-help",
+    role: "What connectors do, inherited permissions, and owner enablement on Team and Enterprise plans.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-research-help",
+    title: "Use research on Claude",
+    url: "https://support.claude.com/en/articles/11088861-using-research-in-claude",
+    publisher: "Anthropic",
+    kind: "official-help",
+    role: "How Research works, which plans include it, and why Research on mobile skips connectors.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-enterprise-search-help",
+    title: "Use enterprise search",
+    url: "https://support.claude.com/en/articles/12489464-use-enterprise-search",
+    publisher: "Anthropic",
+    kind: "official-help",
+    role: "Enterprise search on Team and Enterprise plans: setup, connected tools and cited answers.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "prompt-engineering-docs",
+    title: "Prompt engineering overview",
+    url: "https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Anthropic's guidance on clear instructions, examples, XML tags and structured prompts.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-code-docs",
+    title: "Claude Code overview",
+    url: "https://docs.claude.com/en/docs/claude-code/overview",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "What Claude Code is, where it runs and how it works.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-code-permission-modes",
+    title: "Choose a permission mode",
+    url: "https://code.claude.com/docs/en/permission-modes",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Permission modes, the Shift+Tab cycle, Plan Mode and permission rules.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-code-subagents",
+    title: "Create custom subagents",
+    url: "https://code.claude.com/docs/en/sub-agents",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Subagent files, frontmatter, project and user locations, priority and built-in subagents.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-code-hooks",
+    title: "Hooks reference",
+    url: "https://code.claude.com/docs/en/hooks",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Hook events, matchers and exit-code behaviour, including exit code 2 blocking PreToolUse.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "tool-runner-docs",
+    title: "Tool Runner (SDK)",
+    url: "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-runner",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "The SDK Tool Runner, and when to keep a manual loop for approvals and custom logic.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "managed-agents-docs",
+    title: "Claude Managed Agents overview",
+    url: "https://platform.claude.com/docs/en/managed-agents/overview",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Managed Agents: agents, environments, sessions and events, compared with the Messages API.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "building-effective-agents",
+    title: "Building effective agents",
+    url: "https://www.anthropic.com/engineering/building-effective-agents",
+    publisher: "Anthropic",
+    kind: "official-engineering-guide",
+    role: "Workflows versus agents, and the prompt chaining, routing, parallelization, orchestrator-workers and evaluator-optimizer patterns.",
+    checkedAt: reviewedAt,
+  },
 ];
+
+function pickClaudeSources(ids: string[]): CertificationSource[] {
+  return ids.map((id) => {
+    const source = claudeSourceLibrary.find((candidate) => candidate.id === id);
+    if (!source) throw new Error(`Unknown Claude certification source: ${id}`);
+    return source;
+  });
+}
+
+export const claudeCertificationSources = pickClaudeSources([
+  "anthropic-certification-faq", "anthropic-certification-announcement", "anthropic-academy", "claude-docs",
+  "pearson-anthropic", "aim-ccar-f-launch", "ccar-domain-weights", "ccdv-f-domains", "mcp-specification",
+]);
+
+export const claudeDeveloperCertificationSources = pickClaudeSources([
+  "anthropic-certification-faq", "anthropic-certification-announcement", "pearson-anthropic", "ccdv-f-domains",
+  "claude-docs", "tool-runner-docs", "managed-agents-docs", "building-effective-agents", "mcp-specification", "claude-platform-101-course",
+]);
+
+export const claude101Sources = pickClaudeSources([
+  "anthropic-academy", "claude-101-course", "claude-academy-guide", "prompt-engineering-docs", "claude-projects-help",
+  "claude-artifacts-help", "claude-artifacts-sharing-help", "claude-skills-help", "claude-connectors-help",
+  "claude-research-help", "claude-enterprise-search-help",
+]);
+
+export const claudeCode101Sources = pickClaudeSources([
+  "anthropic-academy", "claude-code-101-course", "claude-code-101-coursera", "claude-academy-guide", "claude-code-docs",
+  "claude-code-permission-modes", "claude-code-subagents", "claude-code-hooks", "mcp-specification",
+]);
+
+export const claudePlatform101Sources = pickClaudeSources([
+  "anthropic-academy", "claude-platform-101-course", "claude-academy-guide", "claude-docs", "tool-runner-docs",
+  "managed-agents-docs", "mcp-specification",
+]);
 
 export const githubCopilotCertificationSources: CertificationSource[] = [
   {

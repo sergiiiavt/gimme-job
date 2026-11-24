@@ -1,12 +1,10 @@
 import { certificationChapter as chapter, type CertificationModule, type CertificationMockExamSettings } from "../certification-catalog";
-import claudeAcademy from "./claude/00-claude-academy.md?raw";
 import claudeExamPlan from "./claude/01-exam-plan.md?raw";
 import claudeAgenticArchitecture from "./claude/02-agentic-architecture.md?raw";
 import claudeCode from "./claude/03-claude-code.md?raw";
 import claudePromptsStructuredOutput from "./claude/04-prompts-structured-output.md?raw";
 import claudeToolsMcp from "./claude/05-tools-mcp.md?raw";
 import claudeContextReliability from "./claude/06-context-reliability.md?raw";
-import claudeDeveloperApi from "./claude/07-developer-api.md?raw";
 import claudeHandsOnLabs from "./claude/08-hands-on-labs.md?raw";
 import claudeMockExam from "./claude/09-mock-exam.md?raw";
 import claudeFinalReview from "./claude/10-final-review.md?raw";
@@ -19,23 +17,24 @@ import copilotPrivacySafeguards from "./copilot/06-privacy-safeguards.md?raw";
 import copilotHandsOnLab from "./copilot/07-hands-on-lab.md?raw";
 import copilotMockExam from "./copilot/08-mock-exam.md?raw";
 import copilotFinalReview from "./copilot/09-final-review.md?raw";
-import { claudeCertificationSources, githubCopilotCertificationSources } from "./sources";
+import ccdvExamPlan from "./ccdv-f/01-exam-plan.md?raw";
+import ccdvApplicationsIntegration from "./ccdv-f/02-applications-integration.md?raw";
+import ccdvModelOptimisation from "./ccdv-f/03-model-optimisation.md?raw";
+import ccdvAgentsToolsMcp from "./ccdv-f/04-agents-tools-mcp.md?raw";
+import ccdvPromptsSecurityEvaluation from "./ccdv-f/05-prompts-security-evaluation.md?raw";
+import ccdvHandsOnLabs from "./ccdv-f/06-hands-on-labs.md?raw";
+import ccdvMockExam from "./ccdv-f/07-mock-exam.md?raw";
+import ccdvFinalReview from "./ccdv-f/08-final-review.md?raw";
+import { claudeAcademyCatalogs } from "./claude-academy-catalog";
+import { claudeCertificationSources, claudeDeveloperCertificationSources, githubCopilotCertificationSources } from "./sources";
 
 const claudeTaxonomy: CertificationModule[] = [
-  chapter({
-    id: "claude-academy-101s",
-    label: "Claude Academy: free 101 courses",
-    navLabel: "Free 101 courses",
-    level: "Start here · free",
-    description: "Claude 101, Claude Code 101 and Claude Platform 101: who each is for, how to earn the free badge, and how to list it on a CV.",
-    sourceIds: ["anthropic-academy", "claude-101-course", "claude-code-101-course", "claude-platform-101-course", "claude-academy-guide"],
-  }, claudeAcademy),
   chapter({
     id: "claude-exam-plan",
     label: "Exam map & study plan",
     navLabel: "Exam map",
-    level: "Overview",
-    description: "The four Claude certifications, who can sit them, exam rules, CCAR-F and CCDV-F domains, and how to pace this track.",
+    level: "Start here",
+    description: "The four Claude certifications, who can sit them, exam rules, CCAR-F domains and scenarios, and how to pace this track.",
     sourceIds: ["anthropic-certification-faq", "anthropic-certification-announcement", "anthropic-academy", "pearson-anthropic", "aim-ccar-f-launch", "ccar-domain-weights", "ccdv-f-domains"],
   }, claudeExamPlan),
   chapter({
@@ -79,14 +78,6 @@ const claudeTaxonomy: CertificationModule[] = [
     sourceIds: ["claude-docs"],
   }, claudeContextReliability),
   chapter({
-    id: "developer-api",
-    label: "Developer API depth (CCDV-F)",
-    navLabel: "Developer API",
-    level: "CCDV-F",
-    description: "Request shape, streaming events, stop reasons, retries, batches, prompt caching, model tiers, platforms and security.",
-    sourceIds: ["claude-docs", "ccdv-f-domains"],
-  }, claudeDeveloperApi),
-  chapter({
     id: "claude-hands-on-labs",
     label: "Hands-on labs",
     navLabel: "Labs",
@@ -99,8 +90,8 @@ const claudeTaxonomy: CertificationModule[] = [
     label: "Original mock exam — 40 questions",
     navLabel: "Mock exam · 40",
     level: "Exam practice",
-    description: "Forty original scenario questions across the six CCAR-F scenarios and the CCDV-F API delta, with an explanation key.",
-    sourceIds: ["aim-ccar-f-launch", "ccar-domain-weights", "ccdv-f-domains"],
+    description: "Forty original scenario questions across the six CCAR-F production scenarios, with an explanation key.",
+    sourceIds: ["aim-ccar-f-launch", "ccar-domain-weights"],
   }, claudeMockExam),
   chapter({
     id: "claude-final-review",
@@ -110,6 +101,73 @@ const claudeTaxonomy: CertificationModule[] = [
     description: "The meta-rule, six distractor patterns, high-yield distinctions and a readiness checklist.",
     sourceIds: ["anthropic-certification-faq", "pearson-anthropic"],
   }, claudeFinalReview),
+];
+
+const claudeDeveloperTaxonomy: CertificationModule[] = [
+  chapter({
+    id: "ccdv-exam-plan",
+    label: "Exam map & study plan",
+    navLabel: "Exam map",
+    level: "Start here",
+    description: "Who can sit CCDV-F, exam rules, the eight domains and their weights, the December 2026 update and how to pace this track.",
+    sourceIds: ["anthropic-certification-faq", "anthropic-certification-announcement", "pearson-anthropic", "ccdv-f-domains", "claude-platform-101-course"],
+  }, ccdvExamPlan),
+  chapter({
+    id: "developer-api",
+    label: "Applications & integration",
+    navLabel: "Applications & integration",
+    level: "CCDV-F · 33%",
+    description: "Request shape, streaming events, stop reasons, errors and retries, platforms and integration patterns.",
+    sourceIds: ["claude-docs", "ccdv-f-domains"],
+  }, ccdvApplicationsIntegration),
+  chapter({
+    id: "ccdv-model-optimisation",
+    label: "Model selection & optimisation",
+    navLabel: "Model selection",
+    level: "CCDV-F · 17%",
+    description: "Model tiers chosen on evidence, prompt caching, Message Batches, token counting and latency levers.",
+    sourceIds: ["claude-docs", "ccdv-f-domains"],
+  }, ccdvModelOptimisation),
+  chapter({
+    id: "ccdv-agents-tools",
+    label: "Agents, workflows, tools & MCP",
+    navLabel: "Agents & tools",
+    level: "CCDV-F · 25%",
+    description: "Workflow patterns versus agents, the tool-use loop, parallel tools, tool errors, MCP and agent harnesses.",
+    sourceIds: ["building-effective-agents", "claude-docs", "tool-runner-docs", "managed-agents-docs", "mcp-specification"],
+  }, ccdvAgentsToolsMcp),
+  chapter({
+    id: "ccdv-prompts-security-eval",
+    label: "Prompts, security, Claude Code & evaluation",
+    navLabel: "Prompts, security & eval",
+    level: "CCDV-F · 25%",
+    description: "Prompt and context engineering, structured output, injection defences, Claude Code in CI and evaluation sets.",
+    sourceIds: ["claude-docs", "ccdv-f-domains"],
+  }, ccdvPromptsSecurityEvaluation),
+  chapter({
+    id: "ccdv-hands-on-labs",
+    label: "Hands-on labs",
+    navLabel: "Labs",
+    level: "Practice",
+    description: "Three labs that cover every CCDV-F domain and each leave a working GimmeJob feature behind.",
+    sourceIds: ["claude-docs", "tool-runner-docs"],
+  }, ccdvHandsOnLabs),
+  chapter({
+    id: "ccdv-mock-exam",
+    label: "Original mock exam — 30 questions",
+    navLabel: "Mock exam · 30",
+    level: "Exam practice",
+    description: "Thirty original questions weighted like the CCDV-F domains, with an explanation key.",
+    sourceIds: ["ccdv-f-domains", "claude-docs"],
+  }, ccdvMockExam),
+  chapter({
+    id: "ccdv-final-review",
+    label: "Final review & exam-day checklist",
+    navLabel: "Final review",
+    level: "Revision",
+    description: "The meta-rule, high-yield distinctions, six distractor patterns and a readiness checklist.",
+    sourceIds: ["anthropic-certification-faq", "pearson-anthropic", "ccdv-f-domains"],
+  }, ccdvFinalReview),
 ];
 
 const githubCopilotTaxonomy: CertificationModule[] = [
@@ -191,10 +249,10 @@ export const claudeCertificationCatalog = {
   trackId: "claude-architect",
   trackLabel: "Claude CCAR-F",
   version: 1,
-  title: "Claude Certified Architect & Developer Exam Preparation",
-  titleUk: "Підготовка до іспитів Claude Certified Architect і Developer",
-  description: "A self-study path for Anthropic's Claude Certified Architect – Foundations exam with the API delta for Developer – Foundations: the free Claude Academy 101 courses, every domain, worked examples, hands-on labs that build GimmeJob features, a 40-question original mock exam, and a final review.",
-  descriptionUk: "Self-study learning path для іспиту Claude Certified Architect – Foundations з доповненням для Developer – Foundations: усі домени, розібрані приклади, практичні лабораторні, 40 авторських питань mock exam і фінальне повторення.",
+  title: "Claude Certified Architect – Foundations (CCAR-F) Exam Preparation",
+  titleUk: "Підготовка до іспиту Claude Certified Architect – Foundations (CCAR-F)",
+  description: "A self-study path for Anthropic's Claude Certified Architect – Foundations exam: every domain, worked examples, hands-on labs that build GimmeJob features, a 40-question original mock exam, and a final review.",
+  descriptionUk: "Self-study learning path для іспиту Claude Certified Architect – Foundations: усі домени, розібрані приклади, практичні лабораторні, 40 авторських питань mock exam і фінальне повторення.",
   lastReviewedAt: "2026-11-24",
   taxonomy: claudeTaxonomy,
   sources: claudeCertificationSources,
@@ -204,6 +262,28 @@ export const claudeCertificationCatalog = {
       strong: "Take the official practice exam and book once it reports 900 or more.",
       close: "Reread the chapters behind every wrong answer, then retake this mock.",
       gaps: "Redo the hands-on labs for your weakest domain before another mock.",
+      more: "Return to the chapter sequence before doing more mock exams.",
+    },
+  } satisfies CertificationMockExamSettings,
+};
+
+export const claudeDeveloperCertificationCatalog = {
+  trackId: "claude-developer",
+  trackLabel: "Claude CCDV-F",
+  version: 1,
+  title: "Claude Certified Developer – Foundations (CCDV-F) Exam Preparation",
+  titleUk: "Підготовка до іспиту Claude Certified Developer – Foundations (CCDV-F)",
+  description: "A self-study path for Anthropic's Claude Certified Developer – Foundations exam: all eight domains, worked examples, three hands-on labs that build GimmeJob features, a 30-question original mock exam, and a final review.",
+  descriptionUk: "Self-study learning path для іспиту Claude Certified Developer – Foundations: усі вісім доменів, розібрані приклади, три практичні лабораторні, 30 авторських питань mock exam і фінальне повторення.",
+  lastReviewedAt: "2026-11-24",
+  taxonomy: claudeDeveloperTaxonomy,
+  sources: claudeDeveloperCertificationSources,
+  mockExam: {
+    scoreNote: "This mock uses one question = one practice mark. Claude exams report a scaled score from 100 to 1,000 with 720 to pass, so treat this percentage as a diagnostic.",
+    evaluationTexts: {
+      strong: "Recheck the official guide for the December 2026 changes, then book.",
+      close: "Reread the chapters behind every wrong answer, then retake this mock.",
+      gaps: "Do the hands-on labs for your weakest domain before another mock.",
       more: "Return to the chapter sequence before doing more mock exams.",
     },
   } satisfies CertificationMockExamSettings,
@@ -231,4 +311,11 @@ export const githubCopilotCertificationCatalog = {
   } satisfies CertificationMockExamSettings,
 };
 
-export const aiEngineeringCertificationCatalogs = [claudeCertificationCatalog, githubCopilotCertificationCatalog];
+export { claude101Catalog, claudeCode101Catalog, claudePlatform101Catalog } from "./claude-academy-catalog";
+
+export const aiEngineeringCertificationCatalogs = [
+  ...claudeAcademyCatalogs,
+  claudeCertificationCatalog,
+  claudeDeveloperCertificationCatalog,
+  githubCopilotCertificationCatalog,
+];
