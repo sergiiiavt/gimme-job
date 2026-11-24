@@ -1,4 +1,5 @@
 import { certificationChapter as chapter, type CertificationModule, type CertificationMockExamSettings } from "../certification-catalog";
+import claudeAcademy from "./claude/00-claude-academy.md?raw";
 import claudeExamPlan from "./claude/01-exam-plan.md?raw";
 import claudeAgenticArchitecture from "./claude/02-agentic-architecture.md?raw";
 import claudeCode from "./claude/03-claude-code.md?raw";
@@ -22,10 +23,18 @@ import { claudeCertificationSources, githubCopilotCertificationSources } from ".
 
 const claudeTaxonomy: CertificationModule[] = [
   chapter({
+    id: "claude-academy-101s",
+    label: "Claude Academy: free 101 courses",
+    navLabel: "Free 101 courses",
+    level: "Start here · free",
+    description: "Claude 101, Claude Code 101 and Claude Platform 101: who each is for, how to earn the free badge, and how to list it on a CV.",
+    sourceIds: ["anthropic-academy", "claude-101-course", "claude-code-101-course", "claude-platform-101-course", "claude-academy-guide"],
+  }, claudeAcademy),
+  chapter({
     id: "claude-exam-plan",
     label: "Exam map & study plan",
     navLabel: "Exam map",
-    level: "Start here",
+    level: "Overview",
     description: "The four Claude certifications, who can sit them, exam rules, CCAR-F and CCDV-F domains, and how to pace this track.",
     sourceIds: ["anthropic-certification-faq", "anthropic-certification-announcement", "anthropic-academy", "pearson-anthropic", "aim-ccar-f-launch", "ccar-domain-weights", "ccdv-f-domains"],
   }, claudeExamPlan),
@@ -184,9 +193,9 @@ export const claudeCertificationCatalog = {
   version: 1,
   title: "Claude Certified Architect & Developer Exam Preparation",
   titleUk: "Підготовка до іспитів Claude Certified Architect і Developer",
-  description: "A self-study path for Anthropic's Claude Certified Architect – Foundations exam with the API delta for Developer – Foundations: every domain, worked examples, hands-on labs that build GimmeJob features, a 40-question original mock exam, and a final review.",
+  description: "A self-study path for Anthropic's Claude Certified Architect – Foundations exam with the API delta for Developer – Foundations: the free Claude Academy 101 courses, every domain, worked examples, hands-on labs that build GimmeJob features, a 40-question original mock exam, and a final review.",
   descriptionUk: "Self-study learning path для іспиту Claude Certified Architect – Foundations з доповненням для Developer – Foundations: усі домени, розібрані приклади, практичні лабораторні, 40 авторських питань mock exam і фінальне повторення.",
-  lastReviewedAt: "2026-11-23",
+  lastReviewedAt: "2026-11-24",
   taxonomy: claudeTaxonomy,
   sources: claudeCertificationSources,
   mockExam: {

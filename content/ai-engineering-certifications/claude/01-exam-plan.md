@@ -1,23 +1,12 @@
 # Exam map & study plan
 
-This track prepares you for **Claude Certified Architect – Foundations (CCAR-F)** and adds the API depth for **Claude Certified Developer – Foundations (CCDV-F)**. Both are proctored Anthropic exams. Study the material even if you cannot sit them yet: it is exactly what senior AI-agent interviews probe.
-
-## Start here: free Anthropic Academy certificates
-
-Two free 101 courses come before everything else in this track. Anyone can take them, they need only a free Skilljar sign-up, and each ends with a completion certificate you can add to LinkedIn straight away.
-
-| Course | Take it if | Time |
-| --- | --- | --- |
-| Claude Code 101 | You write code; the recommended first course for developers | A couple of hours |
-| Claude 101 | You want the everyday features: projects, artifacts, research, connectors | A couple of hours |
-
-These are course certificates, not proctored certifications. For CCAR-F, Anthropic recommends Claude 101, Building with the Claude API, Introduction to Model Context Protocol and Claude Code in Action, plus hands-on building with its developer tools.
+This track prepares you for **Claude Certified Architect – Foundations (CCAR-F)** and adds the API depth for **Claude Certified Developer – Foundations (CCDV-F)**. Both are proctored Anthropic exams. Study the material even if you cannot sit them yet: it is exactly what senior AI-agent interviews probe. New to Claude? Earn the free 101 badges in the previous chapter first.
 
 ## Who can sit the exams
 
 Only employees of companies in the **Claude Partner Network** can certify, and registration needs a partner email on a recognised company domain. Customers and non-partners are not eligible yet. Partner Network membership is free for organizations, so the first question to ask is whether your employer is already a partner.
 
-If you are not eligible, the free **Anthropic Academy** courses issue completion certificates that anyone can earn: after the two 101 courses, take Claude Code in Action, Building with the Claude API, Introduction to Model Context Protocol, MCP Advanced Topics, and Introduction to Agent Skills.
+If you are not eligible, the free **Claude Academy** courses award completion badges that anyone can earn: after the 101 courses, take Claude Code in Action, Building with the Claude API, Introduction to Model Context Protocol, MCP Advanced Topics, and Introduction to Agent Skills.
 
 ## The four Claude certifications
 
@@ -58,7 +47,7 @@ CCDV-F is an API exam. Its weights, as reported from the July 2026 candidate gui
 
 ## How to use this track
 
-1. Finish Claude Code 101 and Claude 101 on Anthropic Academy.
+1. Earn the Claude 101 and Claude Code 101 badges on Claude Academy.
 2. Read the five domain chapters in order, then the developer API chapter.
 3. Do at least three of the hands-on labs; hands-on time is what separates a pass from a near miss.
 4. Take the 40-question mock exam under an 80-minute timer.
