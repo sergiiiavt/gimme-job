@@ -110,3 +110,14 @@ test("certification mock exam answers cannot be guessed by position or option le
     assert.ok(correctIsStrictlyLongest / total < 0.5, `${catalog.trackId} correct answer is the longest option in ${correctIsStrictlyLongest} of ${total}`);
   }
 });
+
+test("the Claude track opens on the free Claude Academy 101 chapter", () => {
+  const claude = certificationTracks.find((catalog) => catalog.trackId === "claude-architect");
+  assert.ok(claude);
+  const first = claude.taxonomy[0];
+  assert.ok(first);
+  assert.equal(first.id, "claude-academy-101s");
+  for (const course of ["Claude 101", "Claude Code 101", "Claude Platform 101"]) {
+    assert.ok(first.markdown.includes(course), `free chapter covers ${course}`);
+  }
+});
