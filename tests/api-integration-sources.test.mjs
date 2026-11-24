@@ -40,7 +40,7 @@ test("API integration uses the shared learning source registry pattern", async (
   assert.match(topicPage, /LearningSourceRegistry/);
   assert.match(topicPage, /stripSourceSections/);
   assert.match(topicPage, /sourceSectionIds/);
-  assert.match(topicPage, /MarkdownDocument markdown=\{renderedMarkdown\}/);
+  assert.match(topicPage, /<MarkdownDocument\b[^>]*\bmarkdown=\{renderedMarkdown\}/);
   assert.match(topicPage, /topicSources\.map/);
 
   assert.match(learningUi, /id="source-registry"/);

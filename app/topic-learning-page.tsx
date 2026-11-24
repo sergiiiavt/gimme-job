@@ -8,7 +8,7 @@ import { sectionNavigationHref } from "./navigation-paths";
 import { chapterSourcesLabel } from "./source-count-label";
 import MarkdownDocument, { extractMarkdownHeadings, markdownSlug } from "./qa-markdown";
 import { SiteSidebar, type SiteSection } from "./site-navigation";
-import { localizedLabel, topicNavigationItems } from "./topic-learning-navigation";
+import { localizedLabel, topicNavigationItems, topicSectionNavigation } from "./topic-learning-navigation";
 import styles from "./qa-fundamentals-page.module.css";
 
 type SiteMode = "public" | "personal";
@@ -222,10 +222,13 @@ function ChapterView({ catalog, chapterCount, chapterNumber, eyebrow, language, 
     () => hasSourceRegistry ? stripSourceSections(markdown) : markdown,
     [hasSourceRegistry, markdown],
   );
-  const headings = useMemo(
-    () => extractMarkdownHeadings(renderedMarkdown).filter((heading) => heading.level === 2),
-    [renderedMarkdown],
-  );
+  const { headings, headingIdOverrides } = useMemo(() => {
+    const canonicalMarkdown = hasSourceRegistry ? stripSourceSections(topic.markdown) : topic.markdown;
+    return topicSectionNavigation(
+      extractMarkdownHeadings(renderedMarkdown).filter((heading) => heading.level === 2),
+      extractMarkdownHeadings(canonicalMarkdown).filter((heading) => heading.level === 2),
+    );
+  }, [hasSourceRegistry, renderedMarkdown, topic.markdown]);
 
   return (
     <>
@@ -237,7 +240,7 @@ function ChapterView({ catalog, chapterCount, chapterNumber, eyebrow, language, 
       <div className={styles.layout}>
         <div className={styles.document}>
           <article className={styles.article}>
-            <MarkdownDocument markdown={renderedMarkdown}/>
+            <MarkdownDocument headingIdOverrides={headingIdOverrides} markdown={renderedMarkdown}/>
           </article>
 
           {hasSourceRegistry && (
