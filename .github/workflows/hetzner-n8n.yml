@@ -1,12 +1,9 @@
 name: Bootstrap Hetzner n8n
 
+# Manual dispatch only while the n8n integration is paused (N8N_INTEGRATION_ENABLED in
+# app/n8n-integration.ts). Restore the push trigger on main when n8n is resumed:
+#   push: { branches: [main], paths: [.github/workflows/hetzner-n8n.yml, ops/hetzner/provision.mjs] }
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/hetzner-n8n.yml
-      - ops/hetzner/provision.mjs
   workflow_dispatch:
 
 permissions:
