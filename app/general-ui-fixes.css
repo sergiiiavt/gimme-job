@@ -29,14 +29,6 @@
   section[aria-label="На цій сторінці"] > nav::-webkit-scrollbar {
     display: none;
   }
-
-  section[aria-label="On this page"] > nav > a,
-  section[aria-label="На цій сторінці"] > nav > a {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
 }
 
 @media (min-width: 1181px) {

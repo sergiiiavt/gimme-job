@@ -12,3 +12,15 @@ test("learning TOC keeps long heading names fully visible", async () => {
   assert.match(styles, /text-overflow:\s*clip\s*!important/);
   assert.match(styles, /white-space:\s*normal\s*!important/);
 });
+
+test("long learning TOCs scroll internally without clamping link text", async () => {
+  const styles = await read("app/general-ui-fixes.css");
+
+  assert.match(styles, /max-height:\s*calc\(100dvh - 36px\)/);
+  assert.match(styles, /overflow-y:\s*auto/);
+  assert.match(styles, /overscroll-behavior-y:\s*contain/);
+  assert.match(styles, /scrollbar-width:\s*none/);
+  assert.match(styles, /::-webkit-scrollbar/);
+  assert.doesNotMatch(styles, /line-clamp|display:\s*-webkit-box/);
+  assert.match(styles, /grid-template-columns:\s*minmax\(0, 1fr\) 228px/);
+});

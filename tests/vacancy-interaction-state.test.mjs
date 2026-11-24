@@ -62,13 +62,3 @@ test("vacancy filter menus use the browser top layer and follow their anchors", 
   assert.match(generalStyles, /\.vacancy-filter-menu\[popover\]/);
   assert.match(generalStyles, /\.vacancy-calendar-menu\[popover\]/);
 });
-
-test("long learning TOCs scroll internally without a visible scrollbar", () => {
-  assert.match(generalStyles, /max-height:\s*calc\(100dvh - 36px\)/);
-  assert.match(generalStyles, /overflow-y:\s*auto/);
-  assert.match(generalStyles, /overscroll-behavior-y:\s*contain/);
-  assert.match(generalStyles, /scrollbar-width:\s*none/);
-  assert.match(generalStyles, /::-webkit-scrollbar/);
-  assert.match(generalStyles, /-webkit-line-clamp:\s*2/);
-  assert.match(generalStyles, /grid-template-columns:\s*minmax\(0, 1fr\) 228px/);
-});
