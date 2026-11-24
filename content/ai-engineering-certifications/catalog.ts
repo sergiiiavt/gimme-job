@@ -1,4 +1,4 @@
-import type { IstqbAiTestingModule } from "../istqb-ai-testing/modules";
+import { certificationChapter as chapter, type CertificationModule, type CertificationMockExamSettings } from "../certification-catalog";
 import claudeExamPlan from "./claude/01-exam-plan.md?raw";
 import claudeAgenticArchitecture from "./claude/02-agentic-architecture.md?raw";
 import claudeCode from "./claude/03-claude-code.md?raw";
@@ -19,22 +19,6 @@ import copilotHandsOnLab from "./copilot/07-hands-on-lab.md?raw";
 import copilotMockExam from "./copilot/08-mock-exam.md?raw";
 import copilotFinalReview from "./copilot/09-final-review.md?raw";
 import { claudeCertificationSources, githubCopilotCertificationSources } from "./sources";
-
-export type CertificationModule = IstqbAiTestingModule;
-
-type ModuleFields = Omit<CertificationModule, "count" | "markdown">;
-
-/** Mock exam chapters end in `mock-exam`; topic ids stay unique across tracks on the shared route. */
-export const isMockExamModuleId = (id: string) => id === "mock-exam" || id.endsWith("-mock-exam");
-
-const sectionCount = (markdown: string) => (markdown.match(/^## /gm) ?? []).length;
-const mockQuestionCount = (markdown: string) => (markdown.match(/^\*\*\d+\.\*\*/gm) ?? []).length;
-
-const chapter = (fields: ModuleFields, markdown: string): CertificationModule => ({
-  ...fields,
-  count: isMockExamModuleId(fields.id) ? mockQuestionCount(markdown) : sectionCount(markdown),
-  markdown,
-});
 
 const claudeTaxonomy: CertificationModule[] = [
   chapter({
@@ -193,11 +177,6 @@ const githubCopilotTaxonomy: CertificationModule[] = [
     sourceIds: ["gh300-study-guide", "gh300-certification-page"],
   }, copilotFinalReview),
 ];
-
-export interface CertificationMockExamSettings {
-  scoreNote: string;
-  evaluationTexts: { strong: string; close: string; gaps: string; more: string };
-}
 
 export const claudeCertificationCatalog = {
   trackId: "claude-architect",

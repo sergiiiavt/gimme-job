@@ -23,8 +23,11 @@ test("certification catalog keeps CT-AI selected and restores under-construction
 
   assert.match(page, /const DEFAULT_TRACK_ID = "ct-ai-v2"/);
   assert.match(page, /label: "CT-AI v2\.0", available: true/);
-  for (const track of ["ISTQB", "Cloud", "Security", "AI Engineering"]) {
+  for (const track of ["Cloud", "Security"]) {
     assert.match(page, new RegExp(`label: "${track}", available: false`));
+  }
+  for (const retired of ["ISTQB", "AI Engineering"]) {
+    assert.doesNotMatch(page, new RegExp(`label: "${retired}", available: false`), `${retired} placeholder is replaced by real tracks`);
   }
   assert.match(page, /type SecondarySwitcher/);
   assert.match(page, /secondarySwitcher=\{switcher\}/);

@@ -349,5 +349,14 @@
     "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio",
     "role": "Newline-delimited messages, stdout reserved for protocol messages, logs on stderr, and shutdown by closing stdin.",
     "checkedAt": "2026-11-21"
+  },
+  {
+    "id": "huggingface-agents-course",
+    "title": "Hugging Face AI Agents Course",
+    "publisher": "Hugging Face",
+    "kind": "course",
+    "url": "https://huggingface.co/learn/agents-course",
+    "role": "Free course from agent basics through smolagents, LlamaIndex and LangGraph to a benchmark agent as the final assignment; finishing it earns a free certificate.",
+    "checkedAt": "2026-11-24"
   }
 ]

@@ -35,6 +35,8 @@ test("canonical learning registry includes current Git-backed learning surfaces"
   assert.ok(routes.has("/learn/programming#python"));
   assert.ok(routes.has("/learn/programming#csharp"));
   assert.ok(routes.has("/learn/certifications#ct-ai-v2"));
+  assert.ok(routes.has("/learn/certifications#ctfl-v4"));
+  assert.ok(routes.has("/learn/certifications#ct-genai-v1"));
   assert.ok(routes.has("/learn/certifications#claude-architect"));
   assert.ok(routes.has("/learn/certifications#github-copilot-gh-300"));
 });

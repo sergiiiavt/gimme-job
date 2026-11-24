@@ -133,6 +133,7 @@ for label, method, response in [("older", "tools/list", older), ("current", "too
 - **Трасування вартості й затримки.** Додайте кількість токенів і час для кожного кроку й рахуйте їх на задачу ([Оцінювання та спостережуваність агентів](/learn/agentic?topic=agent-observability)).
 - **HTTP-транспорт.** Віддавайте той самий обробник через Streamable HTTP з перевіркою `Origin` і прив'язкою до localhost ([Model Context Protocol](/learn/agentic?topic=model-context-protocol)).
 - **Систематичні тести.** Додайте контрактні тести, property-based тести й внесення збоїв ([Тестування серверів MCP](/learn/llm?topic=agent-testing&section=testing-mcp-servers)).
+- **Структурований курс.** Безкоштовний [Hugging Face AI Agents Course](https://huggingface.co/learn/agents-course) проводить ті самі ідеї через smolagents, LlamaIndex і LangGraph і завершується агентом для бенчмарку, якого можна показати. За проходження видають безкоштовний сертифікат; сам агент, якого ви збудуєте, цінніший за сертифікат.
 
 ## Типові помилки
 

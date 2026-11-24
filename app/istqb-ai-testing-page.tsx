@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { claudeCertificationCatalog, githubCopilotCertificationCatalog, isMockExamModuleId, type CertificationMockExamSettings } from "@/content/ai-engineering-certifications/catalog";
+import { claudeCertificationCatalog, githubCopilotCertificationCatalog } from "@/content/ai-engineering-certifications/catalog";
+import { isMockExamModuleId, type CertificationMockExamSettings } from "@/content/certification-catalog";
 import istqbAiTestingCatalog from "@/content/istqb-ai-testing/catalog";
+import { ctflCertificationCatalog, ctGenAiCertificationCatalog } from "@/content/istqb-certifications/catalog";
 import type { IstqbAiTestingModule } from "@/content/istqb-ai-testing/modules";
 import { contentHref } from "./content-deep-links";
 import IstqbAiMockExam from "./istqb-ai-mock-exam";
@@ -59,19 +61,21 @@ type CertificationCatalog = {
 };
 
 const certificationCatalogs: Record<string, CertificationCatalog> = {
+  [ctflCertificationCatalog.trackId]: ctflCertificationCatalog,
   [DEFAULT_TRACK_ID]: istqbAiTestingCatalog,
+  [ctGenAiCertificationCatalog.trackId]: ctGenAiCertificationCatalog,
   [claudeCertificationCatalog.trackId]: claudeCertificationCatalog,
   [githubCopilotCertificationCatalog.trackId]: githubCopilotCertificationCatalog,
 };
 
 const certificationTracks = [
+  { id: ctflCertificationCatalog.trackId, label: ctflCertificationCatalog.trackLabel, available: true },
   { id: DEFAULT_TRACK_ID, label: "CT-AI v2.0", available: true },
+  { id: ctGenAiCertificationCatalog.trackId, label: ctGenAiCertificationCatalog.trackLabel, available: true },
   { id: claudeCertificationCatalog.trackId, label: claudeCertificationCatalog.trackLabel, available: true },
   { id: githubCopilotCertificationCatalog.trackId, label: githubCopilotCertificationCatalog.trackLabel, available: true },
-  { id: "istqb", label: "ISTQB", available: false, emptyState: "The broader ISTQB certification learning path is under construction." },
   { id: "cloud", label: "Cloud", available: false, emptyState: "Cloud certification learning paths are under construction." },
   { id: "security", label: "Security", available: false, emptyState: "Security certification learning paths are under construction." },
-  { id: "ai-engineering", label: "AI Engineering", available: false, emptyState: "AI engineering certification learning paths are under construction." },
 ];
 
 const certificationTrackLayout = `

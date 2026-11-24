@@ -7,16 +7,26 @@ registerTsx();
 registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
 
 const [
-  { aiEngineeringCertificationCatalogs, isMockExamModuleId },
+  { aiEngineeringCertificationCatalogs },
+  { istqbCertificationCatalogs },
+  { isMockExamModuleId },
   { parseIstqbAiMockExam },
+  { default: ctAiCatalog },
 ] = await Promise.all([
   import("../content/ai-engineering-certifications/catalog.ts"),
+  import("../content/istqb-certifications/catalog.ts"),
+  import("../content/certification-catalog.ts"),
   import("../app/istqb-ai-mock-exam-model.ts"),
+  import("../content/istqb-ai-testing/catalog.ts"),
 ]);
 
-type Catalog = (typeof aiEngineeringCertificationCatalogs)[number];
+const certificationTracks = [...istqbCertificationCatalogs, ...aiEngineeringCertificationCatalogs];
+
+type Catalog = (typeof certificationTracks)[number];
 
 const expectedMockQuestions: Record<string, number> = {
+  "ctfl-v4": 40,
+  "ct-genai-v1": 40,
   "claude-architect": 40,
   "github-copilot-gh-300": 30,
 };
@@ -27,11 +37,11 @@ const mockExam = (catalog: Catalog) => {
   return { mockChapter, exam: parseIstqbAiMockExam(mockChapter.markdown) };
 };
 
-test("AI engineering certification tracks have unique ids and resolvable sources", () => {
-  const trackIds = aiEngineeringCertificationCatalogs.map((catalog) => catalog.trackId);
+test("certification tracks have unique ids and resolvable sources", () => {
+  const trackIds = certificationTracks.map((catalog) => catalog.trackId);
   assert.equal(new Set(trackIds).size, trackIds.length);
 
-  for (const catalog of aiEngineeringCertificationCatalogs) {
+  for (const catalog of certificationTracks) {
     const moduleIds = catalog.taxonomy.map((chapter) => chapter.id);
     assert.equal(new Set(moduleIds).size, moduleIds.length, `${catalog.trackId} module ids are unique`);
 
@@ -47,8 +57,14 @@ test("AI engineering certification tracks have unique ids and resolvable sources
   }
 });
 
-test("AI engineering certification chapters publish retrievable sections", () => {
-  for (const catalog of aiEngineeringCertificationCatalogs) {
+test("topic ids are unique across all tracks on /learn/certifications", () => {
+  const ids = [ctAiCatalog, ...certificationTracks].flatMap((catalog) => catalog.taxonomy.map((chapter: { id: string }) => chapter.id));
+  const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+  assert.deepEqual(duplicates, []);
+});
+
+test("certification track chapters publish retrievable sections", () => {
+  for (const catalog of certificationTracks) {
     for (const chapter of catalog.taxonomy) {
       assert.match(chapter.markdown, /^# \S/, `${catalog.trackId}/${chapter.id} starts with a title`);
       assert.ok(chapter.count > 0, `${catalog.trackId}/${chapter.id} has a positive count`);
@@ -58,8 +74,8 @@ test("AI engineering certification chapters publish retrievable sections", () =>
   }
 });
 
-test("AI engineering mock exams parse completely with the shared mock exam model", () => {
-  for (const catalog of aiEngineeringCertificationCatalogs) {
+test("certification mock exams parse completely with the shared mock exam model", () => {
+  for (const catalog of certificationTracks) {
     const { mockChapter, exam } = mockExam(catalog);
     assert.equal(exam.questions.length, expectedMockQuestions[catalog.trackId], `${catalog.trackId} question count`);
     assert.equal(mockChapter.count, exam.questions.length, `${catalog.trackId} module count matches the questions`);
@@ -76,8 +92,8 @@ test("AI engineering mock exams parse completely with the shared mock exam model
   }
 });
 
-test("AI engineering mock exam answers cannot be guessed by position or option length", () => {
-  for (const catalog of aiEngineeringCertificationCatalogs) {
+test("certification mock exam answers cannot be guessed by position or option length", () => {
+  for (const catalog of certificationTracks) {
     const { exam } = mockExam(catalog);
     const total = exam.questions.length;
 

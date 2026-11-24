@@ -12,6 +12,7 @@ import sqlQuickReference from "./data-learning/sql-quick-reference.json";
 import embeddedIotCatalog from "./embedded-iot/catalog";
 import gitCatalog from "./git-learning/catalog";
 import istqbAiTestingCatalog from "./istqb-ai-testing/catalog";
+import { ctflCertificationCatalog, ctGenAiCertificationCatalog } from "./istqb-certifications/catalog";
 import llmTestingCatalog from "./llm-testing/catalog";
 import metricsEstimationCatalog from "./metrics-estimation/catalog";
 import networkingCatalog from "./networking/catalog";
@@ -69,6 +70,8 @@ export const learningRagSources: readonly LearningRagSource[] = [
   { key: "agentic", route: "/learn/agentic", value: agenticCatalog },
   { key: "observability", route: "/learn/observability", value: observabilityCatalog },
   { key: "istqb-ai-testing", route: "/learn/certifications", track: "ct-ai-v2", value: istqbAiTestingCatalog },
+  { key: "ctfl-certification", route: "/learn/certifications", track: "ctfl-v4", value: ctflCertificationCatalog },
+  { key: "ct-genai-certification", route: "/learn/certifications", track: "ct-genai-v1", value: ctGenAiCertificationCatalog },
   { key: "claude-certification", route: "/learn/certifications", track: "claude-architect", value: claudeCertificationCatalog },
   { key: "github-copilot-certification", route: "/learn/certifications", track: "github-copilot-gh-300", value: githubCopilotCertificationCatalog },
 ] as const;
