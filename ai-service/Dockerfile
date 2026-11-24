@@ -1,4 +1,4 @@
-FROM python:3.15-slim
+FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -12,12 +12,14 @@ RUN python -m pip install --no-cache-dir --only-binary :all: uv==0.12.1
 COPY ai-service/pyproject.toml /app/pyproject.toml
 COPY ai-service/uv.lock /app/uv.lock
 COPY ai-service/src /app/src
-RUN uv sync --frozen --no-dev --no-build --no-install-project
+RUN UV_PYTHON_DOWNLOADS=never uv sync --frozen --no-dev --no-build --no-install-project
 
 COPY content /app/content
 
 RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
 USER appuser
+
+RUN /app/.venv/bin/python -c "import gimmejob_ai.application"
 
 EXPOSE 8000
 
