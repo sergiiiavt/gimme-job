@@ -27,6 +27,7 @@ type Topic = (typeof llmTestingCatalog.topics)[number];
 const expectedTopicIds = [
   "generative-ai-overview",
   "llm-foundations",
+  "using-ai-reliably",
   "embeddings-similarity",
   "llm-application-anatomy",
   "prompts-as-artifacts",
