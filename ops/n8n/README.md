@@ -2,6 +2,16 @@
 
 This directory contains importable n8n workflow definitions for GimmeJob. The production n8n runtime is managed under `ops/hetzner/` and is available at `https://n8n.gimme-job.com`.
 
+## The n8n integration is paused
+
+`N8N_INTEGRATION_ENABLED` in `app/n8n-integration.ts` is `false` while the self-hosted n8n runtime is down. While it is off:
+
+- every `/internal/n8n/*` Worker route that only n8n uses returns `503 n8n_integration_paused` before authentication, including the daily report's `GET /internal/n8n/vacancies-sync` activity read;
+- `POST /internal/n8n/vacancies-sync` keeps working, because the hourly GitHub Actions vacancy sync (`.github/workflows/vacancy-catalog-sync.yml`) uses it and does not run through n8n;
+- `Bootstrap Hetzner n8n` (`hetzner-n8n.yml`) and `Refresh Hetzner runtime` (`hetzner-n8n-repair.yml`) run only on manual dispatch. The refresh workflow reboots the VM into rescue mode, so merges under `ops/hetzner/`, Dependabot bumps included, no longer start it.
+
+To resume, set the flag back to `true`, restore the two workflows' `push` triggers (kept as comments in each file), and redeploy. The email routes also stay behind `EMAIL_AUTOMATION_ENABLED` below.
+
 ## Email automation is paused
 
 `EMAIL_AUTOMATION_ENABLED` in `app/email-automation.ts` is `false`. While it is off, the Worker `email()` handler accepts and discards forwarded mail, `/auth/forwarding` and the `/internal/n8n/email-*` routes return `503 email_automation_paused`, and the account menu and the "Needs linking" panel are grayed out. Stored email events stay in D1. Deactivate the three email workflows in n8n while paused; set the flag back to `true` and redeploy to restore everything.
