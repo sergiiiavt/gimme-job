@@ -4,6 +4,8 @@
 
 For unrestricted generated text, treat factual correctness as something to measure and improve, rather than promise absolutely. For a bounded product feature, stronger guarantees are possible by restricting what the application can publish or execute. This chapter connects the controls into one design; the detailed methods remain in their linked chapters.
 
+For a practical workflow when writing emails, creating tasks or checking documents with an assistant, start with [Using AI reliably at work](/learn/llm?topic=using-ai-reliably).
+
 **Prerequisites:** [How LLMs generate text](/learn/llm?topic=llm-foundations), [Structured output and validation](/learn/llm?topic=structured-output-validation), [Evaluating RAG systems](/learn/llm?topic=rag-testing), [Evaluating agents and tool use](/learn/llm?topic=agent-testing), [Production quality](/learn/llm?topic=production-quality).
 
 ## What can actually be guaranteed?

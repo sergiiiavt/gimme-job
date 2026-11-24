@@ -110,11 +110,11 @@ RAG додає зовнішню інформацію під час запиту 
 
 ## Як організований курс
 
-Спочатку вивчаємо поняття й інженерію систем, потім — тестування та оцінювання. Наскрізний приклад — помічник служби підтримки вигаданого магазину Stride. Частина розділів використовує GimmeJob Learning Path Advisor.
+Спочатку вивчаємо поняття й щоденне використання AI, далі — інженерію систем, тестування та оцінювання. Наскрізний приклад — помічник служби підтримки вигаданого магазину Stride. Частина розділів використовує GimmeJob Learning Path Advisor.
 
 | Частина | Теми | Результат |
 |---|---|---|
-| Основи | Цей огляд; [Як LLM генерують текст](/learn/llm?topic=llm-foundations); [Векторні подання](/learn/llm?topic=embeddings-similarity) | Словник і механіка моделей |
+| Основи | Цей огляд; [Як LLM генерують текст](/learn/llm?topic=llm-foundations); [Надійне використання AI в роботі](/learn/llm?topic=using-ai-reliably); [Векторні подання](/learn/llm?topic=embeddings-similarity) | Словник, механіка моделей і практична перевірка результатів |
 | Розробка | [Анатомія застосунку та API](/learn/llm?topic=llm-application-anatomy); [Промпти](/learn/llm?topic=prompts-as-artifacts); [Структуровані відповіді](/learn/llm?topic=structured-output-validation) | Інтеграція LLM у застосунок |
 | Тестування й оцінювання | [Особливості тестування LLM](/learn/llm?topic=llm-testing-problem-space); [Тестування без моделі](/learn/llm?topic=testing-without-the-model); [Методологія оцінювання](/learn/llm?topic=evaluation-fundamentals); оцінювачі та статистика | Вимірювання якості й регресій |
 | Складні системи | [Системи RAG](/learn/llm?topic=rag-testing); [Агенти й інструменти](/learn/llm?topic=agent-testing) | Багатокрокові процеси пошуку та дій |

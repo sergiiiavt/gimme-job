@@ -112,11 +112,11 @@ Terms are used inconsistently across tools and papers. This course uses them as 
 
 ## How this course is organized
 
-The path moves from general concepts to the engineering of complete systems, and then to testing and quality evaluation. The fictional store Stride's support assistant provides a recurring example. Some chapters also use the GimmeJob Learning Path Advisor.
+The path moves from general concepts and everyday AI use to the engineering of complete systems, and then to testing and quality evaluation. The fictional store Stride's support assistant provides a recurring example. Some chapters also use the GimmeJob Learning Path Advisor.
 
 | Part | Topics | What you gain |
 |---|---|---|
-| Foundations | This overview; [How LLMs generate text](/learn/llm?topic=llm-foundations); [Embeddings and similarity](/learn/llm?topic=embeddings-similarity) | Vocabulary, model mechanics and representations |
+| Foundations | This overview; [How LLMs generate text](/learn/llm?topic=llm-foundations); [Using AI reliably at work](/learn/llm?topic=using-ai-reliably); [Embeddings and similarity](/learn/llm?topic=embeddings-similarity) | Vocabulary, model mechanics, practical verification and representations |
 | Application engineering | [Application anatomy and APIs](/learn/llm?topic=llm-application-anatomy); [Prompts](/learn/llm?topic=prompts-as-artifacts); [Structured output](/learn/llm?topic=structured-output-validation) | Understand and assemble LLM-powered applications |
 | Testing and evaluation | [Why LLM testing is different](/learn/llm?topic=llm-testing-problem-space); [Testing without the model](/learn/llm?topic=testing-without-the-model); [Evaluation methodology](/learn/llm?topic=evaluation-fundamentals); scorers, judges and statistics | Measure quality and detect regressions |
 | Advanced systems | [RAG systems](/learn/llm?topic=rag-testing); [Agents and tool use](/learn/llm?topic=agent-testing) | Understand multi-stage retrieval and action workflows |

@@ -2138,5 +2138,35 @@
     "role": "Calibrated response sets and component-level statistical guarantees with explicit assumptions; set coverage does not imply every generated answer is correct.",
     "checkedAt": "2026-11-06",
     "status": "current"
+  },
+  {
+    "id": "du-multiagent-debate",
+    "title": "Improving Factuality and Reasoning in Language Models through Multiagent Debate",
+    "publisher": "Du et al. — ICML 2024, PMLR 235",
+    "kind": "paper",
+    "url": "https://proceedings.mlr.press/v235/du24e.html",
+    "role": "Evidence of gains from multi-agent debate on the studied tasks and models; not a guarantee for manual cross-review with current assistants.",
+    "checkedAt": "2026-11-24",
+    "status": "current"
+  },
+  {
+    "id": "smit-debate-strategies",
+    "title": "Should we be going MAD? A Look at Multi-Agent Debate Strategies for LLMs",
+    "publisher": "Smit et al. — ICML 2024, PMLR 235",
+    "kind": "paper",
+    "url": "https://proceedings.mlr.press/v235/smit24a.html",
+    "role": "Comparison with simpler prompting and ensemble strategies showing that debate gains depend on configuration and do not reliably generalize across the evaluated setups.",
+    "checkedAt": "2026-11-24",
+    "status": "current"
+  },
+  {
+    "id": "lee-critical-thinking",
+    "title": "The Impact of Generative AI on Critical Thinking: Self-Reported Reductions in Cognitive Effort and Confidence Effects From a Survey of Knowledge Workers",
+    "publisher": "Lee et al. — CHI 2025",
+    "kind": "paper",
+    "url": "https://www.microsoft.com/en-us/research/publication/the-impact-of-generative-ai-on-critical-thinking-self-reported-reductions-in-cognitive-effort-and-confidence-effects-from-a-survey-of-knowledge-workers/",
+    "role": "Self-reported, correlational evidence about confidence in AI and critical-thinking effort; not evidence that AI causes a loss of ability.",
+    "checkedAt": "2026-11-24",
+    "status": "current"
   }
 ]

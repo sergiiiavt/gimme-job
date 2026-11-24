@@ -146,6 +146,14 @@ test("AI reliability guarantees are discoverable as a linked learning section", 
   assert.ok(hit, "the new chapter must participate in canonical section retrieval");
 });
 
+test("everyday AI review guidance is discoverable at its own section deep link", async () => {
+  const result = await searchRagDocuments(env as never, "Independent review with another AI", ["learning"], 8);
+  const hit = result.results.find((item) => item.sourcePath ===
+    "/learn/llm?topic=using-ai-reliably&section=independent-review-with-another-ai");
+
+  assert.ok(hit, "the practical guide must be retrievable through the canonical learning registry");
+});
+
 test("under-construction topic catalogs do not leak placeholder pages into retrieval", () => {
   const documents = staticRagDocuments().filter((document) => document.kind === "learning");
 

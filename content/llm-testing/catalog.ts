@@ -35,6 +35,8 @@ import proPractice from "./16-pro-practice.md?raw";
 import proPracticeUk from "./16-pro-practice.uk.md?raw";
 import aiReliability from "./17-ai-reliability.md?raw";
 import aiReliabilityUk from "./17-ai-reliability.uk.md?raw";
+import usingAiReliably from "./18-using-ai-reliably.md?raw";
+import usingAiReliablyUk from "./18-using-ai-reliably.uk.md?raw";
 
 export type LlmTestingLevel = "beginner" | "intermediate" | "advanced" | "pro";
 
@@ -89,6 +91,14 @@ const topics: LlmTestingTopic[] = [
     description: "Tokenization with byte-pair encoding, the generation loop, softmax, temperature, top-k and top-p, non-determinism at temperature 0, training stages, hallucination, long contexts and reasoning models.",
     descriptionUk: "Токенізація методом BPE, цикл генерації, softmax, температура, top-k і top-p, недетермінованість за нульової температури, навчання, галюцинації, довгий контекст і моделі міркування.",
   }, llmFoundations, llmFoundationsUk, ["sennrich-bpe", "tiktoken", "vaswani-attention", "alammar-transformer", "karpathy-intro-llms", "holtzman-nucleus", "thinking-machines-nondeterminism", "ouyang-instructgpt", "rafailov-dpo", "sharma-sycophancy", "rottger-xstest", "kalai-why-hallucinate", "maynez-faithfulness", "liu-lost-middle", "hsieh-ruler", "turpin-cot-faithfulness"]),
+  chapter({
+    id: "using-ai-reliably",
+    label: "Using AI reliably at work",
+    labelUk: "Надійне використання AI в роботі",
+    level: "beginner",
+    description: "Everyday AI use: relevant context, source checks, uncertainty, review by another AI, human oversight, reusable prompts and worked examples for emails, tasks, summaries and test data.",
+    descriptionUk: "AI у щоденній роботі: доречний контекст, перевірка джерел, невизначеність, перегляд іншою моделлю та людиною, готові промпти й розібрані приклади листів, задач, узагальнень і тестових даних.",
+  }, usingAiReliably, usingAiReliablyUk, ["anthropic-reduce-hallucinations", "liu-lost-middle", "huang-self-correction", "du-multiagent-debate", "smit-debate-strategies", "lee-critical-thinking"]),
   chapter({
     id: "embeddings-similarity",
     label: "Embeddings and similarity",
