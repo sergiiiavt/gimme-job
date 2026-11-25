@@ -36,3 +36,7 @@ Chapter 6 is short: tool categories, and the benefits and risks of test automati
 ## Worked example
 
 A team buys a record-and-playback tool expecting to automate every manual test within a month. Two risks apply: unrealistic expectations, and inaccurate estimation of the effort to build and maintain the suite. A pilot on a small, stable regression set would reduce both.
+
+## Automation investment calculation
+
+Assume 20 manual runs at 8 hours each: 160 hours. Automation setup 40 hours, maintenance 20 and execution/review 0.5 hours per run: 70 hours, a 90-hour saving over these runs. For two runs the same fixed investment costs 61 hours versus 16 manual. Document assumptions, environment effort and flakiness; a tool is not automatically economical or a replacement for human analysis.

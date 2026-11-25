@@ -22,12 +22,16 @@ def is_flaky(results: list[str]) -> bool:
     return any(earlier == "fail" and later == "pass" for earlier, later in zip(results, results[1:]))
 
 
+class ToolFailure(Exception):
+    """A tool failure must not be confused with successful task completion."""
+
+
 def scripted_policy(observations: list[dict[str, Any]], run_id: str) -> dict[str, Any] | None:
     """Return the next tool call, or None when the triage is complete."""
+    if any(obs.get("isError") for obs in observations):
+        raise ToolFailure("Cannot continue triage after a failed tool")
     if not observations:
         return {"name": "ci_list_failures", "arguments": {"run_id": run_id}}
-    if observations[0].get("isError"):
-        return None  # the run could not be read; stop instead of guessing
     failures = observations[0]["structuredContent"]["failures"]
     histories = {obs["structuredContent"]["test"]: obs["structuredContent"] for obs in observations[1:]
                  if obs.get("tool") == "ci_test_history"}
@@ -45,6 +49,7 @@ def scripted_policy(observations: list[dict[str, Any]], run_id: str) -> dict[str
 def run_triage(run_id: str, max_steps: int = 8) -> dict[str, Any]:
     trace: list[dict[str, Any]] = []
     observations: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
     with StdioClient() as client:
         client.discover()
         for step in range(1, max_steps + 1):
@@ -62,13 +67,18 @@ def run_triage(run_id: str, max_steps: int = 8) -> dict[str, Any]:
                 "ms": round((time.perf_counter() - started) * 1000, 1),
             })
             observations.append({**outcome, "tool": call["name"]})
+            if outcome.get("isError"):
+                errors.append({"tool": call["name"], "content": outcome.get("content", [])})
+                stop_reason = "tool error"
+                break
         else:
             stop_reason = "step budget exhausted"
-    proposals = [obs["structuredContent"] for obs in observations if obs["tool"] == "ci_propose_quarantine"]
-    regressions = [obs["structuredContent"]["test"] for obs in observations
+    successful = [obs for obs in observations if not obs.get("isError")]
+    proposals = [obs["structuredContent"] for obs in successful if obs["tool"] == "ci_propose_quarantine"]
+    regressions = [obs["structuredContent"]["test"] for obs in successful
                    if obs["tool"] == "ci_test_history" and not is_flaky(obs["structuredContent"]["results"])]
     return {"run_id": run_id, "stop_reason": stop_reason, "steps": len(trace), "trace": trace,
-            "proposals": proposals, "investigate": regressions}
+            "proposals": proposals, "investigate": regressions, "errors": errors}
 
 
 if __name__ == "__main__":
@@ -76,6 +86,8 @@ if __name__ == "__main__":
     for entry in report["trace"]:
         print(f"step {entry['step']}: {entry['tool']} {json.dumps(entry['arguments'])} error={entry['is_error']} {entry['ms']} ms")
     print("stop:", report["stop_reason"])
+    for error in report["errors"]:
+        print("tool error:", error["tool"], error["content"])
     for proposal in report["proposals"]:
         print("needs approval:", proposal["id"], proposal["test"], "-", proposal["reason"])
     for test in report["investigate"]:

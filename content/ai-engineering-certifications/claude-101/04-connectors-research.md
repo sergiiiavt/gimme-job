@@ -33,3 +33,7 @@ The third section of Claude 101 covers expanding Claude's reach beyond the chat.
 | "Create the Jira ticket for this bug" | A connector |
 | "Compare three test-management tools, with sources" | Research |
 | "What did we decide about flaky-test quarantine across Slack and Drive?" | Enterprise search |
+
+## Resolve conflicting search results
+
+A current private hiring note says hybrid while an old public page says remote. Open both, compare role/location/date and retain unresolved conflict. Repeated claims from copied pages are not independent sources. A connector is limited by the account’s permissions, granted scopes and organization policy. Research finds and composes evidence; citations still need support/freshness checks. Do not upload sensitive data just to obtain a more detailed answer.

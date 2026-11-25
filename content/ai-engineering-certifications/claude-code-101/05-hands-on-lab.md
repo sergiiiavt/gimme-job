@@ -1,6 +1,6 @@
 # Hands-on lab in the gimme-job repository
 
-One lab that touches every section of Claude Code 101. Work on a branch in your own clone of gimme-job. You need Claude Code with a Pro, Max or Enterprise account or an API key.
+Use a disposable scratch copy with synthetic fixtures. The baseline needs Python/Git only; optional live Claude Code work requires a currently supported account/API setup and an authorized usage budget.
 
 ## 1. Project memory
 
@@ -20,7 +20,7 @@ Create .claude/agents/test-reviewer.md with a description such as "Use after tes
 
 ## 4. A hook that blocks
 
-Add a PreToolUse hook in .claude/settings.local.json, for the Edit and Write tools, that exits with code 2 when the target path ends in .env and prints a reason to stderr. Ask Claude to add a variable to .env and confirm that the edit is blocked and that Claude explains why. Then change the script to exit 1 and watch the edit go through: that is the mistake this lab exists to teach.
+Use examples/certification-practice/hooks/block_fixture_write.py and the accompanying example settings. Feed synthetic Write/Edit JSON events for .env.training and answer.py through stdin. Expect exit 2 with stderr for the protected fixture and exit 0 for the normal path. Reject malformed events. Do not test against real secrets; the matcher does not sandbox Bash, symlinks or a remote backend.
 
 ## 5. Context
 
@@ -28,4 +28,17 @@ Run /context, then /compact, then /context again, and note what changed. Finish 
 
 ## What to keep
 
-The CLAUDE.md, the subagent file and the hook script are three small, concrete things to show in an interview. Delete the .env test change before you push.
+The CLAUDE.md, the subagent file and the hook script are three small, concrete things to show in an interview. Keep the sandbox synthetic and inspect its diff before publishing any work.
+
+## Executable baseline and independent oracle
+
+Use the [offline practice package](https://github.com/sergiiiavt/gimme-job/tree/main/examples/certification-practice). Requires Python 3.10+, no model or API key. Run `python examples/certification-practice/practice.py claude-code`: every reference case should pass. Copy `starter.py` to a scratch file; `--candidate your_solution.py` should fail until you implement the required functions. Retain fixture IDs, expected/actual outputs and the command exit status.
+
+| Stage | Task | Check |
+| --- | --- | --- |
+| Derive | Read requirements before the reference code | Explain the expected outputs independently |
+| Implement | Fill only your track’s starter functions | All selected cases pass; the unfinished starter fails |
+| Challenge | Introduce an incorrect boundary, source claim or error state | At least one relevant oracle rejects it |
+| Review | Explain a plausible mistake and missing production controls | Record limits, not just a green status |
+
+Run the supplied hook tests separately and inspect stdin, stderr and exit status. Retain the minimal diff and an independently derived oracle. A hook matcher is not a general filesystem sandbox. Optional live-tool practice requires authorized access and a usage budget; production writes are outside this sandbox.

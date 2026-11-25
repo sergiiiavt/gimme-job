@@ -37,3 +37,16 @@ Trains: risk identification and non-determinism (chapter 3).
 Score ten generated test cases for accuracy, relevance, diversity and execution success rate. Change one thing in the prompt, rescore, and decide which version to keep.
 
 Trains: evaluation metrics and prompt refinement (chapter 2).
+
+## Executable baseline and independent oracle
+
+Use the [offline practice package](https://github.com/sergiiiavt/gimme-job/tree/main/examples/certification-practice). Requires Python 3.10+, no model or API key. Run `python examples/certification-practice/practice.py genai`: every reference case should pass. Copy `starter.py` to a scratch file; `--candidate your_solution.py` should fail until you implement the required functions. Retain fixture IDs, expected/actual outputs and the command exit status.
+
+| Stage | Task | Check |
+| --- | --- | --- |
+| Derive | Read requirements before the reference code | Explain the expected outputs independently |
+| Implement | Fill only your track’s starter functions | All selected cases pass; the unfinished starter fails |
+| Challenge | Introduce an incorrect boundary, source claim or error state | At least one relevant oracle rejects it |
+| Review | Explain a plausible mistake and missing production controls | Record limits, not just a green status |
+
+Complete the six preceding exercises with R1 and F1–F3; compare independent expected IDs, unsupported claims and metric denominators. The local oracle validates the deterministic outputs, not stochastic model quality. Optional live-tool practice requires authorized access and a usage budget; production writes are outside this sandbox.

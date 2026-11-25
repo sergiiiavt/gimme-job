@@ -29,14 +29,18 @@ The second section of Claude 101 covers organizing your work and knowledge. Expe
 - Skills are available on Free, Pro, Max, Team and Enterprise plans, and need code execution turned on.
 - The same skill format works in the Claude apps, Claude Code and the API.
 
-**Example:** a "bug report" skill that always produces title, environment, steps, expected, actual and severity, so you stop re-explaining the format.
+**Example:** a "bug report" skill that guides the production of title, environment, steps, expected, actual and severity, so you stop re-explaining the format.
 
 ## Projects, skills or connectors?
 
 | You need | Use | Why |
 | --- | --- | --- |
-| The same background documents in every chat about one topic | Project | Project knowledge is always loaded in that project |
+| The same background documents in every chat about one topic | Project | Project knowledge is available for relevant retrieval in that project |
 | A procedure done the same way wherever you ask | Skill | Skills load on demand, everywhere |
 | Claude to read from or act in another app | Connector | Connectors give access to external services and data |
 
 Skills and connectors work together: a connector gives Claude access to a tool, and a skill teaches it how to use that tool well.
+
+## Choose the smallest feature
+
+Reusable bug-report steps belong in a skill; stable product references can live in project knowledge; an editable readiness table can be an artifact; retrieving a private ticket needs an authorized connector. A skill does not create service permissions. Check actual artifact access before sharing; membership in a project is not a universal rule for every derived object. Retrieval makes selected knowledge available without promising every file appears verbatim in every turn.

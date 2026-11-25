@@ -8,7 +8,7 @@ Only employees of companies in the **Claude Partner Network** can certify, and r
 
 ## Exam facts to memorise
 
-- **Questions:** 53, as reported by prep providers; Anthropic does not publish the count.
+- **Questions:** through 6 December 2026, the official guide lists 53. From 7 December, its replacement lists 70 (60 scored and 10 unscored). Both PDFs carry v1.1; identify them by effective date, not version number alone.
 - **Price:** USD 125.
 - **Time:** 120 minutes of testing; plan for about 135 minutes in the seat.
 - **Format:** multiple choice and scenario-based multiple response, closed book, English only.
@@ -30,7 +30,9 @@ Only employees of companies in the **Claude Partner Network** can certify, and r
 | Claude Code | 3.1% | Prompts, security & evaluation |
 | Evaluation, testing and debugging | 2.6% | Prompts, security & evaluation |
 
-The weights come from the July 2026 candidate guide as reported by prep providers. Pearson announced updated exam content from **7 December 2026**, so recheck the official guide before you book.
+The table above is the guide effective through **6 December 2026**. The [replacement guide](https://cc.sj-cdn.net/instructor/6nizmqk8tpzpfjvt6qmmav7rh/public/1794946771/Claude_Certified_Developer_-_Foundations_Exam_Guide_Updated_Dec_7.pdf) is effective **7 December 2026** and lists agents 17%, applications 20%, Claude Code 8%, evaluation 10%, models 12%, prompts/context 15%, security 8%, tools/MCP 10%. Match preparation and scheduling to the effective guide.
+
+Current guide: [CCDV-F through 6 December](https://cc.sj-cdn.net/instructor/6nizmqk8tpzpfjvt6qmmav7rh/public/1794946716/Claude_Certified_Developer_-_Foundations_Exam_Guide.pdf). Facts checked 25 November 2026; prices/eligibility may change.
 
 ## How to use this track
 
@@ -41,3 +43,7 @@ The weights come from the July 2026 candidate guide as reported by prep provider
 5. Use the final review to explain every wrong answer before you retake it.
 
 A realistic pace is three to four weeks at about an hour a day.
+
+## Study evidence by integration task
+
+Build an error matrix for 400/401/403/429/503/529, a stop-reason matrix for end_turn/tool_use/max_tokens/pause_turn/refusal, and fixtures for nullable extraction and unsafe replay. Match the current guide’s weights by effective date. The offline practice checker verifies these small policy decisions; it does not call the API or test a paid platform deployment.

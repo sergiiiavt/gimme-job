@@ -1,88 +1,31 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import { renderToStaticMarkup } from "react-dom/server";
 import { register } from "tsx/esm/api";
-import { createServer } from "vite";
-import react from "@vitejs/plugin-react";
+import { register as registerLoader } from "node:module";
 
 register();
+registerLoader("./helpers/mock-exam-render-loader.mjs", import.meta.url);
 
 const { default: catalog } = await import("../content/istqb-ai-testing/catalog.ts");
 const {
   evaluateIstqbAiMockExam,
   evaluateMockExam,
   mockExamGroupHeadings,
+  mockExamCopy,
+  ukrainianMockExamEvaluationTexts,
   parseIstqbAiMockExam,
   scoreIstqbAiMockExam,
 } = await import("../app/istqb-ai-mock-exam-model.ts");
 const mockMarkdown = catalog.taxonomy.find((module) => module.id === "mock-exam")?.markdown ?? "";
 
-const HOOKS_SPECIFIER = "virtual:istqb-ai-mock-exam-hooks";
-const HOOKS_ID = "\0istqb-ai-mock-exam-hooks";
-const MARKDOWN_ID = "\0istqb-ai-mock-exam-markdown";
-const COMPONENT_SUFFIX = "/app/istqb-ai-mock-exam.tsx";
+const ukMarkdown = await readFile(new URL("../content/istqb-certifications/ctfl/08-mock-exam.uk.md", import.meta.url), "utf8");
+const ukProps = { language: "uk", markdown: ukMarkdown };
+const ukExam = parseIstqbAiMockExam(ukMarkdown);
 
-const testDoubles = {
-  name: "istqb-ai-mock-exam-test-doubles",
-  enforce: "pre",
-  resolveId(id, importer) {
-    if (id === HOOKS_SPECIFIER) return HOOKS_ID;
-    if (!importer?.endsWith(COMPONENT_SUFFIX)) return null;
-    if (id === "./qa-markdown") return MARKDOWN_ID;
-    return null;
-  },
-  async load(id) {
-    if (id.endsWith(COMPONENT_SUFFIX)) {
-      const { readFile } = await import("node:fs/promises");
-      const source = await readFile(id, "utf8");
-      const original = 'import { useMemo, useState } from "react";';
-      assert.ok(source.includes(original), "mock exam hook import changed unexpectedly");
-      return source.replace(
-        original,
-        `import { useMemo, useState } from "${HOOKS_SPECIFIER}";`,
-      );
-    }
-    if (id === HOOKS_ID) {
-      return `
-        export function useMemo(factory) { return factory(); }
-        export function useState(initial) {
-          const index = globalThis.__mockExamStateCursor ?? 0;
-          globalThis.__mockExamStateCursor = index + 1;
-          const overrides = globalThis.__mockExamStateOverrides;
-          const value = Array.isArray(overrides) && Object.prototype.hasOwnProperty.call(overrides, index)
-            ? overrides[index]
-            : (typeof initial === "function" ? initial() : initial);
-          const setter = (next) => {
-            const resolved = typeof next === "function" ? next(value) : next;
-            globalThis.__mockExamStateWrites ??= [];
-            globalThis.__mockExamStateWrites.push({ index, value: resolved });
-          };
-          return [value, setter];
-        }
-      `;
-    }
-    if (id === MARKDOWN_ID) {
-      return `
-        import { jsx } from "react/jsx-runtime";
-        export default function MarkdownDocument({ markdown }) {
-          return jsx("div", { "data-markdown": true, children: markdown });
-        }
-      `;
-    }
-    return null;
-  },
-};
-
-const server = await createServer({
-  appType: "custom",
-  configFile: false,
-  root: process.cwd(),
-  logLevel: "silent",
-  plugins: [testDoubles, react()],
-  server: { middlewareMode: true },
-});
-
-const { default: IstqbAiMockExam } = await server.ssrLoadModule("/app/istqb-ai-mock-exam.tsx");
+// Import the real TSX module through Node so coverage maps to its physical source.
+const { default: IstqbAiMockExam } = await import("../app/istqb-ai-mock-exam.tsx");
 
 function state(overrides = {}) {
   const values = [];
@@ -90,11 +33,11 @@ function state(overrides = {}) {
   return values;
 }
 
-function build(overrides = {}) {
+function build(overrides = {}, props = {}) {
   globalThis.__mockExamStateCursor = 0;
   globalThis.__mockExamStateOverrides = state(overrides);
   globalThis.__mockExamStateWrites = [];
-  return IstqbAiMockExam({ markdown: mockMarkdown });
+  return IstqbAiMockExam({ markdown: mockMarkdown, ...props });
 }
 
 function textOf(node) {
@@ -125,13 +68,12 @@ function answerMap(parsed, correctCount) {
 
 const parsed = parseIstqbAiMockExam(mockMarkdown);
 
-test.after(async () => {
+test.after(() => {
   delete globalThis.__mockExamStateCursor;
   delete globalThis.__mockExamStateOverrides;
   delete globalThis.__mockExamStateWrites;
   delete globalThis.document;
   delete globalThis.window;
-  await server.close();
 });
 
 test("parses and scores the complete CT-AI mock exam model", () => {
@@ -268,4 +210,50 @@ test("retry clears the exam state and returns to the first question group", () =
     { index: 2, value: "" },
   ]);
   assert.equal(scrolledId, "questions-1-10");
+});
+
+
+
+test("Ukrainian assessment keeps canonical group anchors and localized progress and validation", () => {
+  assert.deepEqual(mockExamGroupHeadings(15, 10, "uk"), [
+    { id: "questions-1-10", text: "Запитання 1–10" },
+    { id: "questions-11-15", text: "Запитання 11–15" },
+  ]);
+  const tree = build({ 0: { 1: "A" } }, ukProps);
+  const html = renderToStaticMarkup(tree);
+  assert.match(html, /aria-label="Прогрес тесту"/);
+  assert.match(html, /1<\/strong> \/ 40 відповідей/);
+  assert.match(html, /id="questions-1-10"/);
+  assert.match(html, /Запитання 1–10/);
+  assert.doesNotMatch(html, /Навчальний бал|Неправильно · правильна відповідь:/);
+  findElements(tree, (element) => element.type === "button" && textOf(element) === "Перевірити")[0].props.onClick();
+  assert.equal(globalThis.__mockExamStateWrites.at(-1).value, "Дайте відповіді на всі 40 запитань. Залишилося: 39.");
+});
+
+test("Ukrainian assessment renders every score band, rationale and retry behavior", () => {
+  for (const [score, label] of [[40,"Упевнено"],[34,"Близько"],[30,"Залишилися суттєві прогалини"],[0,"Потрібна додаткова підготовка"]]) {
+    const tree = build({ 0: answerMap(ukExam, score), 1: true }, ukProps);
+    const html = renderToStaticMarkup(tree);
+    assert.match(html, /Навчальний бал/);
+    assert.ok(html.includes(label));
+    assert.match(html, /діагностична навчальна оцінка/);
+    assert.match(html, score === 40 ? /Правильно/ : /Неправильно · правильна відповідь:/);
+    assert.ok(html.includes(ukExam.questions[0].explanation));
+    findElements(tree, (element) => element.type === "button" && textOf(element) === "Повторити")[0].props.onClick();
+    assert.deepEqual(globalThis.__mockExamStateWrites, [{ index: 0, value: {} },{ index: 1, value: false },{ index: 2, value: "" }]);
+  }
+});
+
+
+test("assessment display copy has complete language parity and localized recommendations", () => {
+  assert.deepEqual(Object.keys(mockExamCopy.uk).sort(), Object.keys(mockExamCopy.en).sort());
+  assert.equal(mockExamCopy.en.check, "Check score");
+  assert.equal(mockExamCopy.uk.check, "Перевірити");
+  for (const copy of Object.values(mockExamCopy)) {
+    assert.ok(Object.values(copy).every((value) => typeof value === "string" && value.length > 0));
+  }
+  assert.equal(evaluateMockExam(40, 40, ukrainianMockExamEvaluationTexts).text, ukrainianMockExamEvaluationTexts.strong);
+  assert.equal(evaluateMockExam(34, 40, ukrainianMockExamEvaluationTexts).text, ukrainianMockExamEvaluationTexts.close);
+  assert.equal(evaluateMockExam(30, 40, ukrainianMockExamEvaluationTexts).text, ukrainianMockExamEvaluationTexts.gaps);
+  assert.equal(evaluateMockExam(0, 40, ukrainianMockExamEvaluationTexts).text, ukrainianMockExamEvaluationTexts.more);
 });

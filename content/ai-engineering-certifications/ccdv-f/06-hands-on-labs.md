@@ -32,3 +32,16 @@ An agent with search_vacancies, get_company and save_note tools.
 - Build a 20-case evaluation set and re-run it after every prompt change. Report the results by vacancy type.
 
 Trains: agents and tools, security, evaluation and debugging.
+
+## Executable baseline and independent oracle
+
+Use the [offline practice package](https://github.com/sergiiiavt/gimme-job/tree/main/examples/certification-practice). Requires Python 3.10+, no model or API key. Run `python examples/certification-practice/practice.py developer`: every reference case should pass. Copy `starter.py` to a scratch file; `--candidate your_solution.py` should fail until you implement the required functions. Retain fixture IDs, expected/actual outputs and the command exit status.
+
+| Stage | Task | Check |
+| --- | --- | --- |
+| Derive | Read requirements before the reference code | Explain the expected outputs independently |
+| Implement | Fill only your track’s starter functions | All selected cases pass; the unfinished starter fails |
+| Challenge | Introduce an incorrect boundary, source claim or error state | At least one relevant oracle rejects it |
+| Review | Explain a plausible mistake and missing production controls | Record limits, not just a green status |
+
+Check bounded replay decisions, nullable extraction and four trace outcomes. The retry function is a policy exercise; a real HTTP client still needs backoff/jitter, Retry-After, deadlines and operation reconciliation. Optional live-tool practice requires authorized access and a usage budget; production writes are outside this sandbox.

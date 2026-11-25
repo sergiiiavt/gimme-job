@@ -6,7 +6,7 @@ When an option makes the system **deterministic, measurable or scoped**, it usua
 
 ## High-yield distinctions
 
-- **Retry or fix:** retry 429, 529 and 5xx with backoff and jitter; fix 400; check the key for 401 and 403.
+- **Retry or fix:** retry selected transient 429, 529 and 5xx only when replay-safe and within attempt/deadline budgets, with backoff and jitter; fix 400; check the key for 401 and 403.
 - **Stop reasons:** max_tokens means cut off, tool_use means run the tool, pause_turn means send it back, and refusal means show a fallback.
 - **Streaming vs batches:** streaming improves perceived latency for users; batches halve cost for work nobody waits on.
 - **Caching:** an exact prefix of tools, system and messages; anything variable goes after the last breakpoint.
@@ -34,3 +34,7 @@ When an option makes the system **deterministic, measurable or scoped**, it usua
 - [ ] The official candidate guide rechecked for the 7 December 2026 update
 - [ ] Partner eligibility confirmed with a partner email on your company domain
 - [ ] OnVUE system check passed, or a test center booked
+
+## Explain the failure before changing settings
+
+Differentiate output truncation from transport timeout: use stop_reason and stream completion. Differentiate model token usage from a priced bill. Differentiate a valid source ID from source support. For each missed question create one counterexample, expected decision and check. Repeat affected slices after a model, prompt, schema or platform change.

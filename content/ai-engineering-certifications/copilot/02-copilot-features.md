@@ -49,3 +49,7 @@ Free, Pro and Pro+ are individual plans. **Business** and **Enterprise** add org
 ## Worked example
 
 An organization wants Copilot code review now and agent mode later. Uninstalling extensions or misusing content exclusion are wrong tools. Set the feature policies in the organization's Copilot settings.
+
+## Choose and verify the surface
+
+Ask Chat to explain the discount rules, use an editing workflow for the minimal implementation change, and review the diff with independent boundary cases. Availability of agents, MCP, prompt files and settings varies by client and policy. Repository instructions guide behavior; they do not block a prohibited operation at the filesystem or backend boundary. Check the current supported surface before relying on a setting.

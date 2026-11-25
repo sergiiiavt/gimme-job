@@ -35,3 +35,7 @@ The last section of Claude 101 puts the features together and points to what com
 - **AI Fluency: Framework & Foundations** if you want the thinking behind working well with any AI system.
 
 Each is free on Claude Academy and earns the same kind of badge.
+
+## Show a repeatable workflow
+
+Keep a before/after summary showing the unsupported salary removed, a source-attributed work mode and a reusable prompt. Explain why a second model is a reviewer rather than the source of truth. Check sharing settings before publishing an artifact. This portfolio evidence is useful alongside a completion badge and does not establish professional certification or guaranteed factual accuracy.

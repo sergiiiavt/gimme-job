@@ -6,8 +6,8 @@ Claude Platform 101 is Anthropic's free developer course on **Claude Academy** (
 
 - **Cost:** the course is free. Running the demos uses your own API key from the Claude Console and spends API credit.
 - **You need:** basic programming. No prior experience with agents is required, because each lesson builds on the one before.
-- **Assessment:** the Claude Platform 101 quiz at the end. Passing earns the badge, and retakes are unlimited.
-- **Badge:** comes with a PDF, a LinkedIn share button and a public verification link, and it does not expire.
+- **Assessment:** the Claude Platform 101 quiz at the end. Passing earns the badge, and check current assessment/retake rules in the course.
+- **Badge:** is evidence of course completion; check the issued credential for its verification, sharing and validity details.
 
 ## What the course covers
 
@@ -29,3 +29,7 @@ Claude Platform 101 is Anthropic's free developer course on **Claude Academy** (
 5. List the badge under Training on your CV, and keep the lab's agent in a public repository to show in interviews.
 
 This course is also the best free preparation for the API-heavy parts of the proctored Claude CCDV-F and CCAR-F exams.
+
+## Offline first, live optional
+
+First classify fixed tool traces and validate extraction locally. Then, if you have an authorized account and budget, make one supported SDK request and inspect blocks, stop_reason and usage. Record the model/version and stop reason, without credentials or private payloads. Neither the course badge nor the fixture checker certifies a production agent.

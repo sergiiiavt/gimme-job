@@ -32,3 +32,7 @@ Claude can be wrong, and it can sound sure when it is. Check facts, numbers and 
 ## The desktop app
 
 The Claude desktop app has separate modes for three kinds of work: chatting, handing Claude multi-step work on files on your computer, and coding with Claude Code. Pick the mode by what you want back: an answer, finished work on your files, or changes to a code repository.
+
+## Ground a release note
+
+Prompt: “Using only F1–F3, return location, work mode and salary; cite the source for each and mark unknown facts.” Inspect a draft saying “remote, Kyiv, 5000”: F2 supports Kyiv, but F1 contradicts remote and F3 has no salary. Correct those claims with the source, not another confident answer. Add the required audience and format only after grounding is checked. Use `grounded_claims` to see the unsupported IDs.

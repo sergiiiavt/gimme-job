@@ -23,8 +23,12 @@ Treat every suggestion like a colleague's code: read it, test it, and scan it. W
 
 ## Ownership of outputs
 
-The developer and organization that accept and ship a suggestion own the result, as with any code. Copilot does not take responsibility for correctness, security or licensing.
+The developer and organization that accept and ship a suggestion are responsible for reviewing it and making release decisions. Legal ownership and licensing depend on the applicable facts and terms; this is not a universal legal ruling. Copilot does not take responsibility for correctness, security or licensing.
 
 ## Worked example
 
 A team commits Copilot suggestions whenever they compile. That skips review, testing and scanning, the controls that catch hallucinated APIs and insecure patterns. Responsible use means the same gates as human-written code.
+
+## Independent oracles before generated tests
+
+Derive member/subtotal cases before asking Copilot for tests. If it writes both the implementation and assertions using >100, a green run can repeat the same error. Independently expect 20% at subtotal 100 and 10% at 99 for members. Run dependency/security checks and inspect licensing/attribution issues as appropriate. Developer accountability is practical responsibility, not a universal legal ownership guarantee.

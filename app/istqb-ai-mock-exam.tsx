@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import {
   evaluateMockExam,
   MOCK_EXAM_GROUP_SIZE,
+  mockExamCopy,
+  ukrainianMockExamEvaluationTexts,
   parseIstqbAiMockExam,
   scoreIstqbAiMockExam,
   type AnswerKey,
@@ -18,10 +20,12 @@ const CT_AI_SCORE_NOTE = "This mock uses one question = one practice mark and is
 
 export default function IstqbAiMockExam({
   evaluationTexts,
+  language = "en",
   markdown,
   scoreNote = CT_AI_SCORE_NOTE,
 }: {
   evaluationTexts?: MockExamEvaluationTexts;
+  language?: "en" | "uk";
   markdown: string;
   scoreNote?: string;
 }) {
@@ -31,7 +35,11 @@ export default function IstqbAiMockExam({
   const [validationMessage, setValidationMessage] = useState("");
   const answeredCount = Object.keys(answers).length;
   const score = submitted ? scoreIstqbAiMockExam(exam.questions, answers) : 0;
-  const evaluation = evaluateMockExam(score, exam.questions.length, evaluationTexts);
+  const uk = language === "uk";
+  const labels = mockExamCopy[language];
+  const evaluation = evaluateMockExam(score, exam.questions.length, uk ? ukrainianMockExamEvaluationTexts : evaluationTexts);
+  const evaluationLabel = ({ Strong: labels.strong, Close: labels.close,
+    "Material gaps remain": labels.gaps, "More preparation needed": labels.more } as Record<string, string>)[evaluation.label];
   const groups = Array.from(
     { length: Math.ceil(exam.questions.length / GROUP_SIZE) },
     (_, index) => exam.questions.slice(index * GROUP_SIZE, (index + 1) * GROUP_SIZE),
@@ -46,7 +54,9 @@ export default function IstqbAiMockExam({
   const checkScore = () => {
     if (answeredCount !== exam.questions.length) {
       const firstUnanswered = exam.questions.find((question) => !answers[question.number]);
-      setValidationMessage(`Answer all ${exam.questions.length} questions before checking the score. ${exam.questions.length - answeredCount} remaining.`);
+      setValidationMessage(uk
+        ? `Дайте відповіді на всі ${exam.questions.length} запитань. Залишилося: ${exam.questions.length - answeredCount}.`
+        : `Answer all ${exam.questions.length} questions before checking the score. ${exam.questions.length - answeredCount} remaining.`);
       document.getElementById(`mock-question-${firstUnanswered?.number ?? 1}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
@@ -71,9 +81,9 @@ export default function IstqbAiMockExam({
         <MarkdownDocument markdown={exam.introduction}/>
       </div>
 
-      <div className={styles.progress} aria-label="Mock exam progress">
+      <div className={styles.progress} aria-label={labels.progress}>
         <div>
-          <strong>{answeredCount}</strong> / {exam.questions.length} answered
+          <strong>{answeredCount}</strong> / {exam.questions.length} {labels.answered}
         </div>
         <div className={styles.progressTrack} aria-hidden="true">
           <span style={{ width: `${exam.questions.length ? (answeredCount / exam.questions.length) * 100 : 0}%` }}/>
@@ -85,7 +95,7 @@ export default function IstqbAiMockExam({
         const lastNumber = group.at(-1)?.number ?? firstNumber;
         return (
           <section className={styles.group} id={`questions-${firstNumber}-${lastNumber}`} key={firstNumber}>
-            <h2>Questions {firstNumber}–{lastNumber}</h2>
+            <h2>{labels.questions} {firstNumber}–{lastNumber}</h2>
             <div className={styles.questionList}>
               {group.map((question) => {
                 const selectedAnswer = answers[question.number];
@@ -123,7 +133,7 @@ export default function IstqbAiMockExam({
 
                     {submitted ? (
                       <div className={styles.feedback}>
-                        <strong>{isCorrect ? "Correct" : `Incorrect · correct answer: ${question.correctAnswer}`}</strong>
+                        <strong>{isCorrect ? labels.correct : `${labels.incorrect} ${question.correctAnswer}`}</strong>
                         <span>{question.explanation}</span>
                       </div>
                     ) : null}
@@ -137,26 +147,26 @@ export default function IstqbAiMockExam({
 
       <div className={styles.submitPanel}>
         <div>
-          <strong>Ready to evaluate?</strong>
-          <span>Your answer key stays hidden until you submit all {exam.questions.length} answers.</span>
+          <strong>{labels.ready}</strong>
+          <span>{uk ? `Відповіді й пояснення з’являться після всіх ${exam.questions.length} відповідей.` : `Your answer key stays hidden until you submit all ${exam.questions.length} answers.`}</span>
         </div>
-        <button onClick={checkScore} type="button">Check score</button>
+        <button onClick={checkScore} type="button">{labels.check}</button>
       </div>
       <p className={styles.validation} aria-live="polite">{validationMessage}</p>
 
       {submitted ? (
         <section className={styles.results} id="exam-results" aria-live="polite">
           <div className={styles.scoreBlock}>
-            <span>Practice score</span>
+            <span>{labels.score}</span>
             <strong>{score}<small> / {exam.questions.length}</small></strong>
             <span>{Math.round((score / exam.questions.length) * 100)}%</span>
           </div>
           <div className={styles.evaluation}>
-            <span>Evaluation</span>
-            <h2>{evaluation.label}</h2>
+            <span>{labels.evaluation}</span>
+            <h2>{evaluationLabel}</h2>
             <p>{evaluation.text}</p>
-            <p className={styles.scoreNote}>{scoreNote}</p>
-            <button onClick={retry} type="button">Retry exam</button>
+            <p className={styles.scoreNote}>{uk ? "Це діагностична навчальна оцінка, а не прогноз чи перерахунок офіційного результату." : scoreNote}</p>
+            <button onClick={retry} type="button">{labels.retry}</button>
           </div>
         </section>
       ) : null}

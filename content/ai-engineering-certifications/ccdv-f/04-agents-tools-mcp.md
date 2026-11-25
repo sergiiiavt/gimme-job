@@ -47,3 +47,7 @@ When Claude asks for several tools in one response (**parallel tool use**), run 
 ## Worked example
 
 A support assistant has to answer billing and technical questions, and only billing needs the refund tool. Routing fits better than one big agent: a Haiku-tier classifier routes each question, and the billing path alone gets the refund tool, behind an approval step for amounts above a threshold.
+
+## One trace, four outcomes
+
+Given read-job → history-error, expected status is error with both event IDs. Given read-job only and no completion event, expected incomplete. If the next event exceeds max_steps, return budget with evidence already observed. Given validated finish, return done. Use `trace_outcome` fixtures to distinguish these outcomes. Tool descriptions and strict argument validation do not replace server-side authorization; an agent harness owns state, retries, cancellation, budgets and recovery.

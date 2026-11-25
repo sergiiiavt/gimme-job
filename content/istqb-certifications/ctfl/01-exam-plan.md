@@ -1,6 +1,6 @@
 # Exam map & study plan
 
-This track prepares you for **ISTQB Certified Tester Foundation Level (CTFL) v4.0**, the entry certificate of the ISTQB scheme and the prerequisite for every specialist certificate, including CT-AI and CT-GenAI. The current technical baseline is the v4.0.1 errata release of the April 2023 syllabus.
+This track prepares you for **ISTQB Certified Tester Foundation Level (CTFL) v4.0**, the entry certificate of the ISTQB scheme and a prerequisite for CT-AI and CT-GenAI; check each specialist qualification separately. The current technical baseline is the v4.0.1 errata release of the April 2023 syllabus.
 
 ## Exam facts to memorise
 
@@ -40,3 +40,7 @@ K3 objectives sit mostly in chapter 4 (test techniques) and chapter 5 (estimatio
 4. Take ISTQB's official sample exams A to D, then reread the final review.
 
 A realistic pace is three weeks at about an hour a day for someone already working in QA.
+
+## Objective-to-practice map
+
+Use chapter 4 for FL-4.2.1–4.2.4: derive partitions, both shared borders, decision rules and state transitions. Use chapter 5 for FL-5.1.4–5.1.5 (estimate and prioritise) and FL-5.5.1 (defect report). First solve without the answer key, then explain an incorrect alternative. The lab adds fixed inputs and executable reference checks; it does not replace the syllabus or official samples.

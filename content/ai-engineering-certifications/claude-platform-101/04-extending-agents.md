@@ -42,3 +42,7 @@ Claude Managed Agents is a pre-built agent harness that runs on Anthropic's infr
 ## Building with Claude Code
 
 The course ends by using Claude Code to build against the API: describe the integration, let Claude Code scaffold it, then run and test it. The same review rules apply as for any generated code: read the diff, and run it against real examples before you trust it.
+
+## Select an extension by responsibility
+
+Use a built-in tool only where the chosen model/platform supports it; a skill supplies procedure, MCP supplies an integration contract, and the application still owns credentials and authorization. Managed-agent services can reduce runtime work but do not remove your data, approval and evaluation responsibilities. For long tasks persist source pointers and bounded verified state; compaction is not durable storage.

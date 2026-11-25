@@ -7,15 +7,15 @@ Use this after the chapters, the labs and the mock exam.
 | Pair | Remember |
 | --- | --- |
 | CT-AI vs CT-GenAI | Testing AI-based systems; using GenAI to test |
-| LLM vs SLM | Large, general; compact, cheaper, strong when fine-tuned |
-| Foundation vs instruction-tuned vs reasoning | Needs adaptation; follows instructions; reasons in steps |
+| LLM vs SLM | Relative size; evaluate quality, latency and cost on the task |
+| Foundation vs instruction-tuned vs reasoning | Base training; instruction alignment; reasoning-oriented capability. These can overlap |
 | AI chatbot vs LLM-powered test tool | Conversational; integrated through APIs for defined tasks |
-| System vs user prompt | Constant and hidden; per turn and visible |
+| System vs user prompt | Application instructions that can change; user task and data |
 | Prompt chaining vs few-shot vs meta prompting | Checked steps; examples for format; the LLM writes the prompt |
 | Hallucination vs reasoning error vs bias | Invented content; wrong logic; skewed coverage |
-| Context vs request manipulation | Overload the window; steer with crafted input |
+| Context vs request manipulation | Untrusted-context manipulation; adversarial input. Neither guarantees training-data extraction |
 | Autonomous vs semi-autonomous agent | Minimal human input; periodic oversight |
-| RAG vs fine-tuning | Ground answers in retrieved documents; retrain the model on a dataset |
+| RAG vs fine-tuning | Provide retrieved context at inference; adapt the model with training data. Neither guarantees truth |
 
 ## Lists worth memorising
 
@@ -38,3 +38,7 @@ Use this after the chapters, the labs and the mock exam.
 - 60 minutes for 40 questions: about 90 seconds each.
 - Scenario questions on choosing a prompting technique are the K3 core: decide first whether the task needs checked steps, a fixed format, or a new prompt.
 - There is no negative marking: answer every question.
+
+## Readiness evidence
+
+Before the mock, derive precision/recall from distinct IDs, repair a hallucinated deadline without inventing a replacement, and identify risks under GenAI-3.1.2. Keep a short record of the prompt version, source, expected outcome and observed failure. This makes weak concepts visible; a score from one deterministic quiz cannot measure stochastic reliability or be converted directly to the official weighted score.

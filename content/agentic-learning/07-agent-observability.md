@@ -95,7 +95,7 @@ print("task success rate:", round(len(successes) / len(metrics), 2))
 print("median steps:", statistics.median(item["steps"] for item in metrics))
 print("p50 / p95 latency ms:", statistics.median(latencies), round(statistics.quantiles(latencies, n=20, method="inclusive")[18]))
 print("budget exhausted:", sum(1 for run in runs if run["outcome"] == "budget"))
-print("cost per call:", round(sum(item["cost"] for item in metrics) / sum(len(run["spans"]) for run in runs), 4))
+print("cost per model call:", round(sum(item["cost"] for item in metrics) / sum(1 for run in runs for span in run["spans"] if span["kind"] == "model"), 4))
 print("cost per successful task:", round(sum(item["cost"] for item in metrics) / len(successes), 4))
 ```
 

@@ -49,24 +49,24 @@
 Розумний варіант за замовчуванням — ковзне вікно з приміткою про те, що відкинуто. Код нижче залишає найновіші репліки, що вміщаються в бюджет токенів, а решту замінює підсумком-заглушкою. Кількість токенів оцінюється як один токен на чотири символи; справжня система використовувала б токенізатор провайдера.
 
 ```python
-def estimate_tokens(text):
-    return max(1, len(text) // 4)
-
 def fit_history(system, turns, budget):
-    used = estimate_tokens(system)
-    kept = []
-    for turn in reversed(turns):
-        cost = estimate_tokens(turn["content"])
-        if used + cost > budget:
-            break
-        kept.append(turn)
-        used += cost
-    kept.reverse()
-    dropped = turns[: len(turns) - len(kept)]
-    if dropped:
-        topics = ", ".join(turn["content"].split(".")[0][:40] for turn in dropped if turn["role"] == "user")
-        kept.insert(0, {"role": "system", "content": f"{len(dropped)} earlier turns omitted. Earlier user topics: {topics}"})
-    return kept, used
+    # An estimator for plain-text teaching messages, not a provider tokenizer.
+    def cost(message):
+        return 4 + (len(message["content"]) + 3) // 4
+
+    system_message = {"role": "system", "content": system}
+    latest_user = next((i for i in range(len(turns) - 1, -1, -1)
+                        if turns[i]["role"] == "user"), len(turns))
+    # Keep the latest request and every following reply together.
+    for dropped in range(latest_user + 1):
+        kept = turns[dropped:]
+        notice = ([{"role": "system", "content": f"{dropped} older messages omitted."}]
+                  if dropped else [])
+        history = [system_message, *notice, *kept]
+        used = sum(cost(message) for message in history)
+        if used <= budget:
+            return history, used
+    raise ValueError("Budget cannot hold the system, omission notice and latest request")
 
 turns = [
     {"role": "user", "content": "I test a payments API. Which status codes matter most?"},
@@ -80,6 +80,8 @@ for turn in history:
     print(turn["role"], "|", turn["content"][:70])
 print("tokens used:", used)
 ```
+
+Це оцінка для звичайного тексту. Повідомлення про пропуски також входить до бюджету; останній запит не видаляється. Якщо обов’язкові дані не вміщуються, приклад явно відмовляє. У production використовуйте tokenizer провайдера, резервуйте output-токени й зберігайте цілі групи tool-call/result. Не вставляйте неперевірений підсумок користувацького тексту як системні інструкції.
 
 Що б ви не відкидали, робіть це свідомо й помітно. Тихе обрізання гірше за короткий підсумок, бо модель відповідатиме так, ніби відкинутих реплік ніколи не було.
 

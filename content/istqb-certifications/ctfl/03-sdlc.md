@@ -31,7 +31,7 @@ Chapter 2 places testing inside sequential, iterative and DevOps lifecycles.
 ## Test types
 
 - **Functional testing:** what the system does.
-- **Non-functional testing:** how well it does it, using ISO/IEC 25010 characteristics such as performance efficiency, compatibility, usability, reliability, security, maintainability, portability and safety.
+- **Non-functional testing:** how well it does it, using an explicitly selected quality model and edition. ISO/IEC 25010 editions differ: do not combine their characteristic lists without attribution.
 - **Black-box testing:** based on specifications.
 - **White-box testing:** based on internal structure.
 
@@ -44,3 +44,7 @@ Any test type can be applied at any test level.
 ## Maintenance testing
 
 Triggered by **modifications** (fixes, enhancements, hotfixes), **upgrades or migrations** (including data conversion), and **retirement** (including data archiving and restoration). Its scope depends on the risk of the change, the size of the system and the size of the change; impact analysis helps decide it.
+
+## Choose the level and regression scope
+
+A change to the shared discount function needs component tests for all four rules, API tests for serialization and a system test for the displayed total. Reproduce the reported member/subtotal-100 failure for confirmation. Add non-member and 99/101 cases for regression; include downstream invoices because the function is shared. “Run only the reported test” confirms one fix but misses change impact. Shift left means clarify the ambiguous rule before implementation, not remove later system testing.

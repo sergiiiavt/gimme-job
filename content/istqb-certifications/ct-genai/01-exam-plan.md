@@ -14,7 +14,7 @@ This track prepares you for **ISTQB Certified Tester – Testing with Generative
 
 ## Cognitive and hands-on levels
 
-Learning objectives use **K1 Remember**, **K2 Understand** and **K3 Apply**. The K3 objectives are all in chapter 2: applying prompt engineering to test analysis, design, regression testing and test monitoring. The syllabus also has hands-on objectives from H0 (watch a demo) to H2 (exercise with hints); they build skill but are not examined as practical tasks.
+Learning objectives use **K1 Remember**, **K2 Understand** and **K3 Apply**. K3 objectives include GenAI-2.2.1–2.2.5 (applied prompting) and GenAI-3.1.2 (identify risks in a GenAI testing scenario). The syllabus also has hands-on objectives from H0 (watch a demo) to H2 (exercise with hints); they build skill but are not examined as practical tasks.
 
 ## The five chapters
 
@@ -26,7 +26,7 @@ Learning objectives use **K1 Remember**, **K2 Understand** and **K3 Apply**. The
 | 4 | LLM-powered test infrastructure | 110 min |
 | 5 | Deploying and integrating GenAI in test organisations | 80 min |
 
-Chapter 2 is almost half the training time and holds every K3 objective. Expect it to dominate the exam.
+Chapter 2 is almost half the training time and holds most applied-prompting objectives; risk identification in chapter 3 is also K3. Expect it to dominate the exam.
 
 ## How to use this track
 
@@ -36,3 +36,7 @@ Chapter 2 is almost half the training time and holds every K3 objective. Expect 
 4. Take the official v1.1 sample exam, then reread the final review.
 
 If you already hold CTFL and use LLMs at work, two weeks at about an hour a day is realistic.
+
+## Applied-objective coverage
+
+Cover GenAI-2.2.1–2.2.5 with prompt construction, test analysis, design/implementation, regression analysis and monitoring/control cases. Include GenAI-3.1.2: identify and explain risks in a realistic GenAI test workflow. H-level exercises develop practical skill; they are not a claim that the exam contains a coding task. Preserve your inputs, outputs, independent expected results and revisions.

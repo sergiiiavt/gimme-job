@@ -37,3 +37,7 @@ Feature questions feel easy if you use Copilot daily. Points are usually lost on
 4. Take the 30-question mock exam under a 50-minute timer, then Microsoft's free practice assessment.
 
 Two weeks at about an hour a day is enough for an active Copilot user.
+
+## From study guide to practice
+
+Map responsible use to source checks; features to the actual supported client; data handling to account policy; prompting to explicit requirements; privacy to current exclusion behavior. The official GH-300 study guide is the scope reference. Keep an applied evidence folder rather than converting the original practice percentage to the official scaled score.

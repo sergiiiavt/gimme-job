@@ -132,7 +132,7 @@ for finding in review_test_diff(DIFF):
     print("-", finding)
 ```
 
-Automated flags do not replace reading the diff; they make sure the most common ways of weakening a test are never missed.
+Automated flags direct attention to common weakening patterns; they do not replace reading the diff or prove that every weakened assertion was detected.
 
 ## Case study: building this site with agents
 

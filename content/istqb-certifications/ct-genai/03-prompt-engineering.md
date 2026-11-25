@@ -1,6 +1,6 @@
 # Prompt engineering for effective software testing
 
-Chapter 2 is the heart of the exam: 365 of 815 training minutes and every K3 objective.
+Chapter 2 is the heart of the exam: 365 of 815 training minutes and five applied-prompting K3 objectives. GenAI-3.1.2 in chapter 3 is also K3.
 
 ## The six components of a structured prompt
 
@@ -23,7 +23,7 @@ Techniques combine: meta prompting drafts the prompt, few-shot examples fix the 
 
 ## System prompt vs user prompt
 
-The **system prompt** is set by the developer or tester, stays constant across the session, is usually not visible to the chatbot user, and defines behaviour, tone and rules. The **user prompt** is the per-turn input from the user and changes each time.
+The **system prompt** is set by the developer or tester, can be changed by the application across requests, is usually not visible to the chatbot user, and defines behaviour, tone and rules. The **user prompt** is the per-turn input from the user and changes each time.
 
 ## Applying prompts to test tasks (K3)
 
@@ -39,8 +39,8 @@ The **system prompt** is set by the developer or tester, stays constant across t
 | Metric | Measures |
 | --- | --- |
 | Accuracy | Correctness against expert output or standards |
-| Precision | Correctness for a specific objective, such as anomalies correctly flagged |
-| Recall | Whether all relevant instances were found, such as every partition covered |
+| Precision | TP / (TP + FP): how many predicted positives are correct |
+| Recall | TP / (TP + FN): how many actual positives are found |
 | Relevance and contextual fit | Fit with the context and the test basis |
 | Diversity | Range of inputs and scenarios, including edge cases |
 | Execution success rate | Share of generated artefacts that run as they are |
@@ -51,3 +51,15 @@ Because output is non-deterministic, metrics need statistically relevant samples
 ## Refining prompts
 
 Iterate on prompts, A/B test prompt versions, analyse error types in the output, integrate user feedback, tune prompt length and specificity, and share prompt libraries across teams.
+
+## Five applied cases with independent checks
+
+Use requirement R1: four discount rules in the CTFL worked example.
+
+1. Structure a prompt: role=test analyst; context=checkout; instruction=derive conditions; input=R1; constraint=no invented rule; output=rule/ID/expected result.
+2. Analysis: require the four feasible combinations; challenge an output that omits non-members.
+3. Design/implementation: generate 99/100 cases for both membership states; compare with the independently specified fixture table before executing generated code.
+4. Regression: compare `>=100` with `>100`; identify the changed boundary and dependent invoice behavior.
+5. Monitoring/control: from 200 planned, 160 passed, 24 failed and 16 blocked, report 184 executed, 92% execution completion and 87.0% passed/executed. Blocked is not passed. Ask a person to approve a release recommendation.
+
+For expected IDs D1,D2,D3 and predictions D1,D2,D4,D4: TP=2, FP=1, FN=1; precision=2/3 and recall=2/3. Duplicate IDs do not inflate positives.

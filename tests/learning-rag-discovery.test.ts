@@ -163,3 +163,19 @@ test("under-construction topic catalogs do not leak placeholder pages into retri
   assert.equal(documents.some((document) => document.metadata.catalog === "api-integration" && document.metadata.topic === "graphql"), false);
   assert.equal(documents.some((document) => document.metadata.catalog === "networking" && document.metadata.topic === "network-diagnostics"), false);
 });
+
+test("new certification practice and worked sections are derived with canonical links", async () => {
+  const { istqbCertificationCatalogs } = await import("../content/istqb-certifications/catalog.ts");
+  const { aiEngineeringCertificationCatalogs } = await import("../content/ai-engineering-certifications/catalog.ts");
+  const documents = staticRagDocuments().filter((item) => item.kind === "learning");
+  for (const catalog of [...istqbCertificationCatalogs, ...aiEngineeringCertificationCatalogs]) {
+    for (const chapter of catalog.taxonomy) {
+      const sections = documents.filter((item) => item.metadata.track === catalog.trackId && item.metadata.topic === chapter.id && typeof item.metadata.section === "string");
+      assert.equal(sections.length, (chapter.markdown.match(/^## /gm) ?? []).length, `${catalog.trackId}/${chapter.id} publishes every section`);
+      assert.equal(new Set(sections.map((item) => item.metadata.section)).size, sections.length);
+    }
+  }
+  const hit = await searchRagDocuments(env as never, "Worked decision table and state model", ["learning"], 8);
+  assert.ok(hit.results.some((item) => item.sourcePath === "/learn/certifications?topic=ctfl-test-techniques&section=worked-decision-table-and-state-model&track=ctfl-v4"));
+  assert.ok(documents.some((item) => item.metadata.topic === "ctfl-hands-on-lab" && item.metadata.section === "requirements-and-expected-coverage"));
+});

@@ -19,7 +19,7 @@ The loop repeats until the task is done or Claude needs you. Everything it reads
 - **Desktop app:** the Code mode of the Claude desktop app.
 - **Web:** cloud sessions from claude.ai, with no local install.
 
-Configuration such as CLAUDE.md, skills and hooks works the same on every surface.
+Configuration support and behavior can differ by surface/version; verify CLAUDE.md, skills and hooks on the client you use.
 
 ## Permission modes
 
@@ -33,7 +33,7 @@ Configuration such as CLAUDE.md, skills and hooks works the same on every surfac
 - Press **Shift+Tab** to cycle default → acceptEdits → plan. Auto appears in the cycle only when your account meets its requirements.
 - Prefix a single prompt with **/plan** to plan just that request, or start with claude --permission-mode plan.
 - When a plan is ready, you approve it, choose how edits should be approved, or keep planning with feedback. Ctrl+G opens the plan in your editor.
-- **Permission rules** sit on top of modes: allow rules pre-approve specific tools, and deny rules block in every mode.
+- **Permission rules** sit on top of modes: allow/deny rules configure tool decisions. Inspect the effective policy and mode; guidance is not a filesystem or backend sandbox.
 
 ## Your first prompt
 
@@ -43,3 +43,7 @@ Good first prompts are specific and checkable:
 - "Add a test for the empty-search case in the catalog filter, run it, and show me the result." Scoped, with a built-in check.
 
 Avoid "improve the code": nothing in it tells Claude, or you, when the task is done.
+
+## Inspect before executing
+
+Start with “Explain the discount function, requirement and tests; propose a minimal fix.” Confirm the working tree and permitted commands. The agent may read, propose, act and verify; a tool return is not evidence that the intended behavior is correct. Run the subtotal-100 oracle. Planning is useful for uncertainty; a tiny understood correction does not require a ceremonial plan.

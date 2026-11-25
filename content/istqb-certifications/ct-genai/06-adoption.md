@@ -42,3 +42,7 @@ Build capability through hands-on practice, structured learning paths, peer lear
 
 - **Testers** move from test design and execution specialists to AI-assisted test specialists who review AI output, refine prompts and maintain prompt libraries.
 - **Test managers** develop AI-based test strategies, manage AI risks, set governance, and lead hybrid teams of people and GenAI agents.
+
+## A bounded pilot decision
+
+Pilot 20 synthetic tickets with pre-agreed checks: all critical expected conditions covered, no invented facts, no private-data leakage and measured total review time. Split normal, ambiguous and adversarial cases. Compare with the current human workflow; include setup and correction effort. If drafting is faster but review takes longer, do not call it a productivity gain. Expand only after the agreed evidence, owner and rollback conditions are met; training and role changes depend on the organization.

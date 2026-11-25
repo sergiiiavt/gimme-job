@@ -16,6 +16,7 @@ import { ctflCertificationCatalog, ctGenAiCertificationCatalog } from "@/content
 import type { IstqbAiTestingModule } from "@/content/istqb-ai-testing/modules";
 import { contentHref } from "./content-deep-links";
 import IstqbAiMockExam from "./istqb-ai-mock-exam";
+import { topicSectionNavigation } from "./topic-learning-navigation";
 import { mockExamGroupHeadings, parseIstqbAiMockExam } from "./istqb-ai-mock-exam-model";
 import IstqbAiOfficialSampleCompanion from "./istqb-ai-official-sample-companion";
 import { LearningHero, LearningPager, LearningRail, LearningSourceRegistry, type LearningLanguage } from "./learning-document-ui";
@@ -181,13 +182,13 @@ export default function IstqbAiTestingPage() {
     if (!chapter) return undefined;
     return effectiveLanguage === "uk" && hasUkrainian(chapter) ? chapter.navLabelUk : chapter.navLabel;
   };
+  const sectionNavigation = topicSectionNavigation(
+    extractMarkdownHeadings(localizedMarkdown).filter((heading) => heading.level === 2),
+    extractMarkdownHeadings(activeModule?.markdown ?? "").filter((heading) => heading.level === 2),
+  );
   const markdownHeadings = isMockExam
-    ? mockExamGroupHeadings(parseIstqbAiMockExam(localizedMarkdown).questions.length)
-    : activeModule
-      ? extractMarkdownHeadings(localizedMarkdown)
-        .filter((heading) => heading.level === 2)
-        .map(({ id, text }) => ({ id, text }))
-      : [];
+    ? mockExamGroupHeadings(parseIstqbAiMockExam(localizedMarkdown).questions.length, undefined, effectiveLanguage)
+    : sectionNavigation.headings;
   const headings = activeModule?.videos?.length
     ? [...markdownHeadings, { id: "recommended-videos", text: effectiveLanguage === "uk" ? "Рекомендовані відео" : "Recommended videos" }]
     : markdownHeadings;
@@ -205,7 +206,6 @@ export default function IstqbAiTestingPage() {
       const option = certificationTracks.find((candidate) => candidate.id === trackId);
       if (!option) return;
       const firstTrackModule = option.available ? certificationCatalogs[option.id]?.taxonomy[0]?.id ?? null : null;
-      setLanguage("en");
       router.push(contentHref(pathname, searchParams.toString(), {
         topic: firstTrackModule,
         track: trackId,
@@ -295,8 +295,8 @@ export default function IstqbAiTestingPage() {
                       {isOfficialSampleExam
                         ? <IstqbAiOfficialSampleCompanion language={effectiveLanguage} markdown={localizedMarkdown}/>
                         : isMockExam
-                          ? <IstqbAiMockExam markdown={localizedMarkdown} evaluationTexts={activeCatalog.mockExam?.evaluationTexts} scoreNote={activeCatalog.mockExam?.scoreNote}/>
-                          : <MarkdownDocument markdown={localizedMarkdown}/>}
+                          ? <IstqbAiMockExam key={activeModule.id} language={effectiveLanguage} markdown={localizedMarkdown} evaluationTexts={activeCatalog.mockExam?.evaluationTexts} scoreNote={activeCatalog.mockExam?.scoreNote}/>
+                          : <MarkdownDocument headingIdOverrides={sectionNavigation.headingIdOverrides} markdown={localizedMarkdown}/>}
 
                       {activeModule.videos?.length ? (
                         <section>

@@ -19,7 +19,7 @@ Files in `.claude/rules/` can declare a `paths` glob in their frontmatter, for e
 ## Commands and skills
 
 - **Custom commands** in `.claude/commands/` are committed and shared; `~/.claude/commands/` holds personal ones.
-- **Skills** live in `.claude/skills/<name>/SKILL.md`. Frontmatter such as `context: fork` runs the skill in an isolated subagent, so verbose output never reaches the main session, and `allowed-tools` limits what the skill may use.
+- **Skills** live in `.claude/skills/<name>/SKILL.md`. Frontmatter such as `context: fork` runs the skill in an isolated subagent, so verbose output never reaches the main session, and `allowed-tools` pre-approves listed calls for the invoking turn; it does not remove other callable tools. Separate permission settings govern other calls. See the [official skill contract](https://code.claude.com/docs/en/skills#pre-approve-tools-for-a-skill).
 
 ## Plan mode or direct execution
 
@@ -37,3 +37,7 @@ Use **plan mode** for large, ambiguous or multi-file changes and for architectur
 ## Worked example
 
 A GitHub Actions review step times out every run. Raising the timeout or using a bigger runner treats the symptom. The cause is interactive mode: switch to `claude -p` with JSON output.
+
+## Minimal repository workflow
+
+In a scratch copy, inspect the discount requirement and existing tests first. Add the missing subtotal-100 case before changing > to >=. Run the focused tests, inspect the diff and run the repository’s required checks. A reviewer needs the exact requirement and diff; a separate context reduces anchoring but cannot guarantee independence. A CLAUDE.md instruction guides the agent; permission policy and backend authorization enforce operations. Never store credentials in shared rules or MCP configuration.

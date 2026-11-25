@@ -43,3 +43,7 @@ Frequent feedback from stakeholders prevents misunderstandings about requirement
 ## Success factors
 
 Clear objectives and exit criteria, the right review type, small chunks reviewed, feedback to stakeholders and authors, adequate time, management support, and making reviews part of the culture.
+
+## Review before execution
+
+Review R1: “Quickly apply a suitable discount to large orders.” Record three findings: “quickly” has no measurable threshold; “large” has no numeric boundary; “suitable” has no rate or membership rule. In preparation, agree the review goal and criteria. In individual review, log anomalies with source lines. Discuss them with the author, classify findings and track agreed actions. A finding is not automatically a confirmed defect; execution cannot resolve an unspecified intended rate.

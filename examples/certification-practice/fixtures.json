@@ -1,0 +1,993 @@
+{
+  "requirements": {
+    "domain": "all integers",
+    "discount": "member & >=100:20%; member only:10%; >=100 only:5%; otherwise:0%",
+    "sources": {
+      "F1": "hybrid",
+      "F2": "Kyiv",
+      "F3": null
+    },
+    "approvals": "trusted-store decisions scoped to exact arguments; no real send"
+  },
+  "checks": [
+    {
+      "id": "bva-two",
+      "function": "boundary_values",
+      "arguments": [
+        18,
+        65,
+        2
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": [
+        17,
+        18,
+        65,
+        66
+      ]
+    },
+    {
+      "id": "bva-three",
+      "function": "boundary_values",
+      "arguments": [
+        18,
+        65,
+        3
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": [
+        16,
+        17,
+        18,
+        19,
+        64,
+        65,
+        66,
+        67
+      ]
+    },
+    {
+      "id": "bva-overlap",
+      "function": "boundary_values",
+      "arguments": [
+        1,
+        1,
+        3
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": [
+        -1,
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "bva-percent",
+      "function": "boundary_values",
+      "arguments": [
+        1,
+        100,
+        3
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": [
+        -1,
+        0,
+        1,
+        2,
+        99,
+        100,
+        101,
+        102
+      ]
+    },
+    {
+      "id": "invalid-range",
+      "function": "boundary_values",
+      "arguments": [
+        5,
+        1,
+        2
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "discount-0",
+      "function": "discount_percent",
+      "arguments": [
+        false,
+        99
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": 0
+    },
+    {
+      "id": "discount-1",
+      "function": "discount_percent",
+      "arguments": [
+        false,
+        100
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": 5
+    },
+    {
+      "id": "discount-2",
+      "function": "discount_percent",
+      "arguments": [
+        true,
+        99
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": 10
+    },
+    {
+      "id": "discount-3",
+      "function": "discount_percent",
+      "arguments": [
+        true,
+        100
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": 20
+    },
+    {
+      "id": "negative-subtotal",
+      "function": "discount_percent",
+      "arguments": [
+        true,
+        -1
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "state-0",
+      "function": "transition",
+      "arguments": [
+        "draft",
+        "submit"
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": "submitted"
+    },
+    {
+      "id": "state-1",
+      "function": "transition",
+      "arguments": [
+        "submitted",
+        "approve"
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": "approved"
+    },
+    {
+      "id": "state-2",
+      "function": "transition",
+      "arguments": [
+        "submitted",
+        "reject"
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": "draft"
+    },
+    {
+      "id": "state-3",
+      "function": "transition",
+      "arguments": [
+        "approved",
+        "archive"
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "expected": "archived"
+    },
+    {
+      "id": "invalid-transition",
+      "function": "transition",
+      "arguments": [
+        "archived",
+        "approve"
+      ],
+      "tracks": [
+        "ctfl",
+        "copilot"
+      ],
+      "raises": "ValueError"
+    },
+    {
+      "id": "metrics-partial",
+      "function": "detection_metrics",
+      "arguments": [
+        [
+          "D1",
+          "D2",
+          "D3"
+        ],
+        [
+          "D1",
+          "D2",
+          "D4",
+          "D4"
+        ]
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "developer"
+      ],
+      "expected": {
+        "tp": 2,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.667,
+        "recall": 0.667
+      }
+    },
+    {
+      "id": "metrics-empty",
+      "function": "detection_metrics",
+      "arguments": [
+        [],
+        []
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "developer"
+      ],
+      "expected": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null
+      }
+    },
+    {
+      "id": "metrics-none-found",
+      "function": "detection_metrics",
+      "arguments": [
+        [
+          "D1"
+        ],
+        []
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "developer"
+      ],
+      "expected": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 1,
+        "precision": null,
+        "recall": 0.0
+      }
+    },
+    {
+      "id": "metrics-all",
+      "function": "detection_metrics",
+      "arguments": [
+        [
+          "D1"
+        ],
+        [
+          "D1"
+        ]
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "developer"
+      ],
+      "expected": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0
+      }
+    },
+    {
+      "id": "schema-valid",
+      "function": "check_extraction",
+      "arguments": [
+        {
+          "title": "QA Engineer",
+          "salary_min": null,
+          "salary_max": null,
+          "remote": "unclear"
+        }
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": []
+    },
+    {
+      "id": "schema-order",
+      "function": "check_extraction",
+      "arguments": [
+        {
+          "title": "QA Engineer",
+          "salary_min": 5000,
+          "salary_max": 3000,
+          "remote": "unclear"
+        }
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": [
+        "salary_order"
+      ]
+    },
+    {
+      "id": "schema-pair",
+      "function": "check_extraction",
+      "arguments": [
+        {
+          "title": "QA Engineer",
+          "salary_min": 3000,
+          "salary_max": null,
+          "remote": "unclear"
+        }
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": [
+        "salary_pair"
+      ]
+    },
+    {
+      "id": "schema-bool",
+      "function": "check_extraction",
+      "arguments": [
+        {
+          "title": "QA Engineer",
+          "salary_min": true,
+          "salary_max": 4000,
+          "remote": "unclear"
+        }
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": [
+        "salary_min"
+      ]
+    },
+    {
+      "id": "schema-title",
+      "function": "check_extraction",
+      "arguments": [
+        {
+          "title": " ",
+          "salary_min": null,
+          "salary_max": null,
+          "remote": "unclear"
+        }
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": [
+        "title"
+      ]
+    },
+    {
+      "id": "schema-extra",
+      "function": "check_extraction",
+      "arguments": [
+        {
+          "title": "QA Engineer",
+          "salary_min": null,
+          "salary_max": null,
+          "remote": "unclear",
+          "source": "F1"
+        }
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": [
+        "fields"
+      ]
+    },
+    {
+      "id": "grounded",
+      "function": "grounded_claims",
+      "arguments": [
+        {
+          "F1": "hybrid",
+          "F2": "Kyiv",
+          "F3": null
+        },
+        [
+          {
+            "id": "C1",
+            "source": "F1",
+            "value": "hybrid"
+          }
+        ]
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "copilot"
+      ],
+      "expected": []
+    },
+    {
+      "id": "unsupported",
+      "function": "grounded_claims",
+      "arguments": [
+        {
+          "F1": "hybrid",
+          "F2": "Kyiv",
+          "F3": null
+        },
+        [
+          {
+            "id": "C2",
+            "source": "F1",
+            "value": "remote"
+          }
+        ]
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "copilot"
+      ],
+      "expected": [
+        "C2"
+      ]
+    },
+    {
+      "id": "unknown-salary",
+      "function": "grounded_claims",
+      "arguments": [
+        {
+          "F1": "hybrid",
+          "F2": "Kyiv",
+          "F3": null
+        },
+        [
+          {
+            "id": "C3",
+            "source": "F3",
+            "value": 5000
+          }
+        ]
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "copilot"
+      ],
+      "expected": [
+        "C3"
+      ]
+    },
+    {
+      "id": "invented-source",
+      "function": "grounded_claims",
+      "arguments": [
+        {
+          "F1": "hybrid",
+          "F2": "Kyiv",
+          "F3": null
+        },
+        [
+          {
+            "id": "C4",
+            "source": "F4",
+            "value": "Kyiv"
+          }
+        ]
+      ],
+      "tracks": [
+        "genai",
+        "claude-101",
+        "architect",
+        "copilot"
+      ],
+      "expected": [
+        "C4"
+      ]
+    },
+    {
+      "id": "gate-read",
+      "function": "action_gate",
+      "arguments": [
+        "read_job",
+        {
+          "tenant": "training",
+          "job_id": "job-7",
+          "candidate_id": "candidate-2"
+        },
+        null
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": "read_only"
+    },
+    {
+      "id": "gate-denied",
+      "function": "action_gate",
+      "arguments": [
+        "delete_job",
+        {
+          "tenant": "training",
+          "job_id": "job-7",
+          "candidate_id": "candidate-2"
+        },
+        null
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": "denied"
+    },
+    {
+      "id": "gate-missing",
+      "function": "action_gate",
+      "arguments": [
+        "send_application",
+        {
+          "tenant": "training",
+          "job_id": "job-7",
+          "candidate_id": "candidate-2"
+        },
+        null
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": "needs_approval"
+    },
+    {
+      "id": "gate-approved",
+      "function": "action_gate",
+      "arguments": [
+        "send_application",
+        {
+          "tenant": "training",
+          "job_id": "job-7",
+          "candidate_id": "candidate-2"
+        },
+        {
+          "tool": "send_application",
+          "arguments": {
+            "tenant": "training",
+            "job_id": "job-7",
+            "candidate_id": "candidate-2"
+          },
+          "approved": true
+        }
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": "approved"
+    },
+    {
+      "id": "gate-tenant",
+      "function": "action_gate",
+      "arguments": [
+        "send_application",
+        {
+          "tenant": "other",
+          "job_id": "job-7",
+          "candidate_id": "candidate-2"
+        },
+        {
+          "tool": "send_application",
+          "arguments": {
+            "tenant": "training",
+            "job_id": "job-7",
+            "candidate_id": "candidate-2"
+          },
+          "approved": true
+        }
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": "needs_approval"
+    },
+    {
+      "id": "gate-numeric",
+      "function": "action_gate",
+      "arguments": [
+        "send_application",
+        {
+          "tenant": "training",
+          "job_id": "job-7",
+          "candidate_id": "candidate-2"
+        },
+        {
+          "tool": "send_application",
+          "arguments": {
+            "tenant": "training",
+            "job_id": "job-7",
+            "candidate_id": "candidate-2"
+          },
+          "approved": 1
+        }
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": "needs_approval"
+    },
+    {
+      "id": "gate-extra",
+      "function": "action_gate",
+      "arguments": [
+        "send_application",
+        {
+          "tenant": "training",
+          "job_id": "job-7",
+          "candidate_id": "candidate-2",
+          "override": true
+        },
+        {
+          "tool": "send_application",
+          "arguments": {
+            "tenant": "training",
+            "job_id": "job-7",
+            "candidate_id": "candidate-2"
+          },
+          "approved": true
+        }
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": "invalid_arguments"
+    },
+    {
+      "id": "retry-rate",
+      "function": "retry_allowed",
+      "arguments": [
+        429,
+        0,
+        2,
+        true
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": true
+    },
+    {
+      "id": "retry-overload",
+      "function": "retry_allowed",
+      "arguments": [
+        529,
+        0,
+        2,
+        true
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": true
+    },
+    {
+      "id": "retry-budget",
+      "function": "retry_allowed",
+      "arguments": [
+        503,
+        2,
+        2,
+        true
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": false
+    },
+    {
+      "id": "retry-unsafe",
+      "function": "retry_allowed",
+      "arguments": [
+        504,
+        0,
+        2,
+        false
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": false
+    },
+    {
+      "id": "retry-bad-request",
+      "function": "retry_allowed",
+      "arguments": [
+        400,
+        0,
+        2,
+        true
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": false
+    },
+    {
+      "id": "retry-unavailable",
+      "function": "retry_allowed",
+      "arguments": [
+        503,
+        1,
+        2,
+        true
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": true
+    },
+    {
+      "id": "trace-done",
+      "function": "trace_outcome",
+      "arguments": [
+        [
+          {
+            "id": "read"
+          },
+          {
+            "id": "finish",
+            "done": true
+          }
+        ],
+        3
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": {
+        "status": "done",
+        "evidence": [
+          "read",
+          "finish"
+        ]
+      }
+    },
+    {
+      "id": "trace-error",
+      "function": "trace_outcome",
+      "arguments": [
+        [
+          {
+            "id": "read"
+          },
+          {
+            "id": "history",
+            "is_error": true
+          }
+        ],
+        2
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": {
+        "status": "error",
+        "evidence": [
+          "read",
+          "history"
+        ]
+      }
+    },
+    {
+      "id": "trace-budget",
+      "function": "trace_outcome",
+      "arguments": [
+        [
+          {
+            "id": "read"
+          },
+          {
+            "id": "history"
+          }
+        ],
+        1
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": {
+        "status": "budget",
+        "evidence": [
+          "read"
+        ]
+      }
+    },
+    {
+      "id": "trace-incomplete",
+      "function": "trace_outcome",
+      "arguments": [
+        [
+          {
+            "id": "read"
+          }
+        ],
+        3
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": {
+        "status": "incomplete",
+        "evidence": [
+          "read"
+        ]
+      }
+    },
+    {
+      "id": "trace-empty",
+      "function": "trace_outcome",
+      "arguments": [
+        [],
+        3
+      ],
+      "tracks": [
+        "platform",
+        "architect",
+        "developer",
+        "claude-code"
+      ],
+      "expected": {
+        "status": "incomplete",
+        "evidence": []
+      }
+    }
+  ]
+}

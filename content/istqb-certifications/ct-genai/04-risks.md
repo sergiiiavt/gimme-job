@@ -22,19 +22,19 @@ Provide complete context, split prompts into steps (chaining), use clear data fo
 
 ## Non-determinism
 
-Lower **temperature** reduces randomness and improves consistency, at the cost of creativity and diversity. A fixed **random seed**, where supported, helps reproducibility. Full reproducibility cannot be guaranteed, so automate parts of output verification.
+Lower **temperature** often reduces sampling variation, but does not guarantee correctness, determinism or the same response across model versions. A fixed **random seed**, where supported, helps reproducibility. Full reproducibility cannot be guaranteed, so automate parts of output verification.
 
 ## Data privacy and security
 
 - **Privacy risks:** sensitive data exposed in outputs, no control over how data is stored and used, compliance violations such as GDPR.
 - **Security risks:** vulnerabilities in LLM-powered test infrastructure, exploitation of LLM weaknesses, malicious input data.
-- **Attack vectors:** context manipulation (overloading the context window to expose training data fragments) and request manipulation (inputs such as images that steer the model into a different context).
+- **Attack vectors:** prompt injection through untrusted documents, tool results or images, and adversarial requests. Context flooding does not automatically reveal training data.
 
 **Mitigations:** data minimisation; anonymisation and pseudonymisation; secure storage and transmission; training and policies; systematic human review of output; cross-evaluation across several LLMs; a secure operating environment (commercial secure offering, secure cloud or in-house); regular security audits; keeping up with best practice. Involve security engineers, legal counsel, the CTO or the CISO.
 
 ## Energy consumption
 
-Task complexity and model size drive energy use, and small interactions add up across millions of users. Generating one image with a powerful model can use as much energy as fully charging a smartphone; generating text uses a small share of that. Limit unnecessary model interactions.
+Task complexity and model size drive energy use, and small interactions add up across millions of users. Energy depends on the model, hardware, task, output size and measurement boundary; a universal image-to-phone-charge equivalence is not justified. Limit unnecessary model interactions.
 
 ## Regulations, standards and frameworks
 
@@ -44,3 +44,7 @@ Task complexity and model size drive energy use, and small interactions add up a
 | ISO/IEC 23053:2022 | Framework for ML-based AI systems |
 | EU AI Act | Regulation with risk-based classification |
 | NIST AI RMF | US framework for fairness, transparency and security |
+
+## K3 risk-identification exercise
+
+Scenario: a tester uploads a real customer ticket, asks a model to fix an assertion until CI is green, and auto-publishes its report. Identify sensitive-data disclosure, oracle weakening, prompt injection from the ticket, unsupported completion claims and loss of traceability. Replace personal data with approved synthetic fixtures; preserve the original expected behavior; sandbox generated code; verify claims against sources; require authorized publication. A second model can miss the same defect and is not an independent factual oracle. Pseudonymised data may still be personal data; replacing a name is not proof of anonymisation.

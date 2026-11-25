@@ -47,3 +47,7 @@ LLMOps covers the practices, tools and processes for developing, deploying and m
 | AI chatbot | Data privacy, security and cost; LLM-as-a-service or in-house open-source models |
 | Test tool with GenAI | The same, plus the vendor's data security and performance assurances |
 | In-house GenAI test tool | Maximum control; plan compute, storage, staff training and validation |
+
+## RAG failure analysis
+
+Facts F1=hybrid, F2=Kyiv, F3=salary unknown. Retrieval returns F1 and F2; generation says remote with salary 5000. Check retrieval relevance/recall separately from answer grounding: a valid link to F1 does not support “remote”. Require null for missing salary and run `grounded_claims`. Fine-tuning changes model behavior but is not a substitute for fresh access-controlled facts. Record source version, retrieval query and safe output evidence for a reproducible failure.

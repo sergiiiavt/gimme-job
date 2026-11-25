@@ -14,20 +14,20 @@ If you are not eligible, the free **Claude Academy** courses award completion ba
 | --- | --- | --- | --- | --- |
 | Claude Certified Architect – Foundations | CCAR-F | Architects designing agent systems | 60 | 125 |
 | Claude Certified Developer – Foundations | CCDV-F | Engineers building on the Claude API | 53 | 125 |
-| Claude Certified Associate – Foundations | CCAO-F | Consultants and delivery staff using Claude daily | 60 | 99 |
-| Claude Certified Architect – Professional | CCAR-P | Enterprise-scale architects | 63 | 175 |
+| Claude Certified Associate – Foundations | CCAO-F | Consultants and delivery staff using Claude daily | Verify current guide | Verify booking |
+| Claude Certified Architect – Professional | CCAR-P | Enterprise-scale architects | Verify current guide | Verify booking |
 
-Question counts for CCDV-F, CCAO-F and CCAR-P come from prep providers rather than Anthropic. Only CCAR-F is covered in this tile; CCDV-F has a full prep path in its own tile.
+This table covers four established tracks, not the complete current portfolio: Pearson also lists CCDV-P. The official CCDV-F guides now publish date-specific counts: 53 through 6 December, then 70 from 7 December. Do not infer current CCAO-F/CCAR-P counts from this table; verify their own guides. Only CCAR-F is covered in this tile; CCDV-F has a full prep path in its own tile.
 
 ## Exam facts to memorise
 
 - **Time:** 120 minutes of testing; plan for about 135 minutes in the seat.
 - **Format:** multiple choice and scenario-based multiple response, closed book, English only.
 - **Delivery:** Pearson OnVUE online proctoring or a Pearson test center.
-- **Score:** scaled from 100 to 1,000; **720 passes** every Claude exam.
+- **Score:** scaled from 100 to 1,000; **720 passes** for this guide.
 - **Retakes:** wait 14 days, then 30, then 90; at most 4 attempts per exam in a rolling 12 months, full fee each time.
 - **Validity:** 12 months. On-time renewal is a free, unproctored assessment; a lapse means retaking the full exam.
-- **Readiness:** Anthropic recommends a practice-exam score of 900 or more before booking CCAR-F.
+- **Readiness:** a practice result is diagnostic, not a guaranteed pass or an officially established booking threshold.
 
 ## CCAR-F domains and the six scenarios
 
@@ -50,3 +50,10 @@ Each sitting draws **4 of 6** published production scenarios, with roughly 15 qu
 5. Use the final review's distractor patterns to explain every wrong answer.
 
 A realistic pace is four weeks at about an hour a day.
+
+
+Primary baseline: [CCAR-F official exam guide, v1.1, November 2026](https://cc.sj-cdn.net/instructor/6nizmqk8tpzpfjvt6qmmav7rh/public/1794946250/Claude_Certified_Architect_-_Foundations_Exam_Guide.pdf). Recheck the booked exam’s current guide; this track is not an exhaustive portfolio reference.
+
+## From domain to evidence
+
+Architecture: classify done/error/budget traces. Tools: reject an unapproved cross-tenant write. Prompts: distinguish JSON shape, business validity and source support. Code: inspect a minimal diff and independent tests. Context: preserve sourced case facts across a handoff. These offline cases support the guide tasks but do not establish production readiness; use the current official guide for the complete objectives.
