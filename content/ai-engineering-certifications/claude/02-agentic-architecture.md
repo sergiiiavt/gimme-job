@@ -19,7 +19,7 @@ The hub-and-spoke pattern has a coordinator that decomposes the task, subagents 
 
 - **Context inheritance depends on the orchestration system.** Do not assume shared history. Anything a subagent needs, including earlier findings, must be passed in its prompt.
 - **Independent subagents run in parallel** when the coordinator issues several subagent calls in one response.
-- **Narrow decomposition is the classic failure.** If a report on "AI in creative industries" covers only visual art while every subagent did good work, the coordinator never assigned music, film or writing. Fix the decomposition, not the workers.
+- **Narrow decomposition is the classic failure.** If the task plan assigned only visual art and those workers completed their assignments, the report’s missing music/film/writing coverage started in the decomposition. Fix the decomposition, not the workers.
 
 ## Hooks: rules that must always hold
 
@@ -38,7 +38,7 @@ Escalate to a human on explicit criteria:
 - the request falls outside documented policy;
 - the agent cannot make progress.
 
-Do not escalate on sentiment scores or on the model's self-reported confidence; neither is a reliable signal of complexity. Hand off with a structured summary: customer, issue, steps already tried, and a recommended next action, so the human does not start from zero.
+Do not use sentiment or uncalibrated model self-confidence alone as a universal complexity signal; use explicit policy and validated evidence. Hand off with a structured summary: customer, issue, steps already tried, and a recommended next action, so the human does not start from zero.
 
 ## Sessions
 

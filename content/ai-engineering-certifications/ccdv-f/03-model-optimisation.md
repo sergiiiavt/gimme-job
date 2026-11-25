@@ -23,7 +23,7 @@ Under the guide effective through 6 December 2026, about 17%; from 7 December, 1
 
 ## Message Batches
 
-- Batches cost half as much as synchronous calls and return results within 24 hours.
+- Batches offer a 50% discount; unfinished requests can expire at the 24-hour processing limit.
 - Each request carries a `custom_id` so you can match results back, and results stay available for 29 days.
 - There is no latency guarantee, so never put batches on a path a user or a merge waits on.
 - Resubmit only the failed items, identified by `custom_id`.

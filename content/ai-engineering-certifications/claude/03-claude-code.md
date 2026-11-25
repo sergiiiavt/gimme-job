@@ -19,7 +19,7 @@ Files in `.claude/rules/` can declare a `paths` glob in their frontmatter, for e
 ## Commands and skills
 
 - **Custom commands** in `.claude/commands/` are committed and shared; `~/.claude/commands/` holds personal ones.
-- **Skills** live in `.claude/skills/<name>/SKILL.md`. Frontmatter such as `context: fork` runs the skill in an isolated subagent, so verbose output never reaches the main session, and `allowed-tools` limits what the skill may use.
+- **Skills** live in `.claude/skills/<name>/SKILL.md`. Frontmatter such as `context: fork` runs the skill in an isolated subagent, so verbose output never reaches the main session, and `allowed-tools` pre-approves listed calls for the invoking turn; it does not remove other callable tools. Separate permission settings govern other calls. See the [official skill contract](https://code.claude.com/docs/en/skills#pre-approve-tools-for-a-skill).
 
 ## Plan mode or direct execution
 

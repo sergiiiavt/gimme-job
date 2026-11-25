@@ -20,7 +20,7 @@ Input_schema описує args, tool_choice обирає tool; самі вони
 
 ## Message Batches
 
-Offline-обробка має окреме вікно та цінові умови; звіряйте custom_id, per-item statuses і retries. Не використовуйте Batches як гарантію негайного pre-merge feedback. Перевіряйте актуальні тарифи й processing-window.
+Offline-обробка має окреме вікно та цінові умови; звіряйте custom_id, per-item statuses і retries. Не використовуйте Batches як гарантію негайного pre-merge feedback. Перевіряйте актуальні тарифи й processing-window: після24 годин невиконаний request може мати expired, а не success.
 
 ## Великі зміни
 

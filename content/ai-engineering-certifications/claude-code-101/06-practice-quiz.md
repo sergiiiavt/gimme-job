@@ -108,7 +108,7 @@ D. Resetting the conversation before a new task
 8. **C** — a project-scoped server in a committed .mcp.json is shared with everyone who clones the repository.
 9. **D** — explore first, plan before editing, then code and commit small, reviewable steps.
 10. **C** — when names clash, the project subagent takes priority over the user one.
-11. **B** — a skill packages "how we do X" so it is done the same way every time.
+11. **B** — a skill packages a repeatable procedure; check the resulting report against the rubric.
 12. **B** — a fresh context does not share the writer's assumptions; the same session tends to repeat its blind spots.
 13. **D** — PostToolUse runs after the tool, so it cannot block it; it can only feed information back to Claude.
 14. **A** — Check current supported account/API access. The offline exercise baseline needs neither paid calls nor a particular subscription list.

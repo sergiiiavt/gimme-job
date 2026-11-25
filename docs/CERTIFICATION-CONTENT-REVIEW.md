@@ -25,7 +25,7 @@ Reviewed against main e848d9ba15e8c088fee7bfd57221064338cfea08 and the preceding
 | CT-GenAI | GenAI-2.2.1–5: construct prompts and apply them to test activities | Five R1 cases; 184 executed / 92% completion / 87.0% pass-executed |
 | CT-GenAI | GenAI-3.1.2: identify risk in context | Customer-ticket injection / weak assertion / unauthorized publication scenario |
 | Claude 101 | Source-grounded output and appropriate feature/access choice | F1 hybrid, F2 Kyiv, F3 unknown salary; unsupported-claim checks |
-| Claude Code 101 | Focused edit, independent review and configured hook behavior | Boundary mutation; real stdin/stdout/stderr/exit-code hook tests |
+| Claude Code 101 | Focused edit, independent review and configured hook behavior and permission-grant scope | Boundary mutation; real stdin/stdout/stderr/exit-code hook tests |
 | Claude Platform 101 | Request blocks, tool contracts and explicit outcomes | Extraction/gate/trace fixtures; optional official-SDK first request |
 | CCAR-F | Architecture, tools, prompts, code and context | Exact approval, partial failure handoff, source conflict and sandbox review |
 | CCDV-F | Integration errors, retries, models, tools and evaluation | Error/stop-reason matrices, safe-replay policy, segment analysis |
@@ -36,3 +36,5 @@ not complete syllabus coverage, not a production agent or an HTTP retry client, 
 proof of model factual accuracy. Optional live SDK/account features and real external
 writes require their own validation; no paid calls or production messages are part of
 this baseline. Normal main deployment continues to own canonical RAG refresh.
+
+Additional primary checks: Claude Code skills `allowed-tools` grants are not tool-pool restrictions (code.claude.com/docs/en/skills); Message Batches has per-item expiry, not guaranteed successful processing of every request (platform.claude.com/docs/en/build-with-claude/batch-processing). Recaps are checked alongside lessons and answer explanations.

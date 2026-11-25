@@ -112,3 +112,25 @@ export function mockExamGroupHeadings(questionCount: number, groupSize = MOCK_EX
     return { id: `questions-${first}-${last}`, text: `${language === "uk" ? "Запитання" : "Questions"} ${first}–${last}` };
   });
 }
+
+/** Localized presentation data lives with the directly testable assessment model. */
+export const mockExamCopy = {
+  en: {
+    progress: "Mock exam progress", answered: "answered", questions: "Questions", correct: "Correct",
+    incorrect: "Incorrect · correct answer:", ready: "Ready to evaluate?", check: "Check score",
+    score: "Practice score", evaluation: "Evaluation", retry: "Retry exam",
+    strong: "Strong", close: "Close", gaps: "Material gaps remain", more: "More preparation needed",
+  },
+  uk: {
+    progress: "Прогрес тесту", answered: "відповідей", questions: "Запитання", correct: "Правильно",
+    incorrect: "Неправильно · правильна відповідь:", ready: "Готові перевірити?", check: "Перевірити",
+    score: "Навчальний бал", evaluation: "Оцінка", retry: "Повторити",
+    strong: "Упевнено", close: "Близько", gaps: "Залишилися суттєві прогалини", more: "Потрібна додаткова підготовка",
+  },
+};
+export const ukrainianMockExamEvaluationTexts: MockExamEvaluationTexts = {
+  strong: "Поясніть невпевнені відповіді й перевірте себе за актуальними офіційними матеріалами.",
+  close: "Повторіть теми за помилками та розв’яжіть нові приклади.",
+  gaps: "Виконайте практичні вправи зі слабких тем перед наступною спробою.",
+  more: "Поверніться до послідовності тем і незалежних очікуваних результатів.",
+};

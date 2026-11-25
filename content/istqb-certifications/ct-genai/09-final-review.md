@@ -7,15 +7,15 @@ Use this after the chapters, the labs and the mock exam.
 | Pair | Remember |
 | --- | --- |
 | CT-AI vs CT-GenAI | Testing AI-based systems; using GenAI to test |
-| LLM vs SLM | Large, general; compact, cheaper, strong when fine-tuned |
-| Foundation vs instruction-tuned vs reasoning | Needs adaptation; follows instructions; reasons in steps |
+| LLM vs SLM | Relative size; evaluate quality, latency and cost on the task |
+| Foundation vs instruction-tuned vs reasoning | Base training; instruction alignment; reasoning-oriented capability. These can overlap |
 | AI chatbot vs LLM-powered test tool | Conversational; integrated through APIs for defined tasks |
-| System vs user prompt | Constant and hidden; per turn and visible |
+| System vs user prompt | Application instructions that can change; user task and data |
 | Prompt chaining vs few-shot vs meta prompting | Checked steps; examples for format; the LLM writes the prompt |
 | Hallucination vs reasoning error vs bias | Invented content; wrong logic; skewed coverage |
-| Context vs request manipulation | Overload the window; steer with crafted input |
+| Context vs request manipulation | Untrusted-context manipulation; adversarial input. Neither guarantees training-data extraction |
 | Autonomous vs semi-autonomous agent | Minimal human input; periodic oversight |
-| RAG vs fine-tuning | Ground answers in retrieved documents; retrain the model on a dataset |
+| RAG vs fine-tuning | Provide retrieved context at inference; adapt the model with training data. Neither guarantees truth |
 
 ## Lists worth memorising
 

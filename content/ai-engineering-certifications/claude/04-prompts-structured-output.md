@@ -26,7 +26,7 @@ After extraction, validate semantics in code: sums, date order, required combina
 
 ## The Message Batches API
 
-Batches cost 50% less and complete within 24 hours, with no latency guarantee. Each request carries a `custom_id` that ties its result back to the input. Use batches for overnight extraction, weekly audits and backfills; never for a blocking pre-merge check someone waits on. Resubmit only the failed items.
+Batches offer a 50% discount and a 24-hour processing window; requests can expire without success. Each request carries a `custom_id` that ties its result back to the input. Use batches for overnight extraction, weekly audits and backfills; never for a blocking pre-merge check someone waits on. Resubmit only the failed items.
 
 ## Reviewing large changes
 

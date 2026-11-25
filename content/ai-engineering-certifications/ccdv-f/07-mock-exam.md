@@ -90,7 +90,7 @@ B. After the last cache breakpoint
 C. In a header, which caching ignores
 D. At the very start of the system prompt
 
-**15.** Before sending a 150-page contract, you want to know whether it fits the context window and what it will cost. What do you use?
+**15.** Before sending a large contract, you need input-token size to check fit and later calculate cost. What do you use?
 A. The token-counting endpoint, before sending
 B. Ask Claude how many tokens the file contains
 C. Send it, then read usage from the response
@@ -202,7 +202,7 @@ D. Asking the model to grade its own new answers
 10. **C** — a refusal is a safety decision; retrying or stripping instructions does not make the request appropriate.
 11. **B** — The observed prefix changes prevent exact matches. Also check model minimum length, TTL and scope when diagnosing other cache misses.
 12. **C** — high-volume, well-defined work suits the small, fast tier; route only the hard cases to a larger model.
-13. **A** — batches halve the cost and finish within 24 hours; custom_id matches results back to postings.
+13. **A** — batches fit the permitted window; reconcile custom_id and per-item success, error, cancellation or expiry.
 14. **B** — anything that varies must sit after the last breakpoint, or the cached prefix never matches.
 15. **A** — Token counting estimates input tokens; reserve output capacity and calculate currency cost separately using applicable rates.
 16. **D** — routing keeps each path simple and gives the refund tool only to the billing path.

@@ -12,7 +12,7 @@ Path-scoped rules застосовують guidance до glob, наприкла�
 
 ## Команди й skills
 
-Project commands і skills пакують повторні процедури; skill може виконувати роботу в fork-контексті за підтримки runtime. Спільні файли версіонуються, особисті залишаються локальними. Процедура не надає зовнішніх credentials.
+Project commands і skills пакують повторні процедури; skill може виконувати роботу в fork-контексті за підтримки runtime. Спільні файли версіонуються, особисті залишаються локальними. Процедура не надає зовнішніх credentials. У Claude Code allowed-tools попередньо дозволяє перелічені виклики на хід активації, але не прибирає решту tools; інші виклики підлягають permission-settings. Дивіться [офіційний контракт](https://code.claude.com/docs/en/skills#pre-approve-tools-for-a-skill).
 
 ## План чи пряма дія
 

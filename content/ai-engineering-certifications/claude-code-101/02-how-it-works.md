@@ -33,7 +33,7 @@ Configuration support and behavior can differ by surface/version; verify CLAUDE.
 - Press **Shift+Tab** to cycle default → acceptEdits → plan. Auto appears in the cycle only when your account meets its requirements.
 - Prefix a single prompt with **/plan** to plan just that request, or start with claude --permission-mode plan.
 - When a plan is ready, you approve it, choose how edits should be approved, or keep planning with feedback. Ctrl+G opens the plan in your editor.
-- **Permission rules** sit on top of modes: allow rules pre-approve specific tools, and deny rules block in every mode.
+- **Permission rules** sit on top of modes: allow/deny rules configure tool decisions. Inspect the effective policy and mode; guidance is not a filesystem or backend sandbox.
 
 ## Your first prompt
 

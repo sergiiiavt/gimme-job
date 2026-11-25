@@ -26,7 +26,7 @@ Pick the smallest fix that removes the root cause and is deterministic wherever 
 | Subdirectory CLAUDE.md vs `.claude/rules/` | Folder scope; glob scope |
 | Plan mode vs direct execution | Large and ambiguous; small and clear |
 | Schema vs validation | Shape; meaning |
-| Batches vs synchronous | Half price within 24 hours; immediate |
+| Batches vs synchronous | Batch discount, with success/error/canceled/expired outcomes; interactive request |
 
 ## Readiness checklist
 

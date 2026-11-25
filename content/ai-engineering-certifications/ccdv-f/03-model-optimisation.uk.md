@@ -12,7 +12,7 @@ Cache відповідає exact-prefix tools/system/messages у підтрим�
 
 ## Message Batches
 
-Batches має окреме processing-window та pricing; custom_id потрібен для reconciliation. Не припускайте порядок output і не повторюйте вже успішні записи. Deadline має дозволяти batch-обробку; для блокувального interactive-check це поганий вибір.
+Batches має окреме processing-window та pricing; custom_id потрібен для reconciliation. Не припускайте порядок output і не повторюйте вже успішні записи. Після24 годин невиконані requests можуть завершитися expired. Deadline має дозволяти batch-обробку; для блокувального interactive-check це поганий вибір.
 
 ## Токени й latency
 

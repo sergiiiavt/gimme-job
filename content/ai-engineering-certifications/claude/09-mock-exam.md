@@ -277,7 +277,7 @@ D. Start a brand-new session and paste in a summary of the work so far
 23. **D** — give the reviewer the history it needs to deduplicate; the other options hide or delay the noise.
 24. **C** — a required field pressures the model to invent a value; give it an honest way to say "not present".
 25. **A** — strict schema enforcement checks structure and types, not all cross-field business rules or source support; validate sums and return the specific error.
-26. **C** — batches cost half as much and finish within 24 hours; custom_id ties each result to its document.
+26. **C** — use the batch discount and processing window; reconcile per-item status and custom_id, including expiry.
 27. **D** — batches have no latency guarantee, so anything a person or a merge waits on needs synchronous calls.
 28. **B** — aggregates hide weak segments; stratified evaluation shows where the system fails.
 29. **D** — Grep searches file contents; Glob matches names and paths, not what is inside files.

@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import {
   evaluateMockExam,
   MOCK_EXAM_GROUP_SIZE,
+  mockExamCopy,
+  ukrainianMockExamEvaluationTexts,
   parseIstqbAiMockExam,
   scoreIstqbAiMockExam,
   type AnswerKey,
@@ -14,27 +16,6 @@ import MarkdownDocument from "./qa-markdown";
 import styles from "./istqb-ai-mock-exam.module.css";
 
 const GROUP_SIZE = MOCK_EXAM_GROUP_SIZE;
-const examCopy = {
-  en: {
-    progress: "Mock exam progress", answered: "answered", questions: "Questions", correct: "Correct",
-    incorrect: "Incorrect · correct answer:", ready: "Ready to evaluate?", check: "Check score",
-    score: "Practice score", evaluation: "Evaluation", retry: "Retry exam",
-    strong: "Strong", close: "Close", gaps: "Material gaps remain", more: "More preparation needed",
-  },
-  uk: {
-    progress: "Прогрес тесту", answered: "відповідей", questions: "Запитання", correct: "Правильно",
-    incorrect: "Неправильно · правильна відповідь:", ready: "Готові перевірити?", check: "Перевірити",
-    score: "Навчальний бал", evaluation: "Оцінка", retry: "Повторити",
-    strong: "Упевнено", close: "Близько", gaps: "Залишилися суттєві прогалини", more: "Потрібна додаткова підготовка",
-  },
-};
-const ukrainianEvaluation: MockExamEvaluationTexts = {
-  strong: "Поясніть невпевнені відповіді й перевірте себе за актуальними офіційними матеріалами.",
-  close: "Повторіть теми за помилками та розв’яжіть нові приклади.",
-  gaps: "Виконайте практичні вправи зі слабких тем перед наступною спробою.",
-  more: "Поверніться до послідовності тем і незалежних очікуваних результатів.",
-};
-
 const CT_AI_SCORE_NOTE = "This mock uses one question = one practice mark and is not directly convertible to the official 44-point CT-AI exam score.";
 
 export default function IstqbAiMockExam({
@@ -55,8 +36,8 @@ export default function IstqbAiMockExam({
   const answeredCount = Object.keys(answers).length;
   const score = submitted ? scoreIstqbAiMockExam(exam.questions, answers) : 0;
   const uk = language === "uk";
-  const labels = examCopy[language];
-  const evaluation = evaluateMockExam(score, exam.questions.length, uk ? ukrainianEvaluation : evaluationTexts);
+  const labels = mockExamCopy[language];
+  const evaluation = evaluateMockExam(score, exam.questions.length, uk ? ukrainianMockExamEvaluationTexts : evaluationTexts);
   const evaluationLabel = ({ Strong: labels.strong, Close: labels.close,
     "Material gaps remain": labels.gaps, "More preparation needed": labels.more } as Record<string, string>)[evaluation.label];
   const groups = Array.from(

@@ -188,3 +188,15 @@ test("CTFL boundary question matches the all-integer shared-border model", () =>
   assert.equal(q.options.find((option) => option.key === q.correctAnswer)?.text, "8");
   assert.match(q.explanation ?? "", /-1,0,1,2,99,100,101,102/);
 });
+
+
+test("CTFL final-review recap preserves both sides of the taught integer boundaries", () => {
+  const catalog = certificationTracks.find((item) => item.trackId === "ctfl-v4");
+  const review = catalog?.taxonomy.find((item) => item.id === "ctfl-final-review");
+  assert.ok(review);
+  const boundaryRecap = review.markdown.split("\n").find((line) => line.startsWith("- **3-value BVA:**"));
+  assert.ok(boundaryRecap);
+  assert.match(boundaryRecap, /all integers/);
+  assert.match(boundaryRecap, /16,17,18,19,64,65,66,67/);
+  assert.match(boundaryRecap, /overlaps/);
+});

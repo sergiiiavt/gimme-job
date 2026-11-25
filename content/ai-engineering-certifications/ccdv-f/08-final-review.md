@@ -6,7 +6,7 @@ When an option makes the system **deterministic, measurable or scoped**, it usua
 
 ## High-yield distinctions
 
-- **Retry or fix:** retry 429, 529 and 5xx with backoff and jitter; fix 400; check the key for 401 and 403.
+- **Retry or fix:** retry selected transient 429, 529 and 5xx only when replay-safe and within attempt/deadline budgets, with backoff and jitter; fix 400; check the key for 401 and 403.
 - **Stop reasons:** max_tokens means cut off, tool_use means run the tool, pause_turn means send it back, and refusal means show a fallback.
 - **Streaming vs batches:** streaming improves perceived latency for users; batches halve cost for work nobody waits on.
 - **Caching:** an exact prefix of tools, system and messages; anything variable goes after the last breakpoint.
