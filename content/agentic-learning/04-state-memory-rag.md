@@ -46,27 +46,27 @@ Sooner or later a conversation or a task outgrows the budget you want to spend p
 | Sub-agents | A helper explores in its own context and returns a condensed result | Main context stays small; more calls overall |
 | Just-in-time retrieval | Keep references (ids, file paths) and fetch content only when needed | Little upfront context; extra tool calls |
 
-A sliding window with a note about what was dropped is a reasonable default. The code below keeps the newest turns that fit a token budget and replaces the rest with a placeholder summary. Token counts are approximated as one token per four characters; a real system would use the provider's tokenizer.
+A sliding window with a note about what was dropped is a reasonable default. The code below keeps the newest turns that fit a token budget and marks explicitly how many older messages were omitted. Token counts are approximated as one token per four characters; a real system would use the provider's tokenizer.
 
 ```python
-def estimate_tokens(text):
-    return max(1, len(text) // 4)
-
 def fit_history(system, turns, budget):
-    used = estimate_tokens(system)
-    kept = []
-    for turn in reversed(turns):
-        cost = estimate_tokens(turn["content"])
-        if used + cost > budget:
-            break
-        kept.append(turn)
-        used += cost
-    kept.reverse()
-    dropped = turns[: len(turns) - len(kept)]
-    if dropped:
-        topics = ", ".join(turn["content"].split(".")[0][:40] for turn in dropped if turn["role"] == "user")
-        kept.insert(0, {"role": "system", "content": f"{len(dropped)} earlier turns omitted. Earlier user topics: {topics}"})
-    return kept, used
+    # An estimator for plain-text teaching messages, not a provider tokenizer.
+    def cost(message):
+        return 4 + (len(message["content"]) + 3) // 4
+
+    system_message = {"role": "system", "content": system}
+    latest_user = next((i for i in range(len(turns) - 1, -1, -1)
+                        if turns[i]["role"] == "user"), len(turns))
+    # Keep the latest request and every following reply together.
+    for dropped in range(latest_user + 1):
+        kept = turns[dropped:]
+        notice = ([{"role": "system", "content": f"{dropped} older messages omitted."}]
+                  if dropped else [])
+        history = [system_message, *notice, *kept]
+        used = sum(cost(message) for message in history)
+        if used <= budget:
+            return history, used
+    raise ValueError("Budget cannot hold the system, omission notice and latest request")
 
 turns = [
     {"role": "user", "content": "I test a payments API. Which status codes matter most?"},
@@ -82,6 +82,8 @@ print("tokens used:", used)
 ```
 
 Whatever you drop, drop it deliberately and visibly. A silent cut is worse than a short summary, because the model will answer as if the missing turns never happened.
+
+This estimator is for plain text. The omission notice counts against the budget; the latest user request is mandatory. An infeasible budget raises explicitly. In production use the provider tokenizer, reserve output tokens and preserve complete tool-call/result groups. Do not elevate an untrusted conversation summary into system instructions.
 
 ## Retrieval as memory
 

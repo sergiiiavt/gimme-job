@@ -31,12 +31,12 @@ const cleanText = (value: string) => value
   .trim();
 
 export function parseIstqbAiMockExam(markdown: string): ParsedMockExam {
-  const [questionSection = "", answerSectionWithScore = ""] = markdown.split(/\n## Answer key with explanations\s*\n/);
-  const [introduction = "", questionsWithHeadings = ""] = questionSection.split(/\n## Questions 1[–-]10\s*\n/);
+  const [questionSection = "", answerSectionWithScore = ""] = markdown.split(/\n## (?:Answer key with explanations|Відповіді з поясненнями)\s*\n/);
+  const [introduction = "", questionsWithHeadings = ""] = questionSection.split(/\n## (?:Questions|Запитання) 1[–-]10\s*\n/);
   const questionsMarkdown = questionsWithHeadings
-    .replace(/^## Questions \d+[–-]\d+\s*$/gm, "")
+    .replace(/^## (?:Questions|Запитання) \d+[–-]\d+\s*$/gm, "")
     .trim();
-  const answerSection = answerSectionWithScore.split(/\n## Score interpretation\s*\n/)[0] ?? "";
+  const answerSection = answerSectionWithScore.split(/\n## (?:Score interpretation|Оцінювання результату)\s*\n/)[0] ?? "";
   const answers = new Map<number, { answer: AnswerKey; explanation: string }>();
 
   for (const match of answerSection.matchAll(/^(\d+)\.\s+\*\*([A-D])\*\*\s+—\s+(.+?)\s*$/gm)) {
@@ -105,10 +105,10 @@ export function evaluateIstqbAiMockExam(score: number): ScoreEvaluation {
 export const MOCK_EXAM_GROUP_SIZE = 10;
 
 /** Rail headings matching the question groups the mock exam renders. */
-export function mockExamGroupHeadings(questionCount: number, groupSize = MOCK_EXAM_GROUP_SIZE): Array<{ id: string; text: string }> {
+export function mockExamGroupHeadings(questionCount: number, groupSize = MOCK_EXAM_GROUP_SIZE, language: "en" | "uk" = "en"): Array<{ id: string; text: string }> {
   return Array.from({ length: Math.ceil(questionCount / groupSize) }, (_, index) => {
     const first = index * groupSize + 1;
     const last = Math.min(questionCount, first + groupSize - 1);
-    return { id: `questions-${first}-${last}`, text: `Questions ${first}–${last}` };
+    return { id: `questions-${first}-${last}`, text: `${language === "uk" ? "Запитання" : "Questions"} ${first}–${last}` };
   });
 }

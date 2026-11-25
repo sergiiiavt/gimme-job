@@ -1,6 +1,6 @@
 # Hands-on lab: a vacancy-research agent
 
-One lab that touches every section of Claude Platform 101. It needs an API key from the Claude Console and Python or TypeScript with the official SDK. Set a low spend limit on the workspace before you start.
+Begin with the no-network fixture baseline below. Live SDK exercises are optional and need an authorized account/key, supported model/SDK, network and usage budget. Use synthetic inputs and low task/spend limits.
 
 ## 1. First call and model choice
 
@@ -10,12 +10,12 @@ One lab that touches every section of Claude Platform 101. It needs an API key f
 ## 2. A hand-written agent loop
 
 1. Define a search_vacancies tool with a clear description, an input_schema with role, remote and posted_within_days, and a stub that returns sample data.
-2. Write the loop: run tools while stop_reason is tool_use, send each tool_result with the matching tool_use_id, and stop on end_turn or after 8 iterations.
+2. Write the loop: run tools while stop_reason is tool_use, send each tool_result with the matching tool_use_id, and distinguish model end_turn from validated task completion. Keep an eight-step cap plus explicit error/incomplete states.
 3. Make the stub fail once and return is_error with a reason. Check that Claude retries or explains instead of reporting "no vacancies".
 
 ## 3. Tool Runner
 
-Replace your loop with the SDK's Tool Runner and confirm that you get the same final answer. Note what you lost, such as a place to ask for approval, and when you would go back to the manual loop.
+Compare the current SDK Tool Runner with your explicit loop. Check equivalent contracts and independent expected outcomes, not identical stochastic prose. Identify the supported extension points for approval, logging, cancellation and recovery before deciding which orchestration to use.
 
 ## 4. Extend it
 
@@ -29,3 +29,16 @@ Recreate the agent as a managed agent, start a session, send a user message even
 ## What to keep
 
 A small repository with the loop, the model comparison table and a README stating what each section taught you. That is a concrete answer to "What have you built with LLM APIs?"
+
+## Executable baseline and independent oracle
+
+Use the [offline practice package](https://github.com/sergiiiavt/gimme-job/tree/main/examples/certification-practice). Requires Python 3.10+, no model or API key. Run `python examples/certification-practice/practice.py platform`: every reference case should pass. Copy `starter.py` to a scratch file; `--candidate your_solution.py` should fail until you implement the required functions. Retain fixture IDs, expected/actual outputs and the command exit status.
+
+| Stage | Task | Check |
+| --- | --- | --- |
+| Derive | Read requirements before the reference code | Explain the expected outputs independently |
+| Implement | Fill only your track’s starter functions | All selected cases pass; the unfinished starter fails |
+| Challenge | Introduce an incorrect boundary, source claim or error state | At least one relevant oracle rejects it |
+| Review | Explain a plausible mistake and missing production controls | Record limits, not just a green status |
+
+Check tool-result validation, exact simulated approvals, retries and done/error/incomplete/budget. A real API integration still needs account authorization, persistent state and safe recovery. Optional live-tool practice requires authorized access and a usage budget; production writes are outside this sandbox.

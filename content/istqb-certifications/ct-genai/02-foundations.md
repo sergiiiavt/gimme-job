@@ -7,7 +7,7 @@ Chapter 1 gives the vocabulary for the rest of the syllabus: types of AI, how LL
 - **Symbolic AI:** rule-based; represents knowledge with symbols and logic.
 - **Classical machine learning:** data-driven; needs data preparation, feature selection and training.
 - **Deep learning:** neural networks learn features automatically, though people are still often involved.
-- **Generative AI:** deep learning used to create new content such as text, images and code.
+- **Generative AI:** approaches, often based on deep learning, used to create new content such as text, images and code.
 
 The key practical advantage of GenAI: pre-trained models can be used without an extra training phase, with the risks covered in chapter 3.
 
@@ -39,3 +39,7 @@ Requirements analysis, test case creation, test oracle generation, test data gen
 ## AI chatbots vs LLM-powered testing applications
 
 An **AI chatbot** is conversational and interactive: good for routine tasks, exploration and onboarding. An **LLM-powered testing application** integrates an LLM through APIs into tools for defined or automated tasks; it is more customisable and scalable. Both depend on good prompt engineering.
+
+## Token, embedding and context example
+
+A tokenizer turns “QA Engineer” into model-specific token IDs; an embedding encoder maps a token or larger fragment into a numeric vector. A vector is not a copied source sentence and similarity does not establish truth. A model may be both instruction-tuned and reasoning-oriented; these labels are not mutually exclusive training stages. Replacing a model can change tokenization, latency and output, so recheck the same inputs. A screenshot task needs a supported visual input path, not merely an image filename in a text-only prompt.

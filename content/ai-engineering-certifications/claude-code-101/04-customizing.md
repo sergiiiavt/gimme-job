@@ -34,16 +34,20 @@ The fourth section of Claude Code 101 covers five ways to shape Claude Code for 
 - Shell commands that Claude Code runs at fixed points, configured in settings.json. Common events are PreToolUse (before a tool runs), PostToolUse (after it runs), UserPromptSubmit, Stop and SessionStart.
 - A PreToolUse hook that **exits with code 2 blocks the tool call**, and its stderr message goes to Claude. Exit code 1 does **not** block anything, a common mistake.
 - PostToolUse cannot undo a call that already ran. Its stderr is shown to Claude so the next step can change.
-- Use hooks for rules that must hold every time: run the formatter after each edit, block edits to .env, send a notification when Claude needs input.
+- Use configured hooks for the events and matched tools they cover: formatting after an edit, blocking a particular Write/Edit call, or a notification. Enforce critical backend or filesystem policy at those boundaries too.
 
 ## Which one?
 
 | You want | Use |
 | --- | --- |
 | Every session to know how to run the tests | CLAUDE.md |
-| Claude never to edit .env, with no exceptions | A PreToolUse hook |
+| Block matched Write/Edit calls targeting a training file | A PreToolUse hook |
 | A test-review specialist with read-only tools | A subagent |
 | Bug reports written the same way every time | A skill |
 | Claude to read and create Jira issues | An MCP server |
 
-The rule of thumb: instructions such as CLAUDE.md and skills make the right behaviour likely; hooks make a rule certain.
+The rule of thumb: instructions such as CLAUDE.md and skills make the right behaviour likely; hooks execute deterministic checks for configured events. They do not universally cover Bash, alternate paths, other tools or remote side effects.
+
+## Test a real hook boundary
+
+The supplied PreToolUse hook accepts a JSON event on stdin. Write/Edit targeting `.env.training` exits 2 and writes a reason to stderr; normal `answer.py` exits 0. Malformed event objects are rejected. The settings example matches only those tools. Bash, symlink aliases and remote writes require separate controls; do not call a hook a general security sandbox. Shared config must contain no credentials.

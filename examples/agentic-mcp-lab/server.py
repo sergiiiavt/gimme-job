@@ -160,8 +160,12 @@ def handle(message: Any) -> dict[str, Any] | None:
     if "id" not in message:
         return None  # notifications get no response
     request_id = message["id"]
-    params = message.get("params") or {}
-    meta = params.get("_meta") or {}
+    params = message.get("params", {})
+    if not isinstance(params, dict):
+        return error(request_id, INVALID_PARAMS, "params must be an object")
+    meta = params.get("_meta", {})
+    if not isinstance(meta, dict):
+        return error(request_id, INVALID_PARAMS, "params._meta must be an object")
     requested = meta.get(META_VERSION)
     if requested not in SUPPORTED_VERSIONS:
         return error(request_id, UNSUPPORTED_PROTOCOL_VERSION, "Unsupported protocol version",

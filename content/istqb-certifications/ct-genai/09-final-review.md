@@ -38,3 +38,7 @@ Use this after the chapters, the labs and the mock exam.
 - 60 minutes for 40 questions: about 90 seconds each.
 - Scenario questions on choosing a prompting technique are the K3 core: decide first whether the task needs checked steps, a fixed format, or a new prompt.
 - There is no negative marking: answer every question.
+
+## Readiness evidence
+
+Before the mock, derive precision/recall from distinct IDs, repair a hallucinated deadline without inventing a replacement, and identify risks under GenAI-3.1.2. Keep a short record of the prompt version, source, expected outcome and observed failure. This makes weak concepts visible; a score from one deterministic quiz cannot measure stochastic reliability or be converted directly to the official weighted score.

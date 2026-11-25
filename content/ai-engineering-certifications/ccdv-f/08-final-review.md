@@ -34,3 +34,7 @@ When an option makes the system **deterministic, measurable or scoped**, it usua
 - [ ] The official candidate guide rechecked for the 7 December 2026 update
 - [ ] Partner eligibility confirmed with a partner email on your company domain
 - [ ] OnVUE system check passed, or a test center booked
+
+## Explain the failure before changing settings
+
+Differentiate output truncation from transport timeout: use stop_reason and stream completion. Differentiate model token usage from a priced bill. Differentiate a valid source ID from source support. For each missed question create one counterexample, expected decision and check. Repeat affected slices after a model, prompt, schema or platform change.

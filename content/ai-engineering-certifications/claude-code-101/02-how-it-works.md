@@ -19,7 +19,7 @@ The loop repeats until the task is done or Claude needs you. Everything it reads
 - **Desktop app:** the Code mode of the Claude desktop app.
 - **Web:** cloud sessions from claude.ai, with no local install.
 
-Configuration such as CLAUDE.md, skills and hooks works the same on every surface.
+Configuration support and behavior can differ by surface/version; verify CLAUDE.md, skills and hooks on the client you use.
 
 ## Permission modes
 
@@ -43,3 +43,7 @@ Good first prompts are specific and checkable:
 - "Add a test for the empty-search case in the catalog filter, run it, and show me the result." Scoped, with a built-in check.
 
 Avoid "improve the code": nothing in it tells Claude, or you, when the task is done.
+
+## Inspect before executing
+
+Start with “Explain the discount function, requirement and tests; propose a minimal fix.” Confirm the working tree and permitted commands. The agent may read, propose, act and verify; a tool return is not evidence that the intended behavior is correct. Run the subtotal-100 oracle. Planning is useful for uncertainty; a tiny understood correction does not require a ceremonial plan.

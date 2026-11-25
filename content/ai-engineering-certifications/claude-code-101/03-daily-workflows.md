@@ -40,3 +40,7 @@ A flaky end-to-end test fails one run in five.
 2. **Plan:** "Propose a fix that removes the cause, not a longer timeout."
 3. **Code:** "Apply it and run the test 20 times in a loop."
 4. **Commit:** "Commit with the root cause in the message."
+
+## A bounded debugging task
+
+Reproduce member=true, subtotal=100 returning 10 instead of 20. Read the relevant function and tests, add the missing boundary, make the compatible comparison fix, then rerun affected checks. If context is compacted, retain the exact requirement, failing input, changed files and test results. A compacted summary can lose facts; reread the source before the next decision.

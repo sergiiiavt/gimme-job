@@ -3,16 +3,62 @@ import type { IstqbAiTestingSource } from "../istqb-ai-testing/sources";
 export type CertificationSource = IstqbAiTestingSource & { checkedAt: string };
 
 const checkedAt = "2026-11-23";
-const reviewedAt = "2026-11-24";
+const reviewedAt = "2026-11-25";
 
 const claudeSourceLibrary: CertificationSource[] = [
+  {
+    id: "ccar-f-guide",
+    title: "CCAR-F official exam guide v1.1, November 2026",
+    url: "https://cc.sj-cdn.net/instructor/6nizmqk8tpzpfjvt6qmmav7rh/public/1794946250/Claude_Certified_Architect_-_Foundations_Exam_Guide.pdf",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Primary task/domain blueprint, scenarios, count and scoring for the architect foundation exam.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "ccdv-f-guide-current",
+    title: "CCDV-F official guide, effective through 6 December 2026",
+    url: "https://cc.sj-cdn.net/instructor/6nizmqk8tpzpfjvt6qmmav7rh/public/1794946716/Claude_Certified_Developer_-_Foundations_Exam_Guide.pdf",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Date-specific primary blueprint: 53 questions and the original domain weights. The PDF also carries v1.1.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "ccdv-f-guide-dec7",
+    title: "CCDV-F official guide, effective 7 December 2026",
+    url: "https://cc.sj-cdn.net/instructor/6nizmqk8tpzpfjvt6qmmav7rh/public/1794946771/Claude_Certified_Developer_-_Foundations_Exam_Guide_Updated_Dec_7.pdf",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Replacement v1.1 guide: 70 questions, 60 scored and 10 unscored, with updated task/domain weights.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-strict-tools",
+    title: "Strict tool use",
+    url: "https://platform.claude.com/docs/en/agents-and-tools/tool-use/strict-tool-use",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Supported strict:true argument enforcement, distinct from tool selection and plain input schemas.",
+    checkedAt: reviewedAt,
+  },
+  {
+    id: "claude-structured-outputs",
+    title: "Structured outputs",
+    url: "https://platform.claude.com/docs/en/build-with-claude/structured-outputs",
+    publisher: "Anthropic",
+    kind: "official-documentation",
+    role: "Supported JSON response enforcement, accepted schemas, compatibility and incomplete/error handling.",
+    checkedAt: reviewedAt,
+  },
+
   {
     id: "anthropic-certification-faq",
     title: "Claude Certification program FAQ",
     url: "https://anthropic-partners.skilljar.com/page/faq-certifications",
     publisher: "Anthropic",
     kind: "official-certification-faq",
-    role: "Primary authority for eligibility, prices, exam format, passing score, retakes, validity and recertification for all four Claude certifications.",
+    role: "Primary authority for eligibility, prices, exam format, passing score, retakes, validity and recertification for the current Claude certification program; verify the specific exam guide.",
     checkedAt,
   },
   {
@@ -48,7 +94,7 @@ const claudeSourceLibrary: CertificationSource[] = [
     url: "https://anthropic.skilljar.com/claude-code-101",
     publisher: "Anthropic",
     kind: "official-training",
-    role: "Course outline, learning objectives and prerequisites (a Pro, Max or Enterprise account or an API key) for Claude Code 101.",
+    role: "Course outline, learning objectives and current supported account/API prerequisites for Claude Code 101.",
     checkedAt: "2026-11-24",
   },
   {
@@ -93,7 +139,7 @@ const claudeSourceLibrary: CertificationSource[] = [
     url: "https://analyticsindiamag.com/ai-news/anthropic-launches-claude-architect-certification-for-99-per-attempt",
     publisher: "Analytics India Magazine",
     kind: "press",
-    role: "Reports the CCAR-F domain weights, 60-question format, scenario selection and the recommended 900 practice score.",
+    role: "Historical launch coverage; use the current official exam guide for format and readiness advice.",
     checkedAt,
   },
   {
@@ -279,11 +325,11 @@ function pickClaudeSources(ids: string[]): CertificationSource[] {
 
 export const claudeCertificationSources = pickClaudeSources([
   "anthropic-certification-faq", "anthropic-certification-announcement", "anthropic-academy", "claude-docs",
-  "pearson-anthropic", "aim-ccar-f-launch", "ccar-domain-weights", "ccdv-f-domains", "mcp-specification",
+  "pearson-anthropic", "ccar-f-guide", "ccdv-f-guide-current", "ccdv-f-guide-dec7", "claude-strict-tools", "claude-structured-outputs", "mcp-specification",
 ]);
 
 export const claudeDeveloperCertificationSources = pickClaudeSources([
-  "anthropic-certification-faq", "anthropic-certification-announcement", "pearson-anthropic", "ccdv-f-domains",
+  "anthropic-certification-faq", "anthropic-certification-announcement", "pearson-anthropic", "ccdv-f-guide-current", "ccdv-f-guide-dec7", "claude-strict-tools", "claude-structured-outputs",
   "claude-docs", "tool-runner-docs", "managed-agents-docs", "building-effective-agents", "mcp-specification", "claude-platform-101-course",
 ]);
 

@@ -13,7 +13,7 @@
 ## Distractors to expect
 
 - "Use a bigger model" when the real fix is context or configuration.
-- "Put it in the prompt" when the rule must hold every time, which is a job for a hook.
+- "Put it in the prompt" when the rule must hold every time, which needs a deterministic control at the relevant execution boundary; a hook only covers its configured events.
 - "Put it in ~/.claude/" when the whole team needs it.
 - "/clear" when the task is not finished, which throws away the work in progress.
 
@@ -29,3 +29,7 @@
 ## After Claude Code 101
 
 Claude Code in Action goes deeper into long, hands-off sessions. Introduction to Agent Skills and Introduction to Subagents each take one topic further. For the proctored path, the Claude Code chapter of the Claude CCAR-F tile builds directly on this course.
+
+## Review the review
+
+Give a fresh reviewer the requirement, diff and independent expected cases; ask for reproducible failures rather than style suggestions. Reject an unsubstantiated claim that tests passed. Keep hook exit-code evidence, regression results and what remains untested. The checker’s green result only covers its listed fixtures, not every code path or production environment.

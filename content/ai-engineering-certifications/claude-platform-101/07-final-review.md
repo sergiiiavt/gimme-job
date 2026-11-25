@@ -31,3 +31,7 @@
 ## After Claude Platform 101
 
 Building with the Claude API goes much deeper. Introduction to Model Context Protocol teaches you to build MCP servers. For the proctored path, the Claude CCDV-F tile builds directly on this course.
+
+## Evidence for an integration
+
+Retain a request/response contract, error/deadline policy, allowed tool list, synthetic extraction fixture and a failed-tool trace. Explain why named tool selection is not strict schema enforcement and why strict shape is not factual grounding. A passing local test says nothing about live account permissions or a remote platform feature until that path is tested.

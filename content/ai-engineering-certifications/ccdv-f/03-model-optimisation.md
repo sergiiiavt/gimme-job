@@ -19,7 +19,7 @@ About 17% of CCDV-F: pick the right model, then make it cheaper and faster witho
 - Mark stable blocks with `cache_control`. The cache matches an exact prefix in the order **tools, system, messages**.
 - Put stable content first, such as tool definitions, the system prompt and reference documents. Put anything that varies, such as a timestamp, a user's name or the question, after the last breakpoint.
 - The default cache lifetime is 5 minutes, and cached reads cost a fraction of normal input tokens.
-- A near-zero hit rate almost always means something variable sits before the breakpoint.
+- For a low hit rate, check exact-prefix changes, the model-specific minimum cacheable length, expiry and cache scope. Variable prefixes are one possible cause.
 
 ## Message Batches
 
@@ -30,9 +30,9 @@ About 17% of CCDV-F: pick the right model, then make it cheaper and faster witho
 
 ## Tokens and latency
 
-- The **token-counting** endpoint estimates the input size and cost before you send, and checks that a request fits the context window.
+- The **token-counting** endpoint estimates input tokens; use the model window and output reserve to check fit. Pricing calculations need applicable model/cache/batch rates separately.
 - **Streaming** does not make the full answer faster, but the first words appear sooner, which is what users notice.
-- To make answers genuinely faster: a smaller model, a lower `max_tokens`, shorter requested outputs, fewer round trips, and independent calls run in parallel.
+- To make answers genuinely faster: a smaller model, shorter actual outputs, an appropriate `max_tokens` cap, fewer round trips, and independent calls run in parallel.
 - **Extended thinking** improves hard multi-step reasoning at the cost of tokens and time. Leave it off for classification and formatting.
 
 ## Choosing the lever
@@ -44,3 +44,7 @@ About 17% of CCDV-F: pick the right model, then make it cheaper and faster witho
 | Users complain the UI feels slow | Streaming, then a smaller model or shorter outputs |
 | Quality drops on rare, hard cases | Route only those cases to a bigger model |
 | Requests sometimes exceed the context window | Count tokens, trim or chunk the input |
+
+## Choose from measured constraints
+
+Assume two models meet the same extraction-quality bar. Model A costs 2 units per 100 records and B costs 6; route normal cases to A and evaluate escalation separately. If A fails the critical slice, its lower price is irrelevant. Cache a stable prefix only when supported minimum length, scope and TTL are satisfied; verify cache-read/write usage. A bulk job eligible for Batches still needs a deadline, per-item status and reconciliation by custom_id; do not assume result order matches submission order.

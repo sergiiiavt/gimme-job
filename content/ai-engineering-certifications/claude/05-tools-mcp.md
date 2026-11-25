@@ -8,7 +8,7 @@ The tool description is the model's main signal for when to use a tool. When an 
 
 ## Fewer tools per agent
 
-Selection accuracy drops as the menu grows. An agent with 18 tools does worse than subagents with four or five each, scoped to their role. Scoping also follows least privilege: a research subagent has no reason to hold a refund tool.
+Similar descriptions and overlapping tools can make selection harder. Compare actual routing errors on a representative set before and after scoping; there is no universal tool-count threshold. Scoping also follows least privilege: a research subagent has no reason to hold a refund tool.
 
 ## tool_choice
 
@@ -19,7 +19,7 @@ Selection accuracy drops as the menu grows. An agent with 18 tools does worse th
 | `{"type": "tool", "name": "…"}` | The model must call that exact tool |
 | `none` | The model may not call tools |
 
-Forcing a named tool is the way to guarantee a structured first step, such as `extract_fields`.
+A named `tool_choice` requests that tool under a supported configuration. It does not by itself guarantee schema-conforming arguments, successful execution or correct facts.
 
 ## Errors the agent can act on
 
@@ -41,4 +41,8 @@ Return failures as structured errors with `isError: true`, a category (transient
 
 ## Worked example
 
-An order service times out and the agent tells the customer they have no orders. The tool returned an empty list on failure. Return `isError: true` with a transient category and retry advice; the agent can then retry once and apologise honestly if it still fails.
+An order service times out and the agent tells the customer they have no orders. The tool returned an empty list on failure. Return `isError: true` with a transient category and retry advice; the runtime can then apply a bounded replay-safe retry or hand off with the unresolved failure.
+
+## Tool-error contract exercise
+
+Inject a timeout into history lookup after a successful failures list. Return isError=true and a safe reason category. Preserve the list as partial evidence; do not read structuredContent from the failed result or interpret missing history as zero failures. Retry only if replay-safe and within budget, otherwise hand off with attempted operation and unresolved evidence. The runnable stdio lab exercises this boundary; it is a scripted policy, not an SDK-backed model agent.

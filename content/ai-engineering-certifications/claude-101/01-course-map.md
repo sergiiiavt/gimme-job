@@ -7,8 +7,8 @@ Claude 101 is Anthropic's free starter course on **Claude Academy** (academy.cla
 - **Cost:** free.
 - **Account:** any Claude account, including Free. Sign in to save progress and earn the badge.
 - **Time:** about an hour or two, self-paced.
-- **Assessment:** the course quizzes. Pass all of them to earn the badge; retakes are unlimited.
-- **Badge:** comes with a PDF, a LinkedIn share button and a public verification link, and it does not expire.
+- **Assessment:** the course quizzes. Pass all of them to earn the badge; check current assessment/retake rules in the course.
+- **Badge:** is evidence of course completion; check the issued credential for its verification, sharing and validity details.
 - **Plan limits:** you can learn every feature from the lessons, but trying some of them needs a paid plan. Research needs Pro, Max, Team or Enterprise, and enterprise search needs Team or Enterprise.
 
 ## What the course covers
@@ -33,3 +33,7 @@ If you already use Claude every day, skim the study chapters and go straight to 
 ## The badge on a CV
 
 List Claude 101 under **Training** or **Courses**, not Certifications; keep that heading for proctored exams such as CTFL or CCAR-F. In an interview, the badge earns more weight when you can show what you set up with it, for example a project with your team's test strategy as knowledge and instructions that make Claude answer as a QA lead.
+
+## A practical completion goal
+
+Using synthetic facts F1=hybrid, F2=Kyiv, F3=salary unknown, produce a short job summary with source IDs. It must retain “hybrid”, not invent remote, and leave salary unknown. Keep the source and corrections. A badge records course completion; practical accuracy needs this additional evidence and does not confer a proctored certification.

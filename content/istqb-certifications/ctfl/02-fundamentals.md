@@ -42,3 +42,7 @@ A person makes an **error** (mistake), which introduces a **defect** (fault, bug
 CTFL v4.0 names two roles: the **test management role** (process, team, planning, monitoring) and the **testing role** (analysis, design, implementation, execution). One person can hold both. The **whole-team approach** makes quality everyone's responsibility, with testers working closely with business representatives and developers.
 
 **Independence** brings different cognitive biases and fresh eyes, but can isolate testers, create a bottleneck, and lead developers to lose a sense of responsibility for quality. Levels range from the author testing their own work to testers outside the organization.
+
+## Trace a defect to a test
+
+Requirement R1: members receive 10% below 100 and 20% at or above 100. A developer misreads “at or above” as “above” (human error), writes `subtotal > 100` (defect), and a member pays 90 instead of 80 on subtotal 100 (failure). Link R1 to a boundary test and the defect report. A passing test at 101 does not cover the failure at 100; removing this defect does not prove the entire checkout is correct.

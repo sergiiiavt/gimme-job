@@ -36,3 +36,7 @@ Use this after the chapters and the mock exam.
 - 60 minutes for 40 questions is 90 seconds each; calculation questions take longer, so move fast on K1 recall.
 - There is no negative marking: answer every question.
 - Read for qualifiers such as "most", "best" and "not" before looking at the options.
+
+## Explain before memorising
+
+For each missed question retain a requirement, a worked input/output example and the coverage denominator. Recalculate 3-value BVA for all integers 1–100 as -1,0,1,2,99,100,101,102. Then change the range to 1–1 and deduplicate overlapping neighbourhoods. Explain why test count alone is not a coverage criterion and why a passing mock does not prove readiness across all learning objectives.

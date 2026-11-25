@@ -1,0 +1,1 @@
+{"hooks":{"PreToolUse":[{"matcher":"Write|Edit","hooks":[{"type":"command","command":"python3 examples/certification-practice/hooks/block_fixture_write.py"}]}]}}

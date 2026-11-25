@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import { renderToStaticMarkup } from "react-dom/server";
 import { register } from "tsx/esm/api";
 import { createServer } from "vite";
@@ -16,6 +17,10 @@ const {
   scoreIstqbAiMockExam,
 } = await import("../app/istqb-ai-mock-exam-model.ts");
 const mockMarkdown = catalog.taxonomy.find((module) => module.id === "mock-exam")?.markdown ?? "";
+
+const ukMarkdown = await readFile(new URL("../content/istqb-certifications/ctfl/08-mock-exam.uk.md", import.meta.url), "utf8");
+const ukProps = { language: "uk", markdown: ukMarkdown };
+const ukExam = parseIstqbAiMockExam(ukMarkdown);
 
 const HOOKS_SPECIFIER = "virtual:istqb-ai-mock-exam-hooks";
 const HOOKS_ID = "\0istqb-ai-mock-exam-hooks";
@@ -90,11 +95,11 @@ function state(overrides = {}) {
   return values;
 }
 
-function build(overrides = {}) {
+function build(overrides = {}, props = {}) {
   globalThis.__mockExamStateCursor = 0;
   globalThis.__mockExamStateOverrides = state(overrides);
   globalThis.__mockExamStateWrites = [];
-  return IstqbAiMockExam({ markdown: mockMarkdown });
+  return IstqbAiMockExam({ markdown: mockMarkdown, ...props });
 }
 
 function textOf(node) {
@@ -268,4 +273,36 @@ test("retry clears the exam state and returns to the first question group", () =
     { index: 2, value: "" },
   ]);
   assert.equal(scrolledId, "questions-1-10");
+});
+
+
+
+test("Ukrainian assessment keeps canonical group anchors and localized progress and validation", () => {
+  assert.deepEqual(mockExamGroupHeadings(15, 10, "uk"), [
+    { id: "questions-1-10", text: "Запитання 1–10" },
+    { id: "questions-11-15", text: "Запитання 11–15" },
+  ]);
+  const tree = build({ 0: { 1: "A" } }, ukProps);
+  const html = renderToStaticMarkup(tree);
+  assert.match(html, /aria-label="Прогрес тесту"/);
+  assert.match(html, /1<\/strong> \/ 40 відповідей/);
+  assert.match(html, /id="questions-1-10"/);
+  assert.match(html, /Запитання 1–10/);
+  assert.doesNotMatch(html, /Навчальний бал|Неправильно · правильна відповідь:/);
+  findElements(tree, (element) => element.type === "button" && textOf(element) === "Перевірити")[0].props.onClick();
+  assert.equal(globalThis.__mockExamStateWrites.at(-1).value, "Дайте відповіді на всі 40 запитань. Залишилося: 39.");
+});
+
+test("Ukrainian assessment renders every score band, rationale and retry behavior", () => {
+  for (const [score, label] of [[40,"Упевнено"],[34,"Близько"],[30,"Залишилися суттєві прогалини"],[0,"Потрібна додаткова підготовка"]]) {
+    const tree = build({ 0: answerMap(ukExam, score), 1: true }, ukProps);
+    const html = renderToStaticMarkup(tree);
+    assert.match(html, /Навчальний бал/);
+    assert.ok(html.includes(label));
+    assert.match(html, /діагностична навчальна оцінка/);
+    assert.match(html, score === 40 ? /Правильно/ : /Неправильно · правильна відповідь:/);
+    assert.ok(html.includes(ukExam.questions[0].explanation));
+    findElements(tree, (element) => element.type === "button" && textOf(element) === "Повторити")[0].props.onClick();
+    assert.deepEqual(globalThis.__mockExamStateWrites, [{ index: 0, value: {} },{ index: 1, value: false },{ index: 2, value: "" }]);
+  }
 });

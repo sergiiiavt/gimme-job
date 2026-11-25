@@ -1,6 +1,6 @@
 # Data & architecture
 
-10–15% of GH-300. Know how a suggestion is built, filtered and shown, and why each stage exists.
+10–15% of GH-300. Use the sequence below as a conceptual model; verify the actual client/feature contract.
 
 ## The suggestion lifecycle
 
@@ -25,4 +25,8 @@ LLMs predict likely text; they do not verify it. Training data has a cutoff, sug
 
 ## Worked example
 
-A question lists four orderings of prompt, proxy, model and filters. The correct order is always: the client builds the prompt, the proxy screens it, the model responds, post-processing filters run, then the suggestion is shown.
+A question lists four orderings of prompt, proxy, model and filters. In the simplified architecture assumed by that question, the sequence is: the client builds the prompt, the proxy screens it, the model responds, post-processing filters run, then the suggestion is shown.
+
+## A conceptual context flow
+
+Task → available authorized context → model request → suggested change → human/application verification is a conceptual model, not a promise that every Copilot surface uses the same pipeline or filter order. Record which client/feature and policy you actually used. Exclusion, retention and training commitments depend on plan, setting and feature; verify current documentation and do not infer guarantees from the diagram.

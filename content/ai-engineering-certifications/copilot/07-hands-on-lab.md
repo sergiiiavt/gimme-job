@@ -25,3 +25,16 @@ Open a draft pull request and request Copilot code review; check that it applies
 ## Step 6: Safeguards
 
 In a test organization, or by reading the settings pages, find the content exclusion settings, the public-code filter, the feature policies and the audit log entries for Copilot. Note which ones your own plan exposes.
+
+## Executable baseline and independent oracle
+
+Use the [offline practice package](https://github.com/sergiiiavt/gimme-job/tree/main/examples/certification-practice). Requires Python 3.10+, no model or API key. Run `python examples/certification-practice/practice.py copilot`: every reference case should pass. Copy `starter.py` to a scratch file; `--candidate your_solution.py` should fail until you implement the required functions. Retain fixture IDs, expected/actual outputs and the command exit status.
+
+| Stage | Task | Check |
+| --- | --- | --- |
+| Derive | Read requirements before the reference code | Explain the expected outputs independently |
+| Implement | Fill only your track’s starter functions | All selected cases pass; the unfinished starter fails |
+| Challenge | Introduce an incorrect boundary, source claim or error state | At least one relevant oracle rejects it |
+| Review | Explain a plausible mistake and missing production controls | Record limits, not just a green status |
+
+Derive the four discount rules before generating tests. Use review-discount.prompt.md, catch the >100 mutation at true/100 and reject an unsupported F1 claim. Validate suggested code independently. Optional live-tool practice requires authorized access and a usage budget; production writes are outside this sandbox.

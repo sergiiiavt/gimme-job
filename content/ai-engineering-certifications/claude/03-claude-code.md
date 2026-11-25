@@ -37,3 +37,7 @@ Use **plan mode** for large, ambiguous or multi-file changes and for architectur
 ## Worked example
 
 A GitHub Actions review step times out every run. Raising the timeout or using a bigger runner treats the symptom. The cause is interactive mode: switch to `claude -p` with JSON output.
+
+## Minimal repository workflow
+
+In a scratch copy, inspect the discount requirement and existing tests first. Add the missing subtotal-100 case before changing > to >=. Run the focused tests, inspect the diff and run the repository’s required checks. A reviewer needs the exact requirement and diff; a separate context reduces anchoring but cannot guarantee independence. A CLAUDE.md instruction guides the agent; permission policy and backend authorization enforce operations. Never store credentials in shared rules or MCP configuration.

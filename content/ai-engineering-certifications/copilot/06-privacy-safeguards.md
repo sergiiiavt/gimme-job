@@ -37,3 +37,7 @@ Copilot can be enabled or disabled per language and per workspace in the editor.
 ## Worked example
 
 Legal worries about licence exposure. The direct control is blocking suggestions matching public code at organization level; where matches are allowed, code referencing shows the licence. Turning off Chat or excluding every repository does not address the risk.
+
+## Exclusion verification matrix
+
+Record plan, client/version, feature, configured path and observed behavior. Check both direct content and indirect semantic context using synthetic data. Current documentation limits which surfaces respect exclusions; third-party extensions, MCP and filesystem reads need their own controls. An exclusion is not file encryption or universal denial of every tool. Recheck after client/policy changes without testing real secrets.

@@ -53,3 +53,7 @@ Metrics cover progress, defects, risk, coverage and cost. **Progress reports** g
 ## Defect reports
 
 A defect report typically contains: a unique identifier, title and summary, date, author, test object and environment, context, description with steps to reproduce, expected and actual results, severity, priority, status, and references such as the test case. Its objectives: give enough information to resolve the defect, track quality, and suggest process improvements.
+
+## Estimate, prioritise and report
+
+For optimistic 2, most likely 4 and pessimistic 12 hours, three-point estimate = (2 + 4×4 + 12)/6 = 5 hours. This is an estimate with assumptions, not a deadline promise. A prerequisite setup test may run before a higher-risk dependent test. Prioritise the next executable test by risk and additional coverage; 100% statement coverage alone is not a release criterion. A useful defect report includes R1, build, role, subtotal=100, exact steps, expected 20%, actual 10%, evidence and severity rationale. Retesting and risk acceptance need owners.

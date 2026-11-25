@@ -47,3 +47,7 @@ The course has you write the loop by hand first, so you understand it. Then you 
 4. Claude answers with the summary, and stop_reason is end_turn.
 
 If search_vacancies times out, return is_error with "timeout, retry later" rather than an empty list. An empty list looks like a true "no vacancies" answer.
+
+## Execute the result contract
+
+A tool-use block has a call ID; the application validates arguments/authorization, invokes the tool and returns its result with the matching tool_use_id. Preserve multiple calls and results rather than assuming the first block is text. A failed tool must not become empty success. The offline `trace_outcome` and `check_extraction` cases check the relevant decisions; the stdio lab shows a scripted complete loop.

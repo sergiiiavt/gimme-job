@@ -40,3 +40,7 @@ The second section of Claude 101 covers organizing your work and knowledge. Expe
 | Claude to read from or act in another app | Connector | Connectors give access to external services and data |
 
 Skills and connectors work together: a connector gives Claude access to a tool, and a skill teaches it how to use that tool well.
+
+## Choose the smallest feature
+
+Reusable bug-report steps belong in a skill; stable product references can live in project knowledge; an editable readiness table can be an artifact; retrieving a private ticket needs an authorized connector. A skill does not create service permissions. Check actual artifact access before sharing; membership in a project is not a universal rule for every derived object. Retrieval makes selected knowledge available without promising every file appears verbatim in every turn.

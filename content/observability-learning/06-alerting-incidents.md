@@ -107,15 +107,17 @@ The disk-full incident on this site's server, introduced in [Observability for Q
 | Section | Content |
 |---|---|
 | Summary | The server's disk reached 100%. Deployments of the AI service failed, the database playground's MongoDB was down, and several containers reported failing health checks. |
-| Impact | MongoDB in the database playground unavailable for about eight days; AI service deployments failing for two days, while the previous version kept serving. |
+| Impact | MongoDB in the database playground unavailable for about eight days; matching AI deployment upload failures observed on 14, 19 and 21 November, while the previous version kept serving. |
 | Detection | Found by a person after an unrelated deployment failed, not by an alert: a monitoring failure. |
-| Timeline | June: untagged images start accumulating with every deployment. 13 November: the MongoDB container crashes. 19 November: the first AI deployment fails with an unclear upload error. 21 November: read-only diagnosis finds the disk at 100%; untagged images and build cache removed, the container restarted, every container healthy again. |
+| Timeline | June: untagged images start accumulating with every deployment. 13 November: the MongoDB container crashes. 14 November: the earliest matching upload failure in the reviewed workflow history; matching failures recur on 19 and 21 November. 21 November: read-only diagnosis finds the disk at 100%; untagged images and build cache removed, the container restarted, every container healthy again. |
 | Root cause | Each deployment pulled a new image and nothing removed the previous one. |
 | Contributing causes | No alert on disk saturation; no external check of the playground; the deployment failure message did not mention disk space; a script bug meant the cleanup step after deployment never ran. |
 | What went well | Diagnosis started read-only; cleanup removed only unused images; the fix was verified by the next deployment. |
 | Action items | Done: remove replaced images on every deployment and fail early with a clear message when free space is low; fix the script so post-deployment steps run. Open: a disk-usage alert, an external check of the playground, log rotation for containers. |
 
-The QA questions have clear answers here. A black-box test of the playground running every few minutes would have detected the outage on the first day, and a saturation alert would have raised the problem weeks earlier.
+The QA questions have clear answers here. A black-box test of the playground running every few minutes would have detected the outage on the first day, and a saturation alert could have warned earlier, depending on its threshold and the disk-growth trend. Without retained metrics, an exact warning date cannot be established.
+
+Evidence: [14 November workflow](https://github.com/sergiiiavt/gimme-job/actions/runs/43585173844). Matching symptoms do not establish one uninterrupted outage or an identical cause. Alert timing is a counterfactual, not an observed measurement.
 
 ## Common mistakes
 

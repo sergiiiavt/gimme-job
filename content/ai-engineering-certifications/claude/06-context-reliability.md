@@ -4,7 +4,7 @@
 
 ## Summaries lose numbers
 
-Progressive summarisation keeps the gist and drops specifics: order numbers, amounts, dates. Keep those in a pinned **case-facts** block that is sent verbatim with every request and is never summarised. A larger context window only postpones the problem.
+Progressive summarisation keeps the gist and drops specifics: order numbers, amounts, dates. Keep those in a pinned **case-facts** block that is sent verbatim with every request with provenance, a budget and revalidation when the underlying case changes. A larger context window only postpones the problem.
 
 ## Trim tool output
 
@@ -12,7 +12,7 @@ An order lookup that returns 40 fields should reach the context as the five the 
 
 ## Lost in the middle
 
-Models attend best to the start and end of long inputs. Put a summary of key findings first, use clear section headers, and do not bury the one critical fact in the middle of a long document.
+Some long-context evaluations show position sensitivity; measure it on your own tasks. Put a summary of key findings first, use clear section headers, and do not bury the one critical fact in the middle of a long document.
 
 ## Errors travel with context
 
@@ -36,3 +36,7 @@ Keep claim-to-source links all the way to the final report. When two credible so
 ## Worked example
 
 A long support chat summarises older turns and the agent asks for the order number again. The fix is not a longer summary: pin order ID, amount and dates in a case-facts block that every request carries.
+
+## Source conflict and sampling
+
+For order O7, retain amount 100 and date/source version in a structured facts record. If a later authoritative revision changes the amount, revalidate rather than pin stale text forever. When one source says remote and another hybrid, check scope/dates; if unresolved, report the conflict. Sample both high- and low-confidence outputs by segment. A model’s self-reported confidence is not a calibrated probability or proof of correctness.

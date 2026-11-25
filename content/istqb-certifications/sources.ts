@@ -1,8 +1,28 @@
 import type { CertificationSource } from "../ai-engineering-certifications/sources";
 
-const checkedAt = "2026-11-24";
+const checkedAt = "2026-11-25";
 
 export const ctflCertificationSources: CertificationSource[] = [
+
+  {
+    id: "istqb-ctfl-syllabus-v401",
+    title: "CTFL Syllabus v4.0.1",
+    url: "https://istqb.org/wp-content/uploads/2024/11/ISTQB_CTFL_Syllabus_v4.0.1.pdf",
+    publisher: "ISTQB",
+    kind: "official-syllabus",
+    role: "Primary learning objectives, K levels, definitions and applied technique requirements for this track.",
+    checkedAt,
+  },
+  {
+    id: "istqb-bva-clarification",
+    title: "ISTQB Boundary Value Analysis clarification",
+    url: "https://istqb.org/wp-content/uploads/2025/10/Boundary-Value-Analysis-white-paper.pdf",
+    publisher: "ISTQB",
+    kind: "official-clarification",
+    role: "Clarifies both partition boundaries at a shared border and the required 3-value neighbours.",
+    checkedAt,
+  },
+
   {
     id: "istqb-ctfl-page",
     title: "Certified Tester Foundation Level (CTFL) v4.0",
@@ -24,6 +44,15 @@ export const ctflCertificationSources: CertificationSource[] = [
 ];
 
 export const ctGenAiCertificationSources: CertificationSource[] = [
+  {
+    id: "owasp-prompt-injection",
+    title: "OWASP LLM01: Prompt Injection",
+    url: "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
+    publisher: "OWASP",
+    kind: "primary-security-guidance",
+    role: "Direct and indirect prompt injection, attack boundaries and mitigation limitations.",
+    checkedAt,
+  },
   {
     id: "isqi-ct-genai",
     title: "ISTQB Certified Tester – Testing with Generative AI (CT-GenAI)",

@@ -35,10 +35,12 @@ const expectedMockQuestions: Record<string, number> = {
   "github-copilot-gh-300": 30,
 };
 
-const mockExam = (catalog: Catalog) => {
+const mockExam = (catalog: Catalog, language: "en" | "uk" = "en") => {
   const mockChapter = catalog.taxonomy.find((chapter) => isMockExamModuleId(chapter.id));
   assert.ok(mockChapter, `${catalog.trackId} has a mock exam`);
-  return { mockChapter, exam: parseIstqbAiMockExam(mockChapter.markdown) };
+  const markdown = language === "uk" ? mockChapter.markdownUk : mockChapter.markdown;
+  assert.ok(markdown);
+  return { mockChapter, exam: parseIstqbAiMockExam(markdown) };
 };
 
 test("certification tracks have unique ids and resolvable sources", () => {
@@ -96,14 +98,24 @@ test("certification mock exams parse completely with the shared mock exam model"
   }
 });
 
-test("certification mock exam answers cannot be guessed by position or option length", () => {
+for (const language of ["en", "uk"] as const) {
+test(`certification ${language} answers avoid dominant letters, short cycles and obvious length cues`, () => {
   for (const catalog of certificationTracks) {
-    const { exam } = mockExam(catalog);
+    const { exam } = mockExam(catalog, language);
     const total = exam.questions.length;
 
     for (const key of ["A", "B", "C", "D"]) {
       const share = exam.questions.filter((question) => question.correctAnswer === key).length / total;
       assert.ok(share >= 0.15 && share <= 0.35, `${catalog.trackId} answer ${key} share ${share.toFixed(2)} is balanced`);
+    }
+
+    for (let period = 1; period <= 4; period += 1) {
+      let hits = 0;
+      for (let offset = 0; offset < period; offset += 1) {
+        const bucket = exam.questions.filter((_, index) => index % period === offset);
+        hits += Math.max(...["A", "B", "C", "D"].map((key) => bucket.filter((item) => item.correctAnswer === key).length));
+      }
+      assert.ok(hits / total <= (total < 20 ? 0.6 : 0.5), `${catalog.trackId}/${language}: period-${period} key fits ${hits}/${total}`);
     }
 
     const correctIsStrictlyLongest = exam.questions.filter((question) => {
@@ -114,6 +126,8 @@ test("certification mock exam answers cannot be guessed by position or option le
     assert.ok(correctIsStrictlyLongest / total < 0.5, `${catalog.trackId} correct answer is the longest option in ${correctIsStrictlyLongest} of ${total}`);
   }
 });
+
+}
 
 test("each Claude exam and course badge has its own self-contained track", () => {
   const byId = new Map(certificationTracks.map((catalog) => [catalog.trackId, catalog]));
@@ -136,4 +150,41 @@ test("each Claude exam and course badge has its own self-contained track", () =>
   for (const trackId of ["claude-101", "claude-code-101", "claude-platform-101", "claude-architect", "claude-developer"]) {
     assert.ok(byId.get(trackId)?.taxonomy.some((chapter) => isMockExamModuleId(chapter.id)), `${trackId} has practice questions`);
   }
+});
+
+
+test("all 65 certification translations preserve sections, executable examples and all 225 answers", () => {
+  let chapters = 0;
+  let questions = 0;
+  for (const catalog of certificationTracks) {
+    for (const chapter of catalog.taxonomy) {
+      const label = `${catalog.trackId}/${chapter.id}`;
+      assert.ok(chapter.markdownUk && chapter.labelUk && chapter.navLabelUk && chapter.levelUk && chapter.descriptionUk, label);
+      assert.equal((chapter.markdownUk.match(/^## /gm) ?? []).length, (chapter.markdown.match(/^## /gm) ?? []).length, `${label} section order`);
+      const blocks = (markdown: string) => [...markdown.matchAll(/^```[^\n]*\n[\s\S]*?^```/gm)].map((match) => match[0]);
+      assert.deepEqual(blocks(chapter.markdownUk), blocks(chapter.markdown), `${label} runnable code parity`);
+      chapters += 1;
+    }
+    const english = mockExam(catalog).exam;
+    const ukrainian = mockExam(catalog, "uk").exam;
+    assert.equal(ukrainian.questions.length, expectedMockQuestions[catalog.trackId]);
+    assert.deepEqual(ukrainian.questions.map((q) => [q.number, q.correctAnswer]), english.questions.map((q) => [q.number, q.correctAnswer]));
+    for (const q of ukrainian.questions) {
+      assert.deepEqual(q.options.map((option) => option.key), ["A", "B", "C", "D"]);
+      assert.ok(q.explanation && q.explanation.length > 20);
+    }
+    questions += ukrainian.questions.length;
+  }
+  assert.equal(chapters, 65);
+  assert.equal(questions, 225);
+});
+
+test("CTFL boundary question matches the all-integer shared-border model", () => {
+  const catalog = certificationTracks.find((item) => item.trackId === "ctfl-v4");
+  assert.ok(catalog);
+  const q = mockExam(catalog).exam.questions.find((item) => item.number === 29);
+  assert.ok(q);
+  assert.match(q.prompt, /domain is all integers/);
+  assert.equal(q.options.find((option) => option.key === q.correctAnswer)?.text, "8");
+  assert.match(q.explanation ?? "", /-1,0,1,2,99,100,101,102/);
 });

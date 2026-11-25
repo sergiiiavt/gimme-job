@@ -7,8 +7,8 @@ Claude Code 101 is Anthropic's free course on **Claude Academy** (academy.claude
 - **Cost:** free.
 - **You need:** basic familiarity with a code editor and the command line, and either a Claude Pro, Max or Enterprise account or an API key. Claude Code is not part of the Free plan.
 - **Time:** about two hours, self-paced.
-- **Assessment:** the course quiz. Passing earns the badge, and retakes are unlimited.
-- **Badge:** comes with a PDF, a LinkedIn share button and a public verification link, and it does not expire.
+- **Assessment:** the course quiz. Passing earns the badge, and check current assessment/retake rules in the course.
+- **Badge:** is evidence of course completion; check the issued credential for its verification, sharing and validity details.
 
 ## What the course covers
 
@@ -36,3 +36,7 @@ Claude Code 101 is Anthropic's free course on **Claude Academy** (academy.claude
 3. Take the 15-question practice quiz and aim for 13 or more.
 4. Take Claude Code 101 on Claude Academy and pass its quiz.
 5. List the badge under Training on your CV, and keep the lab's CLAUDE.md, subagent and hook to show in interviews.
+
+## Prerequisites and evidence
+
+The offline exercises require Python and Git only. Optional live work needs a supported Claude Code account/API configuration and a usage budget; do not assume one exhaustive plan list remains current. Demonstrate a focused edit, a deliberately failing independent test, its repair, and the final diff. Use a disposable sandbox, not production configuration.

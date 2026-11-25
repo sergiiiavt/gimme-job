@@ -6,16 +6,16 @@ Chapter 4 carries the most exam weight and most K3 questions. Work every example
 
 Divide data into partitions that the test object is expected to process the same way, including invalid partitions. **Coverage:** partitions exercised divided by total partitions. With several independent parameters, **each choice coverage** requires every partition of every parameter to be exercised at least once.
 
-Example: an age field accepts 18 to 65. Partitions: below 18 (invalid), 18–65 (valid), above 65 (invalid). Three test values give 100% EP coverage.
+Example: an integer age field accepts 18 to 65 inclusive; the input domain is all integers. Partitions: below 18 (invalid), 18–65 (valid), above 65 (invalid). Three test values give 100% EP coverage.
 
 ## Boundary value analysis (BVA)
 
 Applies to ordered partitions. Boundaries are the minimum and maximum of each partition.
 
 - **2-value BVA:** each boundary and its closest neighbour in the adjacent partition. For 18–65: 17, 18, 65, 66.
-- **3-value BVA:** each boundary and both neighbours. For 18–65: 17, 18, 19, 64, 65, 66.
+- **3-value BVA:** each boundary and both neighbours. For the all-integer domain and valid interval 18–65: 16, 17, 18, 19, 64, 65, 66, 67. Both borders have two adjacent partition boundaries: 17/18 and 65/66. Cover each boundary and both neighbours, then deduplicate. A narrower model that considers only the valid interval endpoints produces six values; it does not cover all partition boundaries defined here.
 
-Coverage is boundary values exercised divided by boundary values identified.
+For 2-value BVA, count covered boundary values; for 3-value BVA, include the required neighbours in the identified coverage items. The [ISTQB clarification](https://istqb.org/wp-content/uploads/2025/10/Boundary-Value-Analysis-white-paper.pdf) explains the shared-border interpretation.
 
 ## Decision table testing
 
@@ -34,7 +34,7 @@ A state diagram or table shows states, events and transitions, with optional gua
 - **Statement coverage:** executed statements divided by all executable statements.
 - **Branch coverage:** exercised branches divided by all branches, including both outcomes of every decision.
 - 100% branch coverage implies 100% statement coverage, but not the other way round.
-- White-box techniques can find defects even where the specification is vague, but cannot find missing functionality.
+- White-box techniques can find defects even where the specification is vague, but coverage alone cannot establish that missing functionality exists. Compare the implementation with requirements as well.
 
 ## Experience-based techniques
 
@@ -51,3 +51,16 @@ A state diagram or table shows states, events and transitions, with optional gua
 ## Worked calculation
 
 A program has 10 statements and 4 branches (two decisions). One test executes 8 statements and 2 branches. Statement coverage is 80%; branch coverage is 50%. Adding a test that takes the other outcome of both decisions and executes the 2 remaining statements brings both to 100%.
+
+## Worked decision table and state model
+
+For subtotal >=100 and membership, use four feasible rules:
+
+| Member | Subtotal >=100 | Discount |
+| --- | --- | --- |
+| No | No | 0% |
+| No | Yes | 5% |
+| Yes | No | 10% |
+| Yes | Yes | 20% |
+
+Three covered rules give 75% rule coverage, even if they execute every statement. State table: draft + submit → submitted; submitted + approve → approved; submitted + reject → draft; approved + archive → archived. Sequence submit/reject/submit/approve/archive covers all four valid transitions. It does not test the invalid transition archived + approve. Attempt invalid events independently so one rejection does not mask another. See `boundary_values`, `discount_percent` and `transition` in the offline lab.

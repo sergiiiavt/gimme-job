@@ -36,3 +36,7 @@ Chat uses earlier turns as context, so start a new chat when the topic changes. 
 ## Worked example
 
 Copilot-generated tests all pass and a known date-parsing bug still ships. The tests asserted what the code did, not what the spec required. Prompt: "List edge cases for this parser from the specification, then write one test per case with the expected output from the spec."
+
+## Measure total task effort
+
+Prompt with R1, the four-rule table and required 99/100 cases. Ask for minimal code plus an explanation of edge cases. Compare time for setup, generation, review and correction against your normal workflow; saved keystrokes alone do not establish productivity. One demonstration is one-shot; several examples are few-shot. Neither technique guarantees that unshown cases are correct.
