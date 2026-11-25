@@ -1,6 +1,6 @@
 # Applications & integration
 
-A third of CCDV-F: how a request is built, how responses arrive, why they stop, and how to handle failures. Expect scenarios in which a working prototype breaks in production.
+Under the guide effective through 6 December 2026, about a third of CCDV-F; from 7 December use the revised weights in the exam map. This chapter covers how a request is built, how responses arrive, why they stop, and how to handle failures. Expect scenarios in which a working prototype breaks in production.
 
 ## Request shape
 

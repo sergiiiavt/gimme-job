@@ -1,6 +1,6 @@
 # Model selection & optimisation
 
-About 17% of CCDV-F: pick the right model, then make it cheaper and faster without losing quality. Most questions give you a cost, latency or volume constraint and ask for the best lever.
+Under the guide effective through 6 December 2026, about 17%; from 7 December, 12%. The task remains: pick the right model, then make it cheaper and faster without losing quality. Most questions give you a cost, latency or volume constraint and ask for the best lever.
 
 ## Model tiers
 

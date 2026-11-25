@@ -230,4 +230,4 @@ This mock uses one question = one mark. GH-300 reports a scaled score out of 1,0
 - **21–23:** material gaps remain; redo the Copilot lab in the gimme-job repository.
 - **Below 21:** return to the chapter sequence before doing more mocks.
 
-Privacy, exclusion and safeguard questions carry more weight than their count suggests: they are the ones candidates most often miss.
+Recheck current privacy and safeguard support on the client and plan you use. This practice set does not establish candidates' official error rates.

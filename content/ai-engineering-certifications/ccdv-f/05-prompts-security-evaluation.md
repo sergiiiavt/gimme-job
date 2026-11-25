@@ -1,6 +1,6 @@
 # Prompts, security, Claude Code & evaluation
 
-The remaining quarter of CCDV-F: prompt and context engineering (11%), security and safety (8.1%), Claude Code (3.1%), and evaluation, testing and debugging (2.6%).
+Under the guide effective through 6 December 2026, the remaining quarter: prompt and context engineering (11%), security and safety (8.1%), Claude Code (3.1%), and evaluation, testing and debugging (2.6%).
 
 ## Prompt engineering
 

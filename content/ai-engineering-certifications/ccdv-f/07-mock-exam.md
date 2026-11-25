@@ -230,4 +230,4 @@ This mock uses one question = one mark. The real exam reports a scaled score fro
 - **21–23:** material gaps remain; do the hands-on labs for your weakest domain.
 - **Below 21:** return to the chapter sequence before doing more mocks.
 
-Applications and integration questions carry the most weight: a third of the real exam.
+Applications/integration is 33.1% through 6 December 2026 and 20% from 7 December. Use the exam map’s effective-date table; this original set is not an exact official blueprint.
