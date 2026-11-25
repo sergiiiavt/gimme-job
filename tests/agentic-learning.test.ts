@@ -25,7 +25,7 @@ type Topic = (typeof agenticCatalog.topics)[number];
 
 const publishedIds = [
   "how-agents-work", "tool-design", "model-context-protocol", "state-memory-rag",
-  "human-approval", "coding-agents-for-qa", "agent-observability", "agent-projects-lab",
+  "human-approval", "coding-agents-for-qa", "agent-observability", "agent-projects-lab", "agent-harnesses",
 ];
 const published = agenticCatalog.topics.filter((topic: Topic) => topic.status === "published");
 
