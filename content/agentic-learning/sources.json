@@ -358,5 +358,86 @@
     "url": "https://huggingface.co/learn/agents-course",
     "role": "Free course from agent basics through smolagents, LlamaIndex and LangGraph to a benchmark agent as the final assignment; finishing it earns a free certificate.",
     "checkedAt": "2026-11-24"
+  },
+  {
+    "id": "hashimoto-ai-adoption",
+    "title": "My AI Adoption Journey",
+    "publisher": "Mitchell Hashimoto",
+    "kind": "article",
+    "url": "https://mitchellh.com/writing/my-ai-adoption-journey",
+    "role": "Step 5, \"Engineer the Harness\": every agent mistake becomes an AGENTS.md line or a programmed tool so it is not repeated.",
+    "checkedAt": "2026-11-25"
+  },
+  {
+    "id": "openai-harness-engineering",
+    "title": "Harness engineering: leveraging Codex in an agent-first world",
+    "publisher": "OpenAI",
+    "kind": "article",
+    "url": "https://openai.com/index/harness-engineering/",
+    "role": "A million-line product built only by Codex agents: AGENTS.md as a short map, the repository as system of record, per-worktree observability, custom linters with remediation messages and continuous clean-up.",
+    "checkedAt": "2026-11-25"
+  },
+  {
+    "id": "fowler-harness-engineering",
+    "title": "Harness engineering for coding agent users",
+    "publisher": "Birgitta Böckeler, martinfowler.com",
+    "kind": "article",
+    "url": "https://martinfowler.com/articles/harness-engineering.html",
+    "role": "Builder and user harness, guides and sensors, computational and inferential controls, keeping quality left, harnessability and open problems.",
+    "checkedAt": "2026-11-25"
+  },
+  {
+    "id": "langchain-harness-anatomy",
+    "title": "The Anatomy of an Agent Harness",
+    "publisher": "LangChain",
+    "kind": "article",
+    "url": "https://www.langchain.com/blog/the-anatomy-of-an-agent-harness",
+    "role": "Agent = Model + Harness, harness components derived from desired behaviours, and model–harness co-training and its overfitting.",
+    "checkedAt": "2026-11-25"
+  },
+  {
+    "id": "langchain-deep-agents-harness",
+    "title": "Improving Deep Agents with harness engineering",
+    "publisher": "LangChain",
+    "kind": "article",
+    "url": "https://www.langchain.com/blog/improving-deep-agents-with-harness-engineering",
+    "role": "Harness-only changes on Terminal Bench 2.0 with a fixed model (52.8% to 66.5%): verification before finishing, loop detection, time budgets and reasoning settings.",
+    "checkedAt": "2026-11-25"
+  },
+  {
+    "id": "anthropic-long-running-harness",
+    "title": "Effective harnesses for long-running agents",
+    "publisher": "Anthropic",
+    "kind": "article",
+    "url": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+    "role": "Initializer and coding sessions, a JSON feature list with pass flags, progress files, git and end-to-end checks for work that spans many context windows.",
+    "checkedAt": "2026-11-25"
+  },
+  {
+    "id": "anthropic-harness-design-apps",
+    "title": "Harness design for long-running application development",
+    "publisher": "Anthropic",
+    "kind": "article",
+    "url": "https://www.anthropic.com/engineering/harness-design-long-running-apps",
+    "role": "Planner, generator and separate evaluator agents; lenient self-evaluation; cost of the full harness; removing components as models improve.",
+    "checkedAt": "2026-11-25"
+  },
+  {
+    "id": "claude-harness-patterns",
+    "title": "Harnessing Claude's intelligence: 3 patterns for agent harness design",
+    "publisher": "Anthropic — Claude blog",
+    "kind": "article",
+    "url": "https://claude.com/resources/articles/harnessing-claudes-intelligence",
+    "role": "Harnesses encode assumptions about what the model cannot do; lean on general tools, strip outdated scaffolding and set boundaries for cost, UX and security.",
+    "checkedAt": "2026-11-25"
+  },
+  {
+    "id": "claude-code-hooks",
+    "title": "Hooks reference",
+    "publisher": "Anthropic — Claude Code docs",
+    "kind": "official-docs",
+    "url": "https://code.claude.com/docs/en/hooks",
+    "role": "Hook events, configuration and exit codes: feedback after a tool call and blocking the agent from stopping.",
+    "checkedAt": "2026-11-25"
   }
 ]

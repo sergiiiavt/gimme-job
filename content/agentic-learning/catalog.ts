@@ -15,6 +15,8 @@ import agentObservability from "./07-agent-observability.md?raw";
 import agentObservabilityUk from "./07-agent-observability.uk.md?raw";
 import agentProjectsLab from "./08-agent-projects-lab.md?raw";
 import agentProjectsLabUk from "./08-agent-projects-lab.uk.md?raw";
+import agentHarnesses from "./09-agent-harnesses.md?raw";
+import agentHarnessesUk from "./09-agent-harnesses.uk.md?raw";
 
 export type AgenticTopicStatus = "published" | "under-construction";
 
@@ -107,6 +109,13 @@ const topics: AgenticTopic[] = [
     description: "Choosing narrow agent projects for QA, a definition of done, and a runnable lab: an MCP server, client and triage agent on the 2026-07-28 revision of the protocol.",
     descriptionUk: "Як обрати вузький агентний проєкт для QA, визначення «готово» і практична лабораторна: MCP-сервер, клієнт і агент для розбору збоїв за ревізією протоколу 2026-07-28.",
   }, agentProjectsLab, agentProjectsLabUk, ["mcp-discover", "mcp-stdio", "mcp-versioning", "mcp-tools", "mcp-inspector", "anthropic-building-agents", "anthropic-writing-tools", "huggingface-agents-course"]),
+  chapter({
+    id: "agent-harnesses",
+    label: "Agent harnesses and harness engineering",
+    labelUk: "Harness агентів і harness engineering",
+    description: "Agent = model + harness, builder and user harnesses, guides and sensors, turning each agent mistake into a harness change, hooks and gates, harnesses for long-running work, legible codebases, testing the harness and removing scaffolding as models improve.",
+    descriptionUk: "Агент = модель + harness, harness виробника й користувача, напрямні й сенсори, як кожна помилка агента стає зміною harness, hooks і бар'єри, harness для довгих задач, зрозумілі агенту кодові бази, тестування harness і прибирання риштування з кращими моделями.",
+  }, agentHarnesses, agentHarnessesUk, ["fowler-harness-engineering", "hashimoto-ai-adoption", "openai-harness-engineering", "langchain-harness-anatomy", "langchain-deep-agents-harness", "anthropic-long-running-harness", "anthropic-harness-design-apps", "claude-harness-patterns", "claude-code-hooks", "agents-md", "anthropic-building-agents"]),
 ];
 
 export const agenticCatalog = {
