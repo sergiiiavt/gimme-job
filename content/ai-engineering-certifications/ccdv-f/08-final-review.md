@@ -1,4 +1,4 @@
-# Final review & exam-day checklist
+# Final review
 
 ## The meta-rule
 
@@ -25,16 +25,3 @@ When an option makes the system **deterministic, measurable or scoped**, it usua
 4. "Batch it" for work a person is waiting on.
 5. "Look at the overall average" when one segment is failing.
 6. "Build an agent" when routing or a chain is enough.
-
-## Readiness checklist
-
-- [ ] The four domain chapters read, and the Claude Platform 101 badge earned or its chapters read
-- [ ] At least two hands-on labs done, with the code kept
-- [ ] 27 or more on the 30-question mock, and every wrong answer explained
-- [ ] The official candidate guide rechecked for the 7 December 2026 update
-- [ ] Partner eligibility confirmed with a partner email on your company domain
-- [ ] OnVUE system check passed, or a test center booked
-
-## Explain the failure before changing settings
-
-Differentiate output truncation from transport timeout: use stop_reason and stream completion. Differentiate model token usage from a priced bill. Differentiate a valid source ID from source support. For each missed question create one counterexample, expected decision and check. Repeat affected slices after a model, prompt, schema or platform change.

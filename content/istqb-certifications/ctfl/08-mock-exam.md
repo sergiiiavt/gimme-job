@@ -1,6 +1,6 @@
 # 40-question original mock exam
 
-Set a 60-minute timer (75 minutes if English is not your native language) and answer all 40 before opening the key. These are original practice questions written for this learning path from the CTFL v4.0 syllabus. They are not ISTQB sample questions; take the official sample exams A to D as the authoritative examples. Like the real exam, this mock leans on chapters 4 and 5.
+These are original practice questions written for this learning path from the CTFL v4.0 syllabus. They are not ISTQB sample questions. Like the real exam, this mock leans on chapters 4 and 5.
 
 ## Questions 1–10
 
@@ -295,11 +295,4 @@ D. Collaboration tools for team communication
 
 ## Score interpretation
 
-This mock uses one question = one mark, like the real CTFL exam, where 26 of 40 passes. Treat it as a diagnostic:
-
-- **36–40:** strong; take the official sample exams A to D under time pressure.
-- **32–35:** close; revisit the chapters behind your wrong answers.
-- **28–31:** material gaps remain; redo the chapter 4 calculations by hand.
-- **Below 28:** return to the chapter sequence before doing more mocks.
-
-For every wrong answer, write down which syllabus term or distinction would have resolved it.
+One correct answer earns one practice mark. The result is diagnostic, not an official exam score or a readiness threshold.

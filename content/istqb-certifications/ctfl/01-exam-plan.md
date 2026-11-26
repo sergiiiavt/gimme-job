@@ -1,8 +1,8 @@
-# Exam map & study plan
+# Exam map
 
 This track prepares you for **ISTQB Certified Tester Foundation Level (CTFL) v4.0**, the entry certificate of the ISTQB scheme and a prerequisite for CT-AI and CT-GenAI; check each specialist qualification separately. The current technical baseline is the v4.0.1 errata release of the April 2023 syllabus.
 
-## Exam facts to memorise
+## Exam facts
 
 - **Questions:** 40 multiple-choice questions, one point each.
 - **Pass mark:** 26 of 40 points (65%).
@@ -19,7 +19,7 @@ Every question maps to a learning objective with a cognitive level:
 - **K2 Understand:** explain, compare, classify.
 - **K3 Apply:** use a technique on a scenario, such as deriving boundary values or a three-point estimate.
 
-K3 objectives sit mostly in chapter 4 (test techniques) and chapter 5 (estimation, prioritisation, defect reports). They are where calculation questions come from, so practise them by hand.
+K3 objectives sit mostly in chapter 4 (test techniques) and chapter 5 (estimation, prioritisation, defect reports). These objectives include calculation questions.
 
 ## The six chapters
 
@@ -32,15 +32,6 @@ K3 objectives sit mostly in chapter 4 (test techniques) and chapter 5 (estimatio
 | 5 | Managing the test activities | Estimation, prioritisation, risk, monitoring, defect reports |
 | 6 | Test tools | Tool categories, benefits and risks of automation |
 
-## How to use this track
-
-1. Read the six chapters in order; chapters 4 and 5 deserve double time.
-2. Work every calculation example in chapter 4 on paper.
-3. Take the 40-question mock exam under a 60-minute timer.
-4. Take ISTQB's official sample exams A to D, then reread the final review.
-
-A realistic pace is three weeks at about an hour a day for someone already working in QA.
-
 ## Objective-to-practice map
 
-Use chapter 4 for FL-4.2.1–4.2.4: derive partitions, both shared borders, decision rules and state transitions. Use chapter 5 for FL-5.1.4–5.1.5 (estimate and prioritise) and FL-5.5.1 (defect report). First solve without the answer key, then explain an incorrect alternative. The lab adds fixed inputs and executable reference checks; it does not replace the syllabus or official samples.
+FL-4.2.1–4.2.4 cover partitions, boundaries, decision rules and state transitions in chapter 4. FL-5.1.4–5.1.5 cover estimation and prioritisation; FL-5.5.1 covers defect reporting in chapter 5. The lab includes fixed inputs and executable reference checks.

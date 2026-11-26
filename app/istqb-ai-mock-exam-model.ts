@@ -84,10 +84,10 @@ export interface MockExamEvaluationTexts {
 }
 
 const istqbAiEvaluationTexts: MockExamEvaluationTexts = {
-  strong: "Review every uncertainty, then take the official sample exam under time pressure.",
-  close: "Revisit the learning-path chapters behind your wrong answers, then repeat the weak areas.",
-  gaps: "Repeat metric calculations and the distinctions between AI testing techniques before another mock.",
-  more: "Return to the chapter sequence before doing more mock exams, focusing on the concepts behind missed questions.",
+  strong: "Strong result on this practice set.",
+  close: "Some answers need review.",
+  gaps: "Several topics have gaps.",
+  more: "Many topics have gaps.",
 };
 
 /** Bands at 90%, 80% and 70% of the questions; for 40 questions these are 36, 32 and 28. */
@@ -129,8 +129,8 @@ export const mockExamCopy = {
   },
 };
 export const ukrainianMockExamEvaluationTexts: MockExamEvaluationTexts = {
-  strong: "Поясніть невпевнені відповіді й перевірте себе за актуальними офіційними матеріалами.",
-  close: "Повторіть теми за помилками та розв’яжіть нові приклади.",
-  gaps: "Виконайте практичні вправи зі слабких тем перед наступною спробою.",
-  more: "Поверніться до послідовності тем і незалежних очікуваних результатів.",
+  strong: "Високий результат у цьому тренувальному тесті.",
+  close: "Є окремі помилки у відповідях.",
+  gaps: "Є прогалини в кількох темах.",
+  more: "Є прогалини в багатьох темах.",
 };

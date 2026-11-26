@@ -1,6 +1,6 @@
 # 30-question original mock exam
 
-Set a **60-minute timer** (the real exam allows about 2 minutes per question) and answer all 30 before opening the key. These are original practice questions written for this learning path from the public exam guides. They are **not Anthropic exam questions**. The questions follow the CCDV-F domain weights: ten on applications and integration, five on model selection, five on agents and workflows, and ten across tools, prompts, security, Claude Code and evaluation.
+These are original practice questions written for this learning path from the public exam guides. They are **not Anthropic exam questions**. The questions follow the CCDV-F domain weights: ten on applications and integration, five on model selection, five on agents and workflows, and ten across tools, prompts, security, Claude Code and evaluation.
 
 ## Questions 1–10
 
@@ -223,11 +223,4 @@ D. Asking the model to grade its own new answers
 
 ## Score interpretation
 
-This mock uses one question = one mark. The real exam reports a scaled score from 100 to 1,000 with 720 to pass, so treat the percentage here as a diagnostic, not a prediction:
-
-- **27–30:** strong; check the official guide for the 7 December 2026 changes, then book.
-- **24–26:** close; reread the chapters behind every wrong answer.
-- **21–23:** material gaps remain; do the hands-on labs for your weakest domain.
-- **Below 21:** return to the chapter sequence before doing more mocks.
-
-Applications/integration is 33.1% through 6 December 2026 and 20% from 7 December. Use the exam map’s effective-date table; this original set is not an exact official blueprint.
+One correct answer earns one practice mark. The result is diagnostic, not an official exam score or a readiness threshold.

@@ -57,7 +57,7 @@ import { claudeCertificationSources, claudeDeveloperCertificationSources, github
 const claudeTaxonomy: CertificationModule[] = [
   chapter({
     id: "claude-exam-plan",
-    label: "Exam map & study plan",
+    label: "Exam map",
     navLabel: "Exam map",
     level: "Start here",
     description: "The current CCAR-F guide, eligibility, exam rules, domain tasks, scenarios and applied practice.",
@@ -121,10 +121,10 @@ const claudeTaxonomy: CertificationModule[] = [
   }, claudeMockExam, translation(claudeMockExamUk, "Пробний тест")),
   chapter({
     id: "claude-final-review",
-    label: "Final review & exam-day checklist",
+    label: "Final review",
     navLabel: "Final review",
     level: "Revision",
-    description: "The meta-rule, six distractor patterns, high-yield distinctions and a readiness checklist.",
+    description: "High-yield distinctions and common distractor patterns.",
     sourceIds: ["anthropic-certification-faq", "pearson-anthropic"],
   }, claudeFinalReview, translation(claudeFinalReviewUk, "Повторення")),
 ];
@@ -132,10 +132,10 @@ const claudeTaxonomy: CertificationModule[] = [
 const claudeDeveloperTaxonomy: CertificationModule[] = [
   chapter({
     id: "ccdv-exam-plan",
-    label: "Exam map & study plan",
+    label: "Exam map",
     navLabel: "Exam map",
     level: "Start here",
-    description: "Who can sit CCDV-F, exam rules, the eight domains and their weights, the December 2026 update and how to pace this track.",
+    description: "CCDV-F eligibility, exam rules, the eight domains and their weights, and the December 2026 update.",
     sourceIds: ["anthropic-certification-faq", "anthropic-certification-announcement", "pearson-anthropic", "ccdv-f-guide-current", "ccdv-f-guide-dec7", "claude-platform-101-course"],
   }, ccdvExamPlan, translation(ccdvExamPlanUk, "Початок")),
   chapter({
@@ -188,10 +188,10 @@ const claudeDeveloperTaxonomy: CertificationModule[] = [
   }, ccdvMockExam, translation(ccdvMockExamUk, "Пробний тест")),
   chapter({
     id: "ccdv-final-review",
-    label: "Final review & exam-day checklist",
+    label: "Final review",
     navLabel: "Final review",
     level: "Revision",
-    description: "The meta-rule, high-yield distinctions, six distractor patterns and a readiness checklist.",
+    description: "High-yield distinctions and common distractor patterns.",
     sourceIds: ["anthropic-certification-faq", "pearson-anthropic", "ccdv-f-guide-current", "ccdv-f-guide-dec7"],
   }, ccdvFinalReview, translation(ccdvFinalReviewUk, "Повторення")),
 ];
@@ -199,10 +199,10 @@ const claudeDeveloperTaxonomy: CertificationModule[] = [
 const githubCopilotTaxonomy: CertificationModule[] = [
   chapter({
     id: "gh300-exam-plan",
-    label: "Exam map & study plan",
+    label: "Exam map",
     navLabel: "Exam map",
     level: "Start here",
-    description: "GH-300 format, scoring, domains, where candidates lose points, and how to pace this track.",
+    description: "GH-300 format, scoring and exam domains.",
     sourceIds: ["gh300-study-guide", "gh300-certification-page", "theserverside-gh300"],
   }, copilotExamPlan, translation(copilotExamPlanUk, "Початок")),
   chapter({
@@ -263,10 +263,10 @@ const githubCopilotTaxonomy: CertificationModule[] = [
   }, copilotMockExam, translation(copilotMockExamUk, "Пробний тест")),
   chapter({
     id: "gh300-final-review",
-    label: "Final review & exam-day checklist",
+    label: "Final review",
     navLabel: "Final review",
     level: "Revision",
-    description: "High-yield distinctions, distractor patterns and a readiness checklist.",
+    description: "High-yield distinctions and common distractor patterns.",
     sourceIds: ["gh300-study-guide", "gh300-certification-page"],
   }, copilotFinalReview, translation(copilotFinalReviewUk, "Повторення")),
 ];
@@ -285,10 +285,10 @@ export const claudeCertificationCatalog = {
   mockExam: {
     scoreNote: "This mock uses one question = one practice mark. Claude exams report a scaled score from 100 to 1,000 with 720 to pass, so treat this percentage as a diagnostic.",
     evaluationTexts: {
-      strong: "Take the official practice exam and review readiness against the current official guide.",
-      close: "Reread the chapters behind every wrong answer, then retake this mock.",
-      gaps: "Redo the hands-on labs for your weakest domain before another mock.",
-      more: "Return to the chapter sequence before doing more mock exams.",
+      strong: "Strong result on this practice set.",
+      close: "Some answers need review.",
+      gaps: "Several topics have gaps.",
+      more: "Many topics have gaps.",
     },
   } satisfies CertificationMockExamSettings,
 };
@@ -307,10 +307,10 @@ export const claudeDeveloperCertificationCatalog = {
   mockExam: {
     scoreNote: "This mock uses one question = one practice mark. Claude exams report a scaled score from 100 to 1,000 with 720 to pass, so treat this percentage as a diagnostic.",
     evaluationTexts: {
-      strong: "Recheck the official guide for the December 2026 changes, then book.",
-      close: "Reread the chapters behind every wrong answer, then retake this mock.",
-      gaps: "Do the hands-on labs for your weakest domain before another mock.",
-      more: "Return to the chapter sequence before doing more mock exams.",
+      strong: "Strong result on this practice set.",
+      close: "Some answers need review.",
+      gaps: "Several topics have gaps.",
+      more: "Many topics have gaps.",
     },
   } satisfies CertificationMockExamSettings,
 };
@@ -329,10 +329,10 @@ export const githubCopilotCertificationCatalog = {
   mockExam: {
     scoreNote: "This mock uses one question = one practice mark. GH-300 reports a scaled score out of 1,000 with 700 to pass, so treat this percentage as a diagnostic.",
     evaluationTexts: {
-      strong: "Take Microsoft's free practice assessment, then book the exam.",
-      close: "Reread the chapters behind every wrong answer, then retake this mock.",
-      gaps: "Redo the Copilot lab in the gimme-job repository before another mock.",
-      more: "Return to the chapter sequence before doing more mock exams.",
+      strong: "Strong result on this practice set.",
+      close: "Some answers need review.",
+      gaps: "Several topics have gaps.",
+      more: "Many topics have gaps.",
     },
   } satisfies CertificationMockExamSettings,
 };

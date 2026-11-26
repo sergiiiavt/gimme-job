@@ -1,4 +1,4 @@
-# Final review & checklist
+# Final review
 
 ## High-yield distinctions
 
@@ -16,20 +16,3 @@
 - "Put it in the prompt" when the rule must hold every time, which needs a deterministic control at the relevant execution boundary; a hook only covers its configured events.
 - "Put it in ~/.claude/" when the whole team needs it.
 - "/clear" when the task is not finished, which throws away the work in progress.
-
-## Checklist before the course quiz
-
-- [ ] I can explain the agent loop and why the context window matters.
-- [ ] I know the permission modes and the default Shift+Tab cycle.
-- [ ] I have used /context, /compact and /clear in a real session.
-- [ ] I have written a CLAUDE.md, a subagent and a hook that blocks, from the hands-on lab.
-- [ ] I can say when to use CLAUDE.md, a skill, a subagent, MCP or a hook.
-- [ ] I scored 13 or more on the practice quiz.
-
-## After Claude Code 101
-
-Claude Code in Action goes deeper into long, hands-off sessions. Introduction to Agent Skills and Introduction to Subagents each take one topic further. For the proctored path, the Claude Code chapter of the Claude CCAR-F tile builds directly on this course.
-
-## Review the review
-
-Give a fresh reviewer the requirement, diff and independent expected cases; ask for reproducible failures rather than style suggestions. Reject an unsubstantiated claim that tests passed. Keep hook exit-code evidence, regression results and what remains untested. The checker’s green result only covers its listed fixtures, not every code path or production environment.

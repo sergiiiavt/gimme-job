@@ -22,10 +22,6 @@
 
 Збережіть вимогу, важливі facts, source-pointers і test-results перед compact. Перевірте, чи після нього правильні boundary-очікування; clear не є recovery persisted-files.
 
-## Що зберегти
-
-Короткий requirement-to-case map, diff, незалежний oracle, результати tests і межі hook. Не публікуйте credentials, приватні logs або чужі дані.
-
 ## Виконувана база
 
 [Пакет](https://github.com/sergiiiavt/gimme-job/tree/main/examples/certification-practice): `python examples/certification-practice/practice.py claude-code`. Reference проходить; starter через --candidate падає до реалізації. Виконайте hook-tests окремо. Інжектуйте wrong outcome й покажіть rejection; це локальні fixtures, не доказ live-сумісності всіх версій CLI.

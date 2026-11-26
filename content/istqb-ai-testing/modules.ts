@@ -24,11 +24,11 @@ export interface IstqbAiTestingModule {
 export const istqbAiTestingModules: IstqbAiTestingModule[] = [
   {
     id: "exam-plan",
-    label: "Exam map & study plan",
+    label: "Exam map",
     navLabel: "Exam map",
     level: "Start here",
-    count: 8,
-    description: "Know exactly what CT-AI v2.0 covers, how the exam is scored, what is examinable, and how to turn this guide into a study plan.",
+    count: 4,
+    description: "CT-AI v2.0 exam format, scoring, learning objectives and syllabus coverage.",
     sourceIds: ["istqb-ctai-page", "istqb-ctai-syllabus-v2", "istqb-ctai-sample-questions-v22", "istqb-ctai-sample-answers-v22", "istqb-ctai-faq", "istqb-glossary"],
     videos: [
       {
@@ -38,11 +38,11 @@ export const istqbAiTestingModules: IstqbAiTestingModule[] = [
         videoId: "06yTuv7jA9k",
       },
     ],
-    markdown: String.raw`# Exam map & study plan
+    markdown: String.raw`# Exam map
 
 This learning path targets **ISTQB Certified Tester AI Testing (CT-AI) v2.0**, the current syllabus. It prepares you to test AI-based systems. It is deliberately **not** a course about using ChatGPT or other generative-AI tools to perform ordinary software testing; ISTQB moved that topic into the separate CT-GenAI certification.
 
-## Exam facts to memorize before studying
+## Exam facts
 
 - **Prerequisite:** ISTQB Certified Tester Foundation Level (CTFL).
 - **Questions:** 40 multiple-choice questions.
@@ -78,8 +78,6 @@ The current syllabus has seven chapters. Recommended accredited-training time is
 6. **Model Testing — 225 min**
 7. **Machine Learning Development Testing — 30 min**
 
-The distribution tells you where to spend effort. Machine learning, model testing, system testing, and input-data testing deserve much more revision time than the short final chapter.
-
 ## Coverage matrix for this guide
 
 Nothing in the seven syllabus chapters is intentionally skipped. The learning path maps them as follows:
@@ -92,40 +90,8 @@ Nothing in the seven syllabus chapters is intentionally skipped. The learning pa
 - **Chapter 6:** model risks; model documentation/reviews; probabilistic performance; adversarial testing; metamorphic testing; drift; over/underfitting; A/B; back-to-back → **Model testing**.
 - **Chapter 7:** ML-development risks and deployment testing → **ML development & deployment**.
 
-The final two sections add **hands-on labs**, a **40-question original mock exam**, and an **exam-day review sheet**.
-
-## Recommended study sequence
-
-Use a three-pass method instead of reading the syllabus repeatedly.
-
-**Pass 1 — Build the mental model.** Read each chapter in this guide, then skim the matching official syllabus section. Your goal is comprehension, not memorization.
-
-**Pass 2 — Make it executable.** Complete the practical task at the end of every chapter. For calculations, work without looking at the formula first. For test-design topics, write actual test cases, oracles, properties, and risks.
-
-**Pass 3 — Exam mode.** Take the official sample exam under time pressure, review every wrong answer against the syllabus, then take the original mock in this guide. A correct guess counts as a weakness until you can explain why the distractors are wrong.
-
-## A practical 14-day plan
-
-- **Days 1–2:** AI foundations + quality characteristics.
-- **Days 3–6:** machine learning, including all metric calculations and neural-network basics.
-- **Days 7–8:** testing AI systems and LLMs.
-- **Days 9–10:** input-data testing.
-- **Days 11–12:** model testing + ML development/deployment.
-- **Day 13:** hands-on labs + terminology review.
-- **Day 14:** official sample exam, original mock exam, targeted revision.
-
-If you already work with ML systems, compress the introductory chapters but do not skip ISTQB terminology. Certification questions often test distinctions that experienced engineers understand informally but name differently.
-
-## Readiness rule
-
-You are ready when you can do all four of these without notes:
-
-1. Explain the lifecycle from data acquisition to deployed-model monitoring and name the main test risks at each stage.
-2. Calculate and interpret classification metrics from a confusion matrix and choose the metric that matches the business risk.
-3. Design tests for a probabilistic or generative system where exact expected outputs are unavailable.
-4. Distinguish input-data testing, model testing, component/system testing, deployment testing, and production monitoring.
-
-**Practice:** create a one-page progress sheet with the seven chapters, K-level weaknesses, lab status, official sample score, and mock-exam score. Re-study by weakness, not by chapter order.`
+The final two sections add **hands-on labs**, a **40-question original mock exam**, and a **final review sheet**.
+`
   },
   {
     id: "ai-foundations",
@@ -1182,7 +1148,7 @@ If you can defend that strategy and explain why every test maps to a risk, you h
     sourceIds: ["istqb-ctai-syllabus-v2", "istqb-ctai-sample-questions-v22", "istqb-ctai-sample-answers-v22"],
     markdown: String.raw`# 40-question original mock exam
 
-Set a **60-minute timer** and answer all 40 before opening the key. These are original practice questions written for this learning path; they are **not ISTQB sample questions** and do not reproduce the official scoring distribution. Use the official v2.2 sample exam as the authoritative example of format and difficulty.
+These are original practice questions written for this learning path; they are **not ISTQB sample questions** and do not reproduce the official scoring distribution.
 
 ## Questions 1–10
 
@@ -1426,11 +1392,11 @@ B. Freeze it and avoid using its results to make iterative model-selection decis
 C. Copy hard test examples into training after each failed run and continue calling it the same test set.  
 D. Use only training data for final evaluation.
 
-**40.** You have one hour before the exam. Which revision is highest value?  
-A. Memorize a list of AI product brands.  
-B. Rework weak learning objectives, metric calculations, distinctions between test techniques, and errors from the official sample exam.  
-C. Learn a new ML framework API.  
-D. Read unrelated AI news.
+**40.** Production inputs shift after deployment, but outcome labels arrive weeks later. What can input-distribution monitoring establish immediately?
+A. The model's current precision and recall.
+B. Evidence of data drift, without proving a change in predictive performance.
+C. That the model has adapted successfully to the new inputs.
+D. That no further model evaluation is needed.
 
 ## Answer key with explanations
 
@@ -1473,30 +1439,24 @@ D. Read unrelated AI news.
 37. **B** — risk and consequences determine what evidence matters.  
 38. **B** — safety is a system/context property, not a single model metric.  
 39. **B** — repeated tuning against the final test set leaks test knowledge into development decisions.  
-40. **B** — exam-focused active recall and error correction have the highest return.
+40. **B** — input-distribution changes indicate data drift; evaluating their effect on predictive performance needs suitable outcome evidence.
 
 ## Score interpretation
 
-This mock uses one question = one practice mark, so its percentage is **not directly convertible** to the official 44-point exam. Use it diagnostically:
-
-- **36–40:** strong; review every uncertainty and take the official sample under time pressure.
-- **32–35:** close; revisit the chapters behind wrong answers.
-- **28–31:** material gaps remain; repeat calculations and test-technique distinctions.
-- **Below 28:** return to the chapter sequence before doing more mocks.
-
-Most important: for every wrong answer, write why your selected distractor was tempting and which syllabus distinction resolves it.`
+One correct answer earns one practice mark. This percentage is not directly convertible to the official 44-point exam score.
+`
   },
   {
     id: "final-review",
-    label: "Final review, references & exam-day checklist",
+    label: "Final review & references",
     navLabel: "Final review",
     level: "Revision",
-    count: 12,
-    description: "Consolidate high-yield distinctions, calculations, official materials, and the final readiness checklist before booking or sitting the exam.",
+    count: 4,
+    description: "Key distinctions, classification formulas, technique selection and official references.",
     sourceIds: ["istqb-ctai-page", "istqb-ctai-syllabus-v2", "istqb-ctai-sample-questions-v22", "istqb-ctai-sample-answers-v22", "istqb-ctai-faq", "istqb-glossary", "iso-25059"],
-    markdown: String.raw`# Final review, references & exam-day checklist
+    markdown: String.raw`# Final review & references
 
-Use this section after the learning chapters, not as a substitute for them.
+A reference sheet of the learning path’s core concepts and official materials.
 
 ## High-yield distinctions
 
@@ -1550,48 +1510,16 @@ When the scenario says… think first about:
 - **“Wrong model in production”** → ML development/deployment artifact traceability.
 - **“Overall score looks good, subgroup bad”** → slicing/fairness/representativeness and risk-specific acceptance criteria.
 
-## Official-material sequence
+## Official references
 
-1. Read the **current CT-AI v2.0 certification page** for exam logistics and version status.
-2. Keep the **v2.0 syllabus** open while studying; every weakness should map back to a learning objective.
-3. Use the **ISTQB glossary** for terminology disputes.
-4. Take the **official Sample Exam Questions v2.2** under timed conditions.
-5. Use the **official Sample Exam Answers v2.2** to review reasoning.
-6. Re-study weak objectives, then take this guide’s original mock.
+- **CT-AI v2.0 certification page:** exam format, prerequisites and version status.
+- **CT-AI v2.0 syllabus:** learning objectives and examinable content.
+- **ISTQB glossary:** terminology and definitions.
+- **Official Sample Exam Questions v2.2:** published practice questions.
+- **Official Sample Exam Answers v2.2:** answers and reasoning.
 
-Never rely on an old CT-AI v1.0 course without checking the version. v2.0 reorganized the syllabus into seven chapters, adds dedicated GenAI/LLM testing and removes the “using AI for testing” scope.
-
-## 24-hour checklist
-
-- I can calculate accuracy, precision, recall and F1 by hand.
-- I can explain why accuracy can fail on imbalanced data.
-- I can identify leakage scenarios.
-- I can turn a vague AI quality claim into a measurable acceptance criterion.
-- I can distinguish locked and adaptive systems.
-- I can name oracle strategies for non-deterministic output.
-- I can design a red-team charter for an LLM.
-- I can propose representative data slices and label-quality checks.
-- I can create at least two valid metamorphic relations.
-- I can distinguish A/B and back-to-back testing.
-- I can explain drift, overfitting and underfitting.
-- I can describe deployment evidence tying the approved model to the serving artifact.
-
-If any item is “no,” revise that topic instead of re-reading everything.
-
-## Exam execution
-
-- Read the qualifier words: **best, most appropriate, first, directly, likely**.
-- Identify the lifecycle stage and test object before choosing a technique.
-- For numeric questions, write TP/TN/FP/FN explicitly before applying a formula.
-- Eliminate answers that claim one metric or technique “proves” overall quality.
-- Flag uncertain items and return; do not spend a large fraction of the exam on one question.
-- Reserve final minutes to review flagged answers and accidental misreads.
-
-## After certification
-
-CT-AI is a knowledge baseline, not the end state. Keep the capstone strategy from this guide and apply it to a real AI feature. Add production monitoring, evaluation datasets, red-team regressions, and deployment traceability. That work turns a certificate into demonstrable AI-testing capability.
-
-**Final practice:** explain the complete lifecycle aloud in five minutes: requirements/quality → data → model training/evaluation → system testing → deployment → monitoring/change. If you cannot connect a technique to the risk it reduces, revisit that section before the exam.`
+CT-AI v2.0 has seven chapters, includes GenAI/LLM testing and separates using AI for testing into CT-GenAI.
+`
   },
 ];
 

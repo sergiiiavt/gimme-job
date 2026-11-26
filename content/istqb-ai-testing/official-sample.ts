@@ -45,7 +45,7 @@ The PDF is hosted by ISTQB and contains the exact official wording, answer optio
 
 [Open ISTQB CT-AI v2.2 Sample Exam — Answers & Justifications](${OFFICIAL_ANSWERS_URL})
 
-The answer document contains the correct answers, learning objectives, K-levels, point values, and reasoning for the options. Do the questions first; use the explanations only during review.
+The answer document contains the correct answers, learning objectives, K-levels, point values, and reasoning for the options.
 
 ## Important distinction: official sample questions vs live exam questions
 
@@ -57,15 +57,7 @@ So:
 - **Actual past/live CT-AI exam questions publicly released by ISTQB:** no.
 - **Original GimmeJob mock questions:** useful as extra practice, but they are not a substitute for this official set.
 
-## How to use this set
-
-1. Open the **Questions** PDF and answer questions **1–40 in 60 minutes** without the answer file.
-2. Record uncertain answers as well as wrong answers; a lucky guess is still a revision target.
-3. Open the **Answers & Justifications** PDF and review the rationale for every uncertain or incorrect option.
-4. Complete **A1–A6** as extra official practice.
-5. Only then use the separate **Original mock exam** module for another fresh 40-question run.
-
-The official v2.2 sample exam is the first exam-practice resource to use in this learning path.`,
+`,
   markdownUk: String.raw`# Офіційний приклад іспиту ISTQB — 46 запитань
 
 Це **реальні офіційні приклади, опубліковані ISTQB** для **CT-AI v2.0** у документі sample exam **v2.2** (опубліковано 20 липня 2026 року).
@@ -90,7 +82,7 @@ PDF розміщений на сайті ISTQB і містить точне оф
 
 [Відкрити ISTQB CT-AI v2.2 Sample Exam — Answers & Justifications](${OFFICIAL_ANSWERS_URL})
 
-Документ із відповідями містить правильні варіанти, learning objectives, K-рівні, кількість балів і пояснення логіки відповідей. Спочатку виконай запитання самостійно, а пояснення відкривай уже під час розбору результату.
+Документ із відповідями містить правильні варіанти, learning objectives, K-рівні, кількість балів і пояснення логіки відповідей.
 
 ## Важлива різниця: офіційні sample questions і запитання реального іспиту
 
@@ -102,15 +94,7 @@ PDF розміщений на сайті ISTQB і містить точне оф
 - **Реальні минулі або поточні запитання CT-AI, офіційно опубліковані ISTQB:** ні.
 - **Авторські mock questions GimmeJob:** корисні як додаткова практика, але не замінюють цей офіційний набір.
 
-## Як працювати з цим набором
-
-1. Відкрий PDF **Questions** і дай відповіді на запитання **1–40 за 60 хвилин**, не відкриваючи файл із відповідями.
-2. Познач не лише неправильні, а й невпевнені відповіді: випадково вгадана відповідь усе одно означає тему для повторення.
-3. Відкрий PDF **Answers & Justifications** і розбери обґрунтування для кожної неправильної або невпевненої відповіді.
-4. Окремо виконай **A1–A6** як додаткову офіційну практику.
-5. Лише після цього переходь до окремого модуля **Original mock exam** для ще одного свіжого набору з 40 запитань.
-
-Офіційний sample exam v2.2 має бути першим екзаменаційним практичним матеріалом у цьому learning path.`,
+`,
 };
 
 export default istqbAiOfficialSampleExam;

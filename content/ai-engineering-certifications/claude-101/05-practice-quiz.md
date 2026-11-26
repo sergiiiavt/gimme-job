@@ -1,6 +1,6 @@
 # 15-question practice quiz
 
-Answer all 15 before opening the key; about 15 minutes is plenty. These are original practice questions written for this learning path from Anthropic's public help articles. They are **not** the Claude Academy quiz questions.
+These are original practice questions written for this learning path from Anthropic's public help articles. They are **not** the Claude Academy quiz questions.
 
 ## Questions 1–10
 
@@ -116,9 +116,4 @@ D. A completion badge for passing the course quizzes
 
 ## Score interpretation
 
-This quiz uses one question = one mark. The real course quizzes only need passing, so use the score to decide what to reread:
-
-- **14–15:** strong; take Claude 101 on Claude Academy now.
-- **12–13:** close; reread the chapter behind each wrong answer.
-- **11:** gaps remain; reread projects, skills and connectors, then retake.
-- **Below 11:** read the three study chapters again before the course.
+One correct answer earns one practice mark. The result is diagnostic, not an official exam score or a readiness threshold.

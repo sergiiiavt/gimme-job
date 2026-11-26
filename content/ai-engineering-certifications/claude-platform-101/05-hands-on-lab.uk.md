@@ -22,10 +22,6 @@ Baseline — локальні policy-fixtures. Live-model та зовнішні 
 
 За optional доступу порівняйте service-contract sessions/state/sandbox із власними вимогами. За відсутності live-доступу зафіксуйте це як unverified, не симулюйте нібито production-test.
 
-## Що зберегти
-
-Contract, oracle, expected/actual, exit-status і список неперевіреного. Credentials та private-payload до evidence не додають. Поясніть помилку й причину rejection, не лише green-count.
-
 ## Виконувана база
 
 [Пакет](https://github.com/sergiiiavt/gimme-job/tree/main/examples/certification-practice): `python examples/certification-practice/practice.py platform`. Reference проходить; starter через --candidate падає до реалізації. Implement extraction/gate/retry/trace, навмисно зламайте один outcome та покажіть відмову oracle. У production окремо потрібні auth, persisted-approvals, idempotency та HTTP-recovery.

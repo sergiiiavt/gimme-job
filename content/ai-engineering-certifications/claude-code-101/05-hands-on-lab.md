@@ -26,10 +26,6 @@ Use examples/certification-practice/hooks/block_fixture_write.py and the accompa
 
 Run /context, then /compact, then /context again, and note what changed. Finish with /clear before starting anything unrelated.
 
-## What to keep
-
-The CLAUDE.md, the subagent file and the hook script are three small, concrete things to show in an interview. Keep the sandbox synthetic and inspect its diff before publishing any work.
-
 ## Executable baseline and independent oracle
 
 Use the [offline practice package](https://github.com/sergiiiavt/gimme-job/tree/main/examples/certification-practice). Requires Python 3.10+, no model or API key. Run `python examples/certification-practice/practice.py claude-code`: every reference case should pass. Copy `starter.py` to a scratch file; `--candidate your_solution.py` should fail until you implement the required functions. Retain fixture IDs, expected/actual outputs and the command exit status.
