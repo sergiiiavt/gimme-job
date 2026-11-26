@@ -1,0 +1,50 @@
+name: Search engine benchmark
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "examples/search-benchmark/**"
+      - "tests/search-benchmark.test.mjs"
+      - "worker/rag.ts"
+      - "content/**"
+      - "package*.json"
+      - ".github/workflows/search-benchmark.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: Compare Typesense and Orama
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Download pinned local Typesense server
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/search-typesense"
+          curl --fail --silent --show-error --location --retry 2 --max-time 180 \
+            https://dl.typesense.org/releases/30.2/typesense-server-30.2-linux-amd64.tar.gz \
+            --output "$RUNNER_TEMP/search-typesense/server.tar.gz"
+          printf '%s  %s\n' cd791605e7c6cc7be457794f534cd4b9f9d361781adb10e40020efc22840ebc3 \
+            "$RUNNER_TEMP/search-typesense/server.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/search-typesense/server.tar.gz" -C "$RUNNER_TEMP/search-typesense"
+      - name: Verify benchmark contracts
+        run: node --test tests/search-benchmark.test.mjs
+      - name: Compare actual engines on the canonical public corpus
+        run: npm run benchmark:search -- --typesense-bin="$RUNNER_TEMP/search-typesense/typesense-server" --output=artifacts/search-benchmark
+      - name: Retain per-query evidence and resource measurements
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: search-engine-benchmark
+          path: artifacts/search-benchmark/
+          if-no-files-found: warn

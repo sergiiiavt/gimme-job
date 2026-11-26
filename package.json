@@ -16,6 +16,7 @@
     "test": "npm run build && node --test",
     "test:coverage": "node scripts/run-test-coverage.mjs",
     "smoke:vacancies": "node --import tsx scripts/smoke-vacancy-sources.ts",
+    "benchmark:search": "node examples/search-benchmark/run.mjs",
     "validate:artifact": "node scripts/validate-cloudflare-artifact.mjs",
     "check:about-links": "node scripts/validate-about-repo-links.mjs",
     "check:content": "node scripts/validate-interview-content.mjs && node scripts/validate-performance-testing-content.mjs && node scripts/validate-sql-interview-content.mjs && node scripts/validate-interview-source-refresh.mjs && node scripts/validate-python-interview-content.mjs && node scripts/validate-python-curriculum-content.mjs && node scripts/validate-python-quick-reference.mjs && node scripts/validate-sql-quick-reference.mjs && node scripts/validate-automation-curriculum-content.mjs && node scripts/validate-qa-fundamentals-content.mjs && node scripts/validate-cloud-devops-content.mjs && node scripts/validate-testing-tools-content.mjs && node scripts/validate-metrics-estimation-content.mjs && npm run check:about-links",
@@ -48,6 +49,8 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.69.1",
+    "@orama/orama": "3.1.18",
+    "@orama/stemmers": "3.1.18",
     "@tailwindcss/postcss": "4.3.5",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
