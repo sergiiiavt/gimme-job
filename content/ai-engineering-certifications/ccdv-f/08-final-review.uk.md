@@ -13,11 +13,3 @@ Input-count/output-cap; usage/currency bill; strict-shape/business-validity/grou
 ## Привабливі неправильні рішення
 
 Retry400 без змін; ротація keys для обходу 429; empty-success за outage; JSON як доказ істини; більша модель замість approval. Поясніть конкретний failure-path і правильний control.
-
-## Готовність
-
-Звірте effective-date guide, виконайте labs та нові контрприклади для помилок mock. Перевірте critical-slices до model/prompt/schema/platform update. Навчальна оцінка не прогнозує official scaled-score.
-
-## Пояснити збій перед settings-change
-
-Truncation діагностують за stop_reason, timeout — за transport/stream. Usage потребує тарифів для bill. Валідний source-ID не доводить support. Для кожної помилки збережіть незалежне очікування, case і результат повторної перевірки.

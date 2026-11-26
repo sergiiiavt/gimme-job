@@ -19,17 +19,3 @@ Claude Platform 101 is Anthropic's free developer course on **Claude Academy** (
 | Managed agents | What managed agents are, building your first one | Extending your agent |
 | Building with Claude Code | Using Claude Code to build against the API | Hands-on lab |
 | Quiz | Claude Platform 101 quiz | Practice quiz |
-
-## Study plan
-
-1. Read the three study chapters in this track; together they take about an hour.
-2. Do the hands-on lab; it takes about 90 minutes with an API key.
-3. Take the 15-question practice quiz and aim for 13 or more.
-4. Take Claude Platform 101 on Claude Academy and pass its quiz.
-5. List the badge under Training on your CV, and keep the lab's agent in a public repository to show in interviews.
-
-This course is also the best free preparation for the API-heavy parts of the proctored Claude CCDV-F and CCAR-F exams.
-
-## Offline first, live optional
-
-First classify fixed tool traces and validate extraction locally. Then, if you have an authorized account and budget, make one supported SDK request and inspect blocks, stop_reason and usage. Record the model/version and stop reason, without credentials or private payloads. Neither the course badge nor the fixture checker certifies a production agent.

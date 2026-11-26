@@ -42,10 +42,10 @@ import { ctflCertificationSources, ctGenAiCertificationSources } from "./sources
 const ctflTaxonomy: CertificationModule[] = [
   chapter({
     id: "ctfl-exam-plan",
-    label: "Exam map & study plan",
+    label: "Exam map",
     navLabel: "Exam map",
     level: "Start here",
-    description: "CTFL v4.0 exam facts, K-levels, the six chapters and how to pace this track.",
+    description: "CTFL v4.0 exam facts, K-levels, the six chapters and learning objectives.",
     sourceIds: ["istqb-ctfl-syllabus-v401", "istqb-ctfl-page"],
   }, ctflExamPlan, translation(ctflExamPlanUk, "Початок")),
   chapter({
@@ -114,10 +114,10 @@ const ctflTaxonomy: CertificationModule[] = [
   }, ctflMockExam, translation(ctflMockExamUk, "Пробний тест")),
   chapter({
     id: "ctfl-final-review",
-    label: "Final review & exam-day checklist",
+    label: "Final review",
     navLabel: "Final review",
     level: "Revision",
-    description: "Terms the exam swaps, formulas and counts, and a readiness checklist.",
+    description: "Terms the exam swaps, formulas and counts.",
     sourceIds: ["istqb-ctfl-syllabus-v401", "istqb-ctfl-page", "istqb-glossary"],
   }, ctflFinalReview, translation(ctflFinalReviewUk, "Повторення")),
 ];
@@ -125,7 +125,7 @@ const ctflTaxonomy: CertificationModule[] = [
 const ctGenAiTaxonomy: CertificationModule[] = [
   chapter({
     id: "genai-exam-plan",
-    label: "Exam map & study plan",
+    label: "Exam map",
     navLabel: "Exam map",
     level: "Start here",
     description: "CT-GenAI v1.1 exam facts, K and H levels, the five chapters and their training time.",
@@ -189,17 +189,17 @@ const ctGenAiTaxonomy: CertificationModule[] = [
   }, ctGenAiMockExam, translation(ctGenAiMockExamUk, "Пробний тест")),
   chapter({
     id: "genai-final-review",
-    label: "Final review & exam-day checklist",
+    label: "Final review",
     navLabel: "Final review",
     level: "Revision",
-    description: "Distinctions the exam tests, lists worth memorising and a readiness checklist.",
+    description: "Key distinctions, prompt components and reference lists.",
     sourceIds: ["isqi-ct-genai", "ct-genai-syllabus-v11"],
   }, ctGenAiFinalReview, translation(ctGenAiFinalReviewUk, "Повторення")),
 ];
 
 const istqbMockExamTexts = {
-  close: "Revisit the chapters behind your wrong answers, then retake this mock.",
-  more: "Return to the chapter sequence before doing more mock exams.",
+  close: "Some answers need review.",
+  more: "Many topics have gaps.",
 };
 
 export const ctflCertificationCatalog = {
@@ -217,8 +217,8 @@ export const ctflCertificationCatalog = {
     scoreNote: "This mock uses one question = one mark, like the real CTFL exam, where 26 of 40 passes.",
     evaluationTexts: {
       ...istqbMockExamTexts,
-      strong: "Take the official sample exams A to D under a 60-minute timer.",
-      gaps: "Redo the chapter 4 calculations by hand before another mock.",
+      strong: "Strong result on this practice set.",
+      gaps: "Several topics have gaps.",
     },
   } satisfies CertificationMockExamSettings,
 };
@@ -238,8 +238,8 @@ export const ctGenAiCertificationCatalog = {
     scoreNote: "This mock uses one question = one mark; the real CT-GenAI exam passes at 65%.",
     evaluationTexts: {
       ...istqbMockExamTexts,
-      strong: "Take the official v1.1 sample exam under a 60-minute timer.",
-      gaps: "Redo the hands-on labs and reread chapter 2 before another mock.",
+      strong: "Strong result on this practice set.",
+      gaps: "Several topics have gaps.",
     },
   } satisfies CertificationMockExamSettings,
 };

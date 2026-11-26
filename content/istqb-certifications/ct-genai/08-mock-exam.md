@@ -1,6 +1,6 @@
 # 40-question original mock exam
 
-Set a 60-minute timer (75 minutes if English is not your native language) and answer all 40 before opening the key. These are original practice questions written for this learning path from the CT-GenAI v1.1 syllabus. They are not ISTQB sample questions; take the official v1.1 sample exam as the authoritative example. Like the syllabus, this mock leans heavily on chapter 2, prompt engineering.
+These are original practice questions written for this learning path from the CT-GenAI v1.1 syllabus. They are not ISTQB sample questions. Like the syllabus, this mock leans heavily on chapter 2, prompt engineering.
 
 ## Questions 1–10
 
@@ -295,11 +295,4 @@ D. Testers hand the test strategy over to AI agents
 
 ## Score interpretation
 
-This mock uses one question = one mark; the real exam passes at 65%. Treat it as a diagnostic:
-
-- **36–40:** strong; take the official v1.1 sample exam under time pressure.
-- **32–35:** close; reread chapter 2 and the chapters behind your wrong answers.
-- **28–31:** material gaps remain; redo the hands-on labs before another mock.
-- **Below 28:** return to the chapter sequence before doing more mocks.
-
-For every wrong answer, write down which syllabus term or distinction would have resolved it.
+One correct answer earns one practice mark. The result is diagnostic, not an official exam score or a readiness threshold.

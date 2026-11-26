@@ -3,8 +3,8 @@ import { istqbAiOfficialSampleExam } from "./official-sample";
 import { istqbAiTestingSources } from "./sources";
 import { istqbAiTestingSupplements } from "./supplements";
 
-const EXAM_PLAN_SUMMARY = "The final two sections add **hands-on labs**, a **40-question original mock exam**, and an **exam-day review sheet**.";
-const UPDATED_EXAM_PLAN_SUMMARY = "The final sections add **hands-on labs**, the **official ISTQB v2.2 sample exam with 46 published questions**, a **40-question original mock exam**, and an **exam-day review sheet**.";
+const EXAM_PLAN_SUMMARY = "The final two sections add **hands-on labs**, a **40-question original mock exam**, and a **final review sheet**.";
+const UPDATED_EXAM_PLAN_SUMMARY = "The final sections add **hands-on labs**, the **official ISTQB v2.2 sample exam with 46 published questions**, a **40-question original mock exam**, and a **final review sheet**.";
 
 const baseTaxonomy = istqbAiTestingModules.map((module) => {
   const markdown = `${module.markdown}${istqbAiTestingSupplements[module.id] ?? ""}`;

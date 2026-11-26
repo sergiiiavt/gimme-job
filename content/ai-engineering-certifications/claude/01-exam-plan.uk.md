@@ -16,12 +16,4 @@ CCAR-F — архітектура; CCDV-F — API-розробка; CCAO-F — �
 
 ## Домени та сценарії
 
-Architecture27%, tools/MCP18%, Claude Code20%, prompts/structured-output20%, context/reliability15%. Шість сценаріїв: support, code generation, multi-agent research, productivity, CI/CD, extraction; guide описує вибір 4 із 6. Готуйте всі сценарії, не лише найзнайоміший.
-
-## Як користуватися шляхом
-
-Пройдіть базові 101 за потреби, потім п’ять domain-тем, практику та mock. Для кожної помилки створіть новий контрприклад. Час підготовки залежить від досвіду; запам’ятовані опції не вимірюють уміння будувати систему.
-
-## Від домену до доказу
-
-Architecture: відрізніть done/error/budget. Tools: відхиліть cross-tenant write без exact approval. Prompts: розділіть shape, business-validity та grounding. Code: перевірте мінімальний diff незалежними тестами. Context: передайте sourced facts. Повний scope задає [офіційний guide](https://cc.sj-cdn.net/instructor/6nizmqk8tpzpfjvt6qmmav7rh/public/1794946250/Claude_Certified_Architect_-_Foundations_Exam_Guide.pdf), не лише наші fixtures.
+Architecture27%, tools/MCP18%, Claude Code20%, prompts/structured-output20%, context/reliability15%. Шість сценаріїв: support, code generation, multi-agent research, productivity, CI/CD, extraction; guide описує вибір 4 із 6. Сценарії охоплюють спільні навички проєктування agent-систем.

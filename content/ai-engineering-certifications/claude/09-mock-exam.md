@@ -1,6 +1,6 @@
 # 40-question original mock exam
 
-Set an **80-minute timer** (the real exam allows 2 minutes per question) and answer all 40 before opening the key. These are original practice questions written for this learning path from the public exam guides. They are **not Anthropic exam questions**. Questions are grouped by the six published CCAR-F production scenarios. The CCDV-F API questions now live in the Claude CCDV-F tile.
+These are original practice questions written for this learning path from the public exam guides. They are **not Anthropic exam questions**. Questions are grouped by the six published CCAR-F production scenarios. The CCDV-F API questions now live in the Claude CCDV-F tile.
 
 ## Questions 1–10
 
@@ -295,11 +295,4 @@ D. Start a brand-new session and paste in a summary of the work so far
 
 ## Score interpretation
 
-This mock uses one question = one mark. The real exam reports a scaled score from 100 to 1,000 with 720 to pass, so treat the percentage here as a diagnostic, not a prediction:
-
-- **36–40:** strong; take the official practice exam and review readiness against the current official guide.
-- **32–35:** close; reread the chapters behind every wrong answer, then retake this mock.
-- **28–31:** material gaps remain; redo the hands-on labs for your weakest domain.
-- **Below 28:** return to the chapter sequence before doing more mocks.
-
-For every wrong answer, write down why the distractor was tempting and which of the six distractor patterns in the final review it matches.
+One correct answer earns one practice mark. The result is diagnostic, not an official exam score or a readiness threshold.

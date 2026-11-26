@@ -1,6 +1,4 @@
-# Final review & exam-day checklist
-
-Use this after the chapters, the lab and the mock exam.
+# Final review
 
 ## High-yield distinctions
 
@@ -22,21 +20,3 @@ Use this after the chapters, the lab and the mock exam.
 3. **Trusting the model:** asking Copilot to confirm its own suggestion instead of checking documentation.
 4. **Skipping gates:** committing AI code because it compiles.
 5. **Assuming instant effect:** expecting exclusion changes to apply immediately without a reload.
-
-## Readiness checklist
-
-- [ ] Every surface in the feature table tried at least once
-- [ ] Hands-on lab done in the gimme-job repository
-- [ ] Mock exam score of 24 or more, with every wrong answer explained
-- [ ] Microsoft's free practice assessment passed
-- [ ] Exam sandbox tried, so the question types are familiar
-
-## Exam day
-
-- About 100 minutes: pace yourself and flag questions to revisit.
-- For multiple-response items, count how many answers are required.
-- Request the 30-minute language allowance in advance if the exam is not in your preferred language.
-
-## Show the missed boundary
-
-Use the supplied review prompt against an implementation using >100. Require a finding with input true/100, expected 20 and actual 10, plus the requirement reference. Verify it independently and reject a false finding on the correct 99 case. The useful outcome is a reproducible defect and repair evidence, not a large volume of AI review comments.

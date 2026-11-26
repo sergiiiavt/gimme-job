@@ -26,10 +26,6 @@ Compare the current SDK Tool Runner with your explicit loop. Check equivalent co
 
 Recreate the agent as a managed agent, start a session, send a user message event and stream the events back. Compare the code you did not have to write with section 2.
 
-## What to keep
-
-A small repository with the loop, the model comparison table and a README stating what each section taught you. That is a concrete answer to "What have you built with LLM APIs?"
-
 ## Executable baseline and independent oracle
 
 Use the [offline practice package](https://github.com/sergiiiavt/gimme-job/tree/main/examples/certification-practice). Requires Python 3.10+, no model or API key. Run `python examples/certification-practice/practice.py platform`: every reference case should pass. Copy `starter.py` to a scratch file; `--candidate your_solution.py` should fail until you implement the required functions. Retain fixture IDs, expected/actual outputs and the command exit status.

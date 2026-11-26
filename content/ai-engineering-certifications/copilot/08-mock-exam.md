@@ -1,6 +1,6 @@
 # 30-question original mock exam
 
-Set a **50-minute timer** (the real GH-300 allows about 100 minutes for a longer paper) and answer all 30 before opening the key. These are original practice questions written for this learning path from the public GH-300 study guide. They are **not Microsoft or GitHub exam questions**.
+These are original practice questions written for this learning path from the public GH-300 study guide. They are **not Microsoft or GitHub exam questions**.
 
 ## Questions 1–10
 
@@ -223,11 +223,4 @@ D. It screens it, for example for toxic content or hacking attempts
 
 ## Score interpretation
 
-This mock uses one question = one mark. GH-300 reports a scaled score out of 1,000 with 700 to pass, so treat the percentage here as a diagnostic:
-
-- **27–30:** strong; take Microsoft's free practice assessment, then book.
-- **24–26:** close; reread the chapters behind every wrong answer.
-- **21–23:** material gaps remain; redo the Copilot lab in the gimme-job repository.
-- **Below 21:** return to the chapter sequence before doing more mocks.
-
-Recheck current privacy and safeguard support on the client and plan you use. This practice set does not establish candidates' official error rates.
+One correct answer earns one practice mark. The result is diagnostic, not an official exam score or a readiness threshold.

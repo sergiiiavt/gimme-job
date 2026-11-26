@@ -1,4 +1,4 @@
-# Final review & checklist
+# Final review
 
 ## High-yield distinctions
 
@@ -18,20 +18,3 @@
 - "Raise max_tokens" when the loop logic is wrong.
 - "Return an empty result" when the tool actually failed.
 - "Parse Claude's text" when a structured field already says what happened.
-
-## Checklist before the course quiz
-
-- [ ] I can write a Messages API request from memory and name the three main response fields.
-- [ ] I have written a bounded loop that distinguishes model end_turn, validated completion, failure and budget exhaustion.
-- [ ] I compared two model tiers on real examples and chose on evidence.
-- [ ] I can name supported built-in tools for the selected platform and say where they run.
-- [ ] I can explain when to use Managed Agents instead of my own loop.
-- [ ] I scored 13 or more on the practice quiz.
-
-## After Claude Platform 101
-
-Building with the Claude API goes much deeper. Introduction to Model Context Protocol teaches you to build MCP servers. For the proctored path, the Claude CCDV-F tile builds directly on this course.
-
-## Evidence for an integration
-
-Retain a request/response contract, error/deadline policy, allowed tool list, synthetic extraction fixture and a failed-tool trace. Explain why named tool selection is not strict schema enforcement and why strict shape is not factual grounding. A passing local test says nothing about live account permissions or a remote platform feature until that path is tested.

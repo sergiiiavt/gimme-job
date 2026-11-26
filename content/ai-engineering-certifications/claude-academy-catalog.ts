@@ -45,12 +45,12 @@ const academyBadgeSources = ["anthropic-academy", "claude-academy-guide"];
 
 /** Practice-quiz settings shared by the free Claude Academy course tracks. */
 const academyQuiz = (course: string): CertificationMockExamSettings => ({
-  scoreNote: `This quiz uses one question = one practice mark. The ${course} course quiz only needs a pass, so use the percentage to decide what to reread.`,
+  scoreNote: `This quiz uses one question = one practice mark. This is a diagnostic practice set, separate from the ${course} assessment.`,
   evaluationTexts: {
-    strong: `Take ${course} on Claude Academy now.`,
-    close: "Reread the chapter behind each wrong answer, then retake this quiz.",
-    gaps: "Redo the study chapters for your weakest topic before retaking this quiz.",
-    more: "Read the study chapters again before taking the course.",
+    strong: "Strong result on this practice set.",
+    close: "Some answers need review.",
+    gaps: "Several topics have gaps.",
+    more: "Many topics have gaps.",
   },
 });
 
@@ -60,7 +60,7 @@ const claude101Taxonomy: CertificationModule[] = [
     label: "Course map & badge",
     navLabel: "Course map",
     level: "Start here · free",
-    description: "What Claude 101 covers, who can take it, how the free badge works and how to list it on a CV.",
+    description: "Claude 101 topics, prerequisites and completion badge.",
     sourceIds: ["claude-101-course", "claude-research-help", "claude-enterprise-search-help", ...academyBadgeSources],
   }, claude101CourseMap, translation(claude101CourseMapUk, "Початок · безкоштовно")),
   chapter({
@@ -97,10 +97,10 @@ const claude101Taxonomy: CertificationModule[] = [
   }, claude101PracticeQuiz, translation(claude101PracticeQuizUk, "Пробний тест")),
   chapter({
     id: "c101-final-review",
-    label: "Final review & next steps",
+    label: "Final review",
     navLabel: "Final review",
     level: "Revision",
-    description: "Use cases by role, other ways to work with Claude, a checklist before the course quizzes, and what to take next.",
+    description: "Use cases by role and other ways to work with Claude.",
     sourceIds: ["claude-101-course", "claude-skills-help", ...academyBadgeSources],
   }, claude101FinalReview, translation(claude101FinalReviewUk, "Повторення")),
 ];
@@ -111,7 +111,7 @@ const claudeCode101Taxonomy: CertificationModule[] = [
     label: "Course map & badge",
     navLabel: "Course map",
     level: "Start here · free",
-    description: "What Claude Code 101 covers, what you need, how the free badge works and a study plan.",
+    description: "Claude Code 101 topics, prerequisites and completion badge.",
     sourceIds: ["claude-code-101-course", "claude-code-101-coursera", ...academyBadgeSources],
   }, claudeCode101CourseMap, translation(claudeCode101CourseMapUk, "Початок · безкоштовно")),
   chapter({
@@ -156,10 +156,10 @@ const claudeCode101Taxonomy: CertificationModule[] = [
   }, claudeCode101PracticeQuiz, translation(claudeCode101PracticeQuizUk, "Пробний тест")),
   chapter({
     id: "cc101-final-review",
-    label: "Final review & checklist",
+    label: "Final review",
     navLabel: "Final review",
     level: "Revision",
-    description: "High-yield distinctions, distractors to expect and a checklist before the course quiz.",
+    description: "High-yield distinctions and common misconceptions.",
     sourceIds: ["claude-code-101-course", ...academyBadgeSources],
   }, claudeCode101FinalReview, translation(claudeCode101FinalReviewUk, "Повторення")),
 ];
@@ -170,7 +170,7 @@ const claudePlatform101Taxonomy: CertificationModule[] = [
     label: "Course map & badge",
     navLabel: "Course map",
     level: "Start here · free",
-    description: "What Claude Platform 101 covers, what you need, how the free badge works and a study plan.",
+    description: "Claude Platform 101 topics, prerequisites and completion badge.",
     sourceIds: ["claude-platform-101-course", ...academyBadgeSources],
   }, claudePlatform101CourseMap, translation(claudePlatform101CourseMapUk, "Початок · безкоштовно")),
   chapter({
@@ -215,10 +215,10 @@ const claudePlatform101Taxonomy: CertificationModule[] = [
   }, claudePlatform101PracticeQuiz, translation(claudePlatform101PracticeQuizUk, "Пробний тест")),
   chapter({
     id: "cp101-final-review",
-    label: "Final review & checklist",
+    label: "Final review",
     navLabel: "Final review",
     level: "Revision",
-    description: "High-yield distinctions, distractors to expect and a checklist before the course quiz.",
+    description: "High-yield distinctions and common misconceptions.",
     sourceIds: ["claude-platform-101-course", ...academyBadgeSources],
   }, claudePlatform101FinalReview, translation(claudePlatform101FinalReviewUk, "Повторення")),
 ];
@@ -229,8 +229,8 @@ export const claude101Catalog = {
   version: 1,
   title: "Claude 101 Course Preparation",
   titleUk: "Підготовка до курсу Claude 101",
-  description: "Everything for the free Claude 101 badge on Claude Academy: course map, study notes on prompting, projects, artifacts, skills, connectors and Research, a 15-question practice quiz and a final checklist.",
-  descriptionUk: "Усе для безкоштовного бейджа Claude 101 на Claude Academy: карта курсу, конспекти про промптинг, projects, artifacts, skills, connectors і Research, 15 тренувальних питань і фінальний чеклист.",
+  description: "Everything for the free Claude 101 badge on Claude Academy: course map, study notes on prompting, projects, artifacts, skills, connectors and Research, a 15-question practice quiz and a final review.",
+  descriptionUk: "Усе для безкоштовного бейджа Claude 101 на Claude Academy: карта курсу, конспекти про промптинг, projects, artifacts, skills, connectors і Research, 15 тренувальних питань і фінальне повторення.",
   lastReviewedAt: "2026-11-25",
   taxonomy: claude101Taxonomy,
   sources: claude101Sources,
@@ -243,8 +243,8 @@ export const claudeCode101Catalog = {
   version: 1,
   title: "Claude Code 101 Course Preparation",
   titleUk: "Підготовка до курсу Claude Code 101",
-  description: "Everything for the free Claude Code 101 badge on Claude Academy: course map, study notes on the agent loop, permission modes, daily workflows and customization, a hands-on lab in this repository, a 15-question practice quiz and a final checklist.",
-  descriptionUk: "Усе для безкоштовного бейджа Claude Code 101 на Claude Academy: карта курсу, конспекти про agent loop, permission modes, щоденні workflows і налаштування, лабораторна в цьому репозиторії, 15 тренувальних питань і фінальний чеклист.",
+  description: "Everything for the free Claude Code 101 badge on Claude Academy: course map, study notes on the agent loop, permission modes, daily workflows and customization, a hands-on lab in this repository, a 15-question practice quiz and a final review.",
+  descriptionUk: "Усе для безкоштовного бейджа Claude Code 101 на Claude Academy: карта курсу, конспекти про agent loop, permission modes, щоденні workflows і налаштування, лабораторна в цьому репозиторії, 15 тренувальних питань і фінальне повторення.",
   lastReviewedAt: "2026-11-25",
   taxonomy: claudeCode101Taxonomy,
   sources: claudeCode101Sources,
@@ -257,8 +257,8 @@ export const claudePlatform101Catalog = {
   version: 1,
   title: "Claude Platform 101 Course Preparation",
   titleUk: "Підготовка до курсу Claude Platform 101",
-  description: "Everything for the free Claude Platform 101 badge on Claude Academy: course map, study notes on requests, model choice, the agent loop, tools, MCP and managed agents, a hands-on lab, a 15-question practice quiz and a final checklist.",
-  descriptionUk: "Усе для безкоштовного бейджа Claude Platform 101 на Claude Academy: карта курсу, конспекти про запити, вибір моделі, agent loop, tools, MCP і managed agents, лабораторна, 15 тренувальних питань і фінальний чеклист.",
+  description: "Everything for the free Claude Platform 101 badge on Claude Academy: course map, study notes on requests, model choice, the agent loop, tools, MCP and managed agents, a hands-on lab, a 15-question practice quiz and a final review.",
+  descriptionUk: "Усе для безкоштовного бейджа Claude Platform 101 на Claude Academy: карта курсу, конспекти про запити, вибір моделі, agent loop, tools, MCP і managed agents, лабораторна, 15 тренувальних питань і фінальне повторення.",
   lastReviewedAt: "2026-11-25",
   taxonomy: claudePlatform101Taxonomy,
   sources: claudePlatform101Sources,

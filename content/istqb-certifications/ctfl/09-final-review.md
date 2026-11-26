@@ -1,6 +1,4 @@
-# Final review & exam-day checklist
-
-Use this after the chapters and the mock exam.
+# Final review
 
 ## Terms the exam likes to swap
 
@@ -22,21 +20,3 @@ Use this after the chapters and the mock exam.
 - **Decision table:** n binary conditions give 2 to the power n columns before collapsing.
 - **Three-point estimation:** E = (a + 4m + b) / 6 and SD = (b − a) / 6.
 - **Coverage:** items exercised divided by items identified, as a percentage.
-
-## Readiness checklist
-
-- [ ] All six chapters read, chapters 4 and 5 twice
-- [ ] Every calculation in chapter 4 worked on paper
-- [ ] Mock exam score of 32 or more, with every wrong answer explained
-- [ ] Official sample exams A to D taken under a 60-minute timer
-- [ ] Extra 15 minutes requested if the exam is not in your native language
-
-## Exam day
-
-- 60 minutes for 40 questions is 90 seconds each; calculation questions take longer, so move fast on K1 recall.
-- There is no negative marking: answer every question.
-- Read for qualifiers such as "most", "best" and "not" before looking at the options.
-
-## Explain before memorising
-
-For each missed question retain a requirement, a worked input/output example and the coverage denominator. Recalculate 3-value BVA for all integers 1–100 as -1,0,1,2,99,100,101,102. Then change the range to 1–1 and deduplicate overlapping neighbourhoods. Explain why test count alone is not a coverage criterion and why a passing mock does not prove readiness across all learning objectives.
