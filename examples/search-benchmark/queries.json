@@ -1,0 +1,1637 @@
+[
+  {
+    "id": "fixtures-exact",
+    "intent": "fixtures",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "pytest fixtures",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "fixtures-setup-teardown-and-dependency-injection"
+      }
+    ]
+  },
+  {
+    "id": "fixtures-prefix",
+    "intent": "fixtures",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "pytest fixt",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "fixtures-setup-teardown-and-dependency-injection"
+      }
+    ]
+  },
+  {
+    "id": "fixtures-typo",
+    "intent": "fixtures",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "pytest fixtuers",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "fixtures-setup-teardown-and-dependency-injection"
+      }
+    ]
+  },
+  {
+    "id": "fixtures-alias-morphology",
+    "intent": "fixtures",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "mixed",
+    "query": "pytest фікстурами",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "fixtures-setup-teardown-and-dependency-injection"
+      }
+    ]
+  },
+  {
+    "id": "fixtures-natural-language",
+    "intent": "fixtures",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "як підготувати дані перед тестом і прибрати після нього",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "fixtures-setup-teardown-and-dependency-injection"
+      }
+    ]
+  },
+  {
+    "id": "parametrize-exact",
+    "intent": "parametrize",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "pytest parametrize",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "parametrize-one-test-many-cases"
+      }
+    ]
+  },
+  {
+    "id": "parametrize-prefix",
+    "intent": "parametrize",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "pytest parametr",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "parametrize-one-test-many-cases"
+      }
+    ]
+  },
+  {
+    "id": "parametrize-typo",
+    "intent": "parametrize",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "pytest parametriz",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "parametrize-one-test-many-cases"
+      }
+    ]
+  },
+  {
+    "id": "parametrize-alias-morphology",
+    "intent": "parametrize",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "mixed",
+    "query": "pytest параметризація",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "parametrize-one-test-many-cases"
+      }
+    ]
+  },
+  {
+    "id": "parametrize-natural-language",
+    "intent": "parametrize",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "запустити один тест із різними наборами даних",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "parametrize-one-test-many-cases"
+      }
+    ]
+  },
+  {
+    "id": "boundaries-exact",
+    "intent": "boundaries",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "boundary value analysis",
+    "targets": [
+      {
+        "route": "/learn/qa-fundamentals",
+        "topic": "requirements-test-design",
+        "section": "boundary-value-analysis"
+      }
+    ]
+  },
+  {
+    "id": "boundaries-prefix",
+    "intent": "boundaries",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "boundary val",
+    "targets": [
+      {
+        "route": "/learn/qa-fundamentals",
+        "topic": "requirements-test-design",
+        "section": "boundary-value-analysis"
+      }
+    ]
+  },
+  {
+    "id": "boundaries-typo",
+    "intent": "boundaries",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "boundry value analysis",
+    "targets": [
+      {
+        "route": "/learn/qa-fundamentals",
+        "topic": "requirements-test-design",
+        "section": "boundary-value-analysis"
+      }
+    ]
+  },
+  {
+    "id": "boundaries-alias-morphology",
+    "intent": "boundaries",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "аналіз граничних значень",
+    "targets": [
+      {
+        "route": "/learn/qa-fundamentals",
+        "topic": "requirements-test-design",
+        "section": "boundary-value-analysis"
+      }
+    ]
+  },
+  {
+    "id": "boundaries-natural-language",
+    "intent": "boundaries",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "які значення перевіряти на межах допустимого діапазону",
+    "targets": [
+      {
+        "route": "/learn/qa-fundamentals",
+        "topic": "requirements-test-design",
+        "section": "boundary-value-analysis"
+      }
+    ]
+  },
+  {
+    "id": "oauth-exact",
+    "intent": "oauth",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "OAuth 2.0",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "identity-and-authorization",
+        "section": "oauth-2-0"
+      }
+    ]
+  },
+  {
+    "id": "oauth-prefix",
+    "intent": "oauth",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "OAuth",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "identity-and-authorization",
+        "section": "oauth-2-0"
+      }
+    ]
+  },
+  {
+    "id": "oauth-typo",
+    "intent": "oauth",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "OAutth",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "identity-and-authorization",
+        "section": "oauth-2-0"
+      }
+    ]
+  },
+  {
+    "id": "oauth-alias-morphology",
+    "intent": "oauth",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "оаут",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "identity-and-authorization",
+        "section": "oauth-2-0"
+      }
+    ]
+  },
+  {
+    "id": "oauth-natural-language",
+    "intent": "oauth",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "надати застосунку доступ без передачі свого пароля",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "identity-and-authorization",
+        "section": "oauth-2-0"
+      }
+    ]
+  },
+  {
+    "id": "transactions-exact",
+    "intent": "transactions",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "transactions atomicity",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "dml-transactions",
+        "section": "transactions-and-atomicity"
+      }
+    ]
+  },
+  {
+    "id": "transactions-prefix",
+    "intent": "transactions",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "transact",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "dml-transactions",
+        "section": "transactions-and-atomicity"
+      }
+    ]
+  },
+  {
+    "id": "transactions-typo",
+    "intent": "transactions",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "transactons atomicity",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "dml-transactions",
+        "section": "transactions-and-atomicity"
+      }
+    ]
+  },
+  {
+    "id": "transactions-alias-morphology",
+    "intent": "transactions",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "транзакціями",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "dml-transactions",
+        "section": "transactions-and-atomicity"
+      }
+    ]
+  },
+  {
+    "id": "transactions-natural-language",
+    "intent": "transactions",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "зберегти всі зміни разом або скасувати їх",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "dml-transactions",
+        "section": "transactions-and-atomicity"
+      }
+    ]
+  },
+  {
+    "id": "joins-exact",
+    "intent": "joins",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "SQL joins",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "joins-relationships"
+      }
+    ]
+  },
+  {
+    "id": "joins-prefix",
+    "intent": "joins",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "SQL joi",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "joins-relationships"
+      }
+    ]
+  },
+  {
+    "id": "joins-typo",
+    "intent": "joins",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "SQL jions",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "joins-relationships"
+      }
+    ]
+  },
+  {
+    "id": "joins-alias-morphology",
+    "intent": "joins",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "mixed",
+    "query": "SQL з’єднання таблиць",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "joins-relationships"
+      }
+    ]
+  },
+  {
+    "id": "joins-natural-language",
+    "intent": "joins",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "як поєднати рядки двох таблиць за ключем",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "joins-relationships"
+      }
+    ]
+  },
+  {
+    "id": "flakiness-exact",
+    "intent": "flakiness",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "flaky tests",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "flakiness",
+        "section": "the-root-causes-of-flaky-tests"
+      }
+    ]
+  },
+  {
+    "id": "flakiness-prefix",
+    "intent": "flakiness",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "flak",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "flakiness",
+        "section": "the-root-causes-of-flaky-tests"
+      }
+    ]
+  },
+  {
+    "id": "flakiness-typo",
+    "intent": "flakiness",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "flaky tsets",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "flakiness",
+        "section": "the-root-causes-of-flaky-tests"
+      }
+    ]
+  },
+  {
+    "id": "flakiness-alias-morphology",
+    "intent": "flakiness",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "нестабільними тестами",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "flakiness",
+        "section": "the-root-causes-of-flaky-tests"
+      }
+    ]
+  },
+  {
+    "id": "flakiness-natural-language",
+    "intent": "flakiness",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "чому тести іноді падають без зміни коду",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "flakiness",
+        "section": "the-root-causes-of-flaky-tests"
+      }
+    ]
+  },
+  {
+    "id": "generators-exact",
+    "intent": "generators",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "generator functions yield",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "generator-functions-and-yield"
+      }
+    ]
+  },
+  {
+    "id": "generators-prefix",
+    "intent": "generators",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "generat",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "generator-functions-and-yield"
+      }
+    ]
+  },
+  {
+    "id": "generators-typo",
+    "intent": "generators",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "generatr functions",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "generator-functions-and-yield"
+      }
+    ]
+  },
+  {
+    "id": "generators-alias-morphology",
+    "intent": "generators",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "генераторами",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "generator-functions-and-yield"
+      }
+    ]
+  },
+  {
+    "id": "generators-natural-language",
+    "intent": "generators",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "повертати елементи поступово без створення цілого списку",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "generator-functions-and-yield"
+      }
+    ]
+  },
+  {
+    "id": "decorators-exact",
+    "intent": "decorators",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "writing decorators",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "writing-your-own-decorators"
+      }
+    ]
+  },
+  {
+    "id": "decorators-prefix",
+    "intent": "decorators",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "decorat",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "writing-your-own-decorators"
+      }
+    ]
+  },
+  {
+    "id": "decorators-typo",
+    "intent": "decorators",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "decoratros",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "writing-your-own-decorators"
+      }
+    ]
+  },
+  {
+    "id": "decorators-alias-morphology",
+    "intent": "decorators",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "декораторами",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "writing-your-own-decorators"
+      }
+    ]
+  },
+  {
+    "id": "decorators-natural-language",
+    "intent": "decorators",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "додати поведінку функції без зміни її реалізації",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "writing-your-own-decorators"
+      }
+    ]
+  },
+  {
+    "id": "rebase-exact",
+    "intent": "rebase",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "rebase replays",
+    "targets": [
+      {
+        "route": "/learn/git",
+        "topic": "merge-rebase",
+        "section": "rebase-replays-a-line-of-work"
+      }
+    ]
+  },
+  {
+    "id": "rebase-prefix",
+    "intent": "rebase",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "rebas",
+    "targets": [
+      {
+        "route": "/learn/git",
+        "topic": "merge-rebase",
+        "section": "rebase-replays-a-line-of-work"
+      }
+    ]
+  },
+  {
+    "id": "rebase-typo",
+    "intent": "rebase",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "rebsae",
+    "targets": [
+      {
+        "route": "/learn/git",
+        "topic": "merge-rebase",
+        "section": "rebase-replays-a-line-of-work"
+      }
+    ]
+  },
+  {
+    "id": "rebase-alias-morphology",
+    "intent": "rebase",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "перебазування",
+    "targets": [
+      {
+        "route": "/learn/git",
+        "topic": "merge-rebase",
+        "section": "rebase-replays-a-line-of-work"
+      }
+    ]
+  },
+  {
+    "id": "rebase-natural-language",
+    "intent": "rebase",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "перенести мої коміти на нову основу гілки",
+    "targets": [
+      {
+        "route": "/learn/git",
+        "topic": "merge-rebase",
+        "section": "rebase-replays-a-line-of-work"
+      }
+    ]
+  },
+  {
+    "id": "volumes-exact",
+    "intent": "volumes",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "Docker volumes",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "storage",
+        "section": "storage-choices"
+      }
+    ]
+  },
+  {
+    "id": "volumes-prefix",
+    "intent": "volumes",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "Docker vol",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "storage",
+        "section": "storage-choices"
+      }
+    ]
+  },
+  {
+    "id": "volumes-typo",
+    "intent": "volumes",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "Docker volumse",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "storage",
+        "section": "storage-choices"
+      }
+    ]
+  },
+  {
+    "id": "volumes-alias-morphology",
+    "intent": "volumes",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "mixed",
+    "query": "Docker томами",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "storage",
+        "section": "storage-choices"
+      }
+    ]
+  },
+  {
+    "id": "volumes-natural-language",
+    "intent": "volumes",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "як зберегти дані після видалення контейнера",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "storage",
+        "section": "storage-choices"
+      }
+    ]
+  },
+  {
+    "id": "health-exact",
+    "intent": "health",
+    "split": "development",
+    "category": "exact",
+    "language": "en",
+    "query": "running healthy ready",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "container-lifecycle",
+        "section": "running-healthy-and-ready"
+      }
+    ]
+  },
+  {
+    "id": "health-prefix",
+    "intent": "health",
+    "split": "development",
+    "category": "prefix",
+    "language": "en",
+    "query": "healthy rea",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "container-lifecycle",
+        "section": "running-healthy-and-ready"
+      }
+    ]
+  },
+  {
+    "id": "health-typo",
+    "intent": "health",
+    "split": "development",
+    "category": "typo",
+    "language": "en",
+    "query": "healthy raedy",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "container-lifecycle",
+        "section": "running-healthy-and-ready"
+      }
+    ]
+  },
+  {
+    "id": "health-alias-morphology",
+    "intent": "health",
+    "split": "development",
+    "category": "alias-morphology",
+    "language": "mixed",
+    "query": "Docker здоров’я",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "container-lifecycle",
+        "section": "running-healthy-and-ready"
+      }
+    ]
+  },
+  {
+    "id": "health-natural-language",
+    "intent": "health",
+    "split": "development",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "контейнер запущений але застосунок ще не готовий",
+    "targets": [
+      {
+        "route": "/learn/docker",
+        "topic": "container-lifecycle",
+        "section": "running-healthy-and-ready"
+      }
+    ]
+  },
+  {
+    "id": "percentiles-exact",
+    "intent": "percentiles",
+    "split": "holdout",
+    "category": "exact",
+    "language": "en",
+    "query": "averages tail",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "averages-hide-the-tail"
+      }
+    ]
+  },
+  {
+    "id": "percentiles-prefix",
+    "intent": "percentiles",
+    "split": "holdout",
+    "category": "prefix",
+    "language": "en",
+    "query": "averages ta",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "averages-hide-the-tail"
+      }
+    ]
+  },
+  {
+    "id": "percentiles-typo",
+    "intent": "percentiles",
+    "split": "holdout",
+    "category": "typo",
+    "language": "en",
+    "query": "avergaes tail",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "averages-hide-the-tail"
+      }
+    ]
+  },
+  {
+    "id": "percentiles-alias-morphology",
+    "intent": "percentiles",
+    "split": "holdout",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "перцентилями",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "averages-hide-the-tail"
+      }
+    ]
+  },
+  {
+    "id": "percentiles-natural-language",
+    "intent": "percentiles",
+    "split": "holdout",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "чому середній час відповіді приховує повільні запити",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "averages-hide-the-tail"
+      }
+    ]
+  },
+  {
+    "id": "retries-exact",
+    "intent": "retries",
+    "split": "holdout",
+    "category": "exact",
+    "language": "en",
+    "query": "errors retries rate limiting",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "http-foundations",
+        "section": "errors-retries-and-rate-limiting"
+      }
+    ]
+  },
+  {
+    "id": "retries-prefix",
+    "intent": "retries",
+    "split": "holdout",
+    "category": "prefix",
+    "language": "en",
+    "query": "retries rate lim",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "http-foundations",
+        "section": "errors-retries-and-rate-limiting"
+      }
+    ]
+  },
+  {
+    "id": "retries-typo",
+    "intent": "retries",
+    "split": "holdout",
+    "category": "typo",
+    "language": "en",
+    "query": "retries rate limitng",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "http-foundations",
+        "section": "errors-retries-and-rate-limiting"
+      }
+    ]
+  },
+  {
+    "id": "retries-alias-morphology",
+    "intent": "retries",
+    "split": "holdout",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "повторними спробами",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "http-foundations",
+        "section": "errors-retries-and-rate-limiting"
+      }
+    ]
+  },
+  {
+    "id": "retries-natural-language",
+    "intent": "retries",
+    "split": "holdout",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "що робити коли сервер тимчасово не відповідає",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "http-foundations",
+        "section": "errors-retries-and-rate-limiting"
+      }
+    ]
+  },
+  {
+    "id": "mqtt-exact",
+    "intent": "mqtt",
+    "split": "holdout",
+    "category": "exact",
+    "language": "en",
+    "query": "MQTT QoS",
+    "targets": [
+      {
+        "route": "/learn/testing-tools",
+        "topic": "mqtt-tools"
+      }
+    ]
+  },
+  {
+    "id": "mqtt-prefix",
+    "intent": "mqtt",
+    "split": "holdout",
+    "category": "prefix",
+    "language": "en",
+    "query": "MQTT",
+    "targets": [
+      {
+        "route": "/learn/testing-tools",
+        "topic": "mqtt-tools"
+      }
+    ]
+  },
+  {
+    "id": "mqtt-typo",
+    "intent": "mqtt",
+    "split": "holdout",
+    "category": "typo",
+    "language": "en",
+    "query": "MQTT retian",
+    "targets": [
+      {
+        "route": "/learn/testing-tools",
+        "topic": "mqtt-tools"
+      }
+    ]
+  },
+  {
+    "id": "mqtt-alias-morphology",
+    "intent": "mqtt",
+    "split": "holdout",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "мкютт",
+    "targets": [
+      {
+        "route": "/learn/testing-tools",
+        "topic": "mqtt-tools"
+      }
+    ]
+  },
+  {
+    "id": "mqtt-natural-language",
+    "intent": "mqtt",
+    "split": "holdout",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "як перевірити доставку повідомлень брокером пристрою",
+    "targets": [
+      {
+        "route": "/learn/testing-tools",
+        "topic": "mqtt-tools"
+      }
+    ]
+  },
+  {
+    "id": "bluetooth-exact",
+    "intent": "bluetooth",
+    "split": "holdout",
+    "category": "exact",
+    "language": "en",
+    "query": "Bluetooth Low Energy",
+    "targets": [
+      {
+        "route": "/learn/embedded",
+        "topic": "wireless-connectivity",
+        "section": "3-bluetooth-classic-vs-bluetooth-low-energy"
+      }
+    ]
+  },
+  {
+    "id": "bluetooth-prefix",
+    "intent": "bluetooth",
+    "split": "holdout",
+    "category": "prefix",
+    "language": "en",
+    "query": "Bluetoo",
+    "targets": [
+      {
+        "route": "/learn/embedded",
+        "topic": "wireless-connectivity",
+        "section": "3-bluetooth-classic-vs-bluetooth-low-energy"
+      }
+    ]
+  },
+  {
+    "id": "bluetooth-typo",
+    "intent": "bluetooth",
+    "split": "holdout",
+    "category": "typo",
+    "language": "en",
+    "query": "Bluetoth Low Energy",
+    "targets": [
+      {
+        "route": "/learn/embedded",
+        "topic": "wireless-connectivity",
+        "section": "3-bluetooth-classic-vs-bluetooth-low-energy"
+      }
+    ]
+  },
+  {
+    "id": "bluetooth-alias-morphology",
+    "intent": "bluetooth",
+    "split": "holdout",
+    "category": "alias-morphology",
+    "language": "en",
+    "query": "BLE",
+    "targets": [
+      {
+        "route": "/learn/embedded",
+        "topic": "wireless-connectivity",
+        "section": "3-bluetooth-classic-vs-bluetooth-low-energy"
+      }
+    ]
+  },
+  {
+    "id": "bluetooth-natural-language",
+    "intent": "bluetooth",
+    "split": "holdout",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "малопотужний бездротовий зв’язок сенсора з телефоном",
+    "targets": [
+      {
+        "route": "/learn/embedded",
+        "topic": "wireless-connectivity",
+        "section": "3-bluetooth-classic-vs-bluetooth-low-energy"
+      }
+    ]
+  },
+  {
+    "id": "cardinality-exact",
+    "intent": "cardinality",
+    "split": "holdout",
+    "category": "exact",
+    "language": "en",
+    "query": "cardinality",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "cardinality"
+      }
+    ]
+  },
+  {
+    "id": "cardinality-prefix",
+    "intent": "cardinality",
+    "split": "holdout",
+    "category": "prefix",
+    "language": "en",
+    "query": "cardinal",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "cardinality"
+      }
+    ]
+  },
+  {
+    "id": "cardinality-typo",
+    "intent": "cardinality",
+    "split": "holdout",
+    "category": "typo",
+    "language": "en",
+    "query": "cardinalty",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "cardinality"
+      }
+    ]
+  },
+  {
+    "id": "cardinality-alias-morphology",
+    "intent": "cardinality",
+    "split": "holdout",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "кардинальністю",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "cardinality"
+      }
+    ]
+  },
+  {
+    "id": "cardinality-natural-language",
+    "intent": "cardinality",
+    "split": "holdout",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "чому мітки з ідентифікаторами користувачів створюють забагато часових рядів",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "cardinality"
+      }
+    ]
+  },
+  {
+    "id": "judge-exact",
+    "intent": "judge",
+    "split": "holdout",
+    "category": "exact",
+    "language": "en",
+    "query": "LLM judge",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "model-graded-evaluation"
+      }
+    ]
+  },
+  {
+    "id": "judge-prefix",
+    "intent": "judge",
+    "split": "holdout",
+    "category": "prefix",
+    "language": "en",
+    "query": "LLM judg",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "model-graded-evaluation"
+      }
+    ]
+  },
+  {
+    "id": "judge-typo",
+    "intent": "judge",
+    "split": "holdout",
+    "category": "typo",
+    "language": "en",
+    "query": "LLM judeg",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "model-graded-evaluation"
+      }
+    ]
+  },
+  {
+    "id": "judge-alias-morphology",
+    "intent": "judge",
+    "split": "holdout",
+    "category": "alias-morphology",
+    "language": "mixed",
+    "query": "LLM суддя",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "model-graded-evaluation"
+      }
+    ]
+  },
+  {
+    "id": "judge-natural-language",
+    "intent": "judge",
+    "split": "holdout",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "оцінити відповідь мовної моделі іншою моделлю",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "model-graded-evaluation"
+      }
+    ]
+  },
+  {
+    "id": "injection-exact",
+    "intent": "injection",
+    "split": "holdout",
+    "category": "exact",
+    "language": "en",
+    "query": "prompt injection",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "security-red-teaming",
+        "section": "prompt-injection"
+      }
+    ]
+  },
+  {
+    "id": "injection-prefix",
+    "intent": "injection",
+    "split": "holdout",
+    "category": "prefix",
+    "language": "en",
+    "query": "prompt inj",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "security-red-teaming",
+        "section": "prompt-injection"
+      }
+    ]
+  },
+  {
+    "id": "injection-typo",
+    "intent": "injection",
+    "split": "holdout",
+    "category": "typo",
+    "language": "en",
+    "query": "prompt injecton",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "security-red-teaming",
+        "section": "prompt-injection"
+      }
+    ]
+  },
+  {
+    "id": "injection-alias-morphology",
+    "intent": "injection",
+    "split": "holdout",
+    "category": "alias-morphology",
+    "language": "uk",
+    "query": "ін’єкція промпту",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "security-red-teaming",
+        "section": "prompt-injection"
+      }
+    ]
+  },
+  {
+    "id": "injection-natural-language",
+    "intent": "injection",
+    "split": "holdout",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "шкідливі інструкції всередині отриманого документа",
+    "targets": [
+      {
+        "route": "/learn/llm",
+        "topic": "security-red-teaming",
+        "section": "prompt-injection"
+      }
+    ]
+  },
+  {
+    "id": "schemas-exact",
+    "intent": "schemas",
+    "split": "holdout",
+    "category": "exact",
+    "language": "en",
+    "query": "OpenAPI",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "contracts-and-schemas",
+        "section": "openapi"
+      }
+    ]
+  },
+  {
+    "id": "schemas-prefix",
+    "intent": "schemas",
+    "split": "holdout",
+    "category": "prefix",
+    "language": "en",
+    "query": "OpenAP",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "contracts-and-schemas",
+        "section": "openapi"
+      }
+    ]
+  },
+  {
+    "id": "schemas-typo",
+    "intent": "schemas",
+    "split": "holdout",
+    "category": "typo",
+    "language": "en",
+    "query": "OpenPAI",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "contracts-and-schemas",
+        "section": "openapi"
+      }
+    ]
+  },
+  {
+    "id": "schemas-alias-morphology",
+    "intent": "schemas",
+    "split": "holdout",
+    "category": "alias-morphology",
+    "language": "mixed",
+    "query": "OpenAPI схемами",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "contracts-and-schemas",
+        "section": "openapi"
+      }
+    ]
+  },
+  {
+    "id": "schemas-natural-language",
+    "intent": "schemas",
+    "split": "holdout",
+    "category": "natural-language",
+    "language": "uk",
+    "query": "описати контракт запитів і відповідей сервісу",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "contracts-and-schemas",
+        "section": "openapi"
+      }
+    ]
+  },
+  {
+    "id": "fixtures-infix",
+    "intent": "fixtures",
+    "split": "development",
+    "category": "infix",
+    "language": "en",
+    "query": "xtures",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "fixtures-setup-teardown-and-dependency-injection"
+      }
+    ]
+  },
+  {
+    "id": "parametrize-infix",
+    "intent": "parametrize",
+    "split": "development",
+    "category": "infix",
+    "language": "en",
+    "query": "rametrize",
+    "targets": [
+      {
+        "route": "/learn/automation",
+        "topic": "pytest-core",
+        "section": "parametrize-one-test-many-cases"
+      }
+    ]
+  },
+  {
+    "id": "boundaries-infix",
+    "intent": "boundaries",
+    "split": "development",
+    "category": "infix",
+    "language": "en",
+    "query": "oundary",
+    "targets": [
+      {
+        "route": "/learn/qa-fundamentals",
+        "topic": "requirements-test-design",
+        "section": "boundary-value-analysis"
+      }
+    ]
+  },
+  {
+    "id": "transactions-infix",
+    "intent": "transactions",
+    "split": "development",
+    "category": "infix",
+    "language": "en",
+    "query": "ansactions",
+    "targets": [
+      {
+        "route": "/learn/data",
+        "topic": "dml-transactions",
+        "section": "transactions-and-atomicity"
+      }
+    ]
+  },
+  {
+    "id": "generators-infix",
+    "intent": "generators",
+    "split": "development",
+    "category": "infix",
+    "language": "en",
+    "query": "nerator",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "generator-functions-and-yield"
+      }
+    ]
+  },
+  {
+    "id": "decorators-infix",
+    "intent": "decorators",
+    "split": "development",
+    "category": "infix",
+    "language": "en",
+    "query": "corators",
+    "targets": [
+      {
+        "route": "/learn/programming",
+        "topic": "iterators-generators-decorators-functional",
+        "section": "writing-your-own-decorators"
+      }
+    ]
+  },
+  {
+    "id": "rebase-infix",
+    "intent": "rebase",
+    "split": "development",
+    "category": "infix",
+    "language": "en",
+    "query": "ebase",
+    "targets": [
+      {
+        "route": "/learn/git",
+        "topic": "merge-rebase",
+        "section": "rebase-replays-a-line-of-work"
+      }
+    ]
+  },
+  {
+    "id": "percentiles-infix",
+    "intent": "percentiles",
+    "split": "holdout",
+    "category": "infix",
+    "language": "en",
+    "query": "verages",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "averages-hide-the-tail"
+      }
+    ]
+  },
+  {
+    "id": "cardinality-infix",
+    "intent": "cardinality",
+    "split": "holdout",
+    "category": "infix",
+    "language": "en",
+    "query": "rdinality",
+    "targets": [
+      {
+        "route": "/learn/observability",
+        "topic": "metrics",
+        "section": "cardinality"
+      }
+    ]
+  },
+  {
+    "id": "schemas-infix",
+    "intent": "schemas",
+    "split": "holdout",
+    "category": "infix",
+    "language": "en",
+    "query": "penAPI",
+    "targets": [
+      {
+        "route": "/learn/api",
+        "topic": "contracts-and-schemas",
+        "section": "openapi"
+      }
+    ]
+  }
+]

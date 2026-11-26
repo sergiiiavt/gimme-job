@@ -270,6 +270,14 @@ including local commands, production safety guards, Azure Load Testing setup,
 and current VUH cost notes, lives in
 [`tests/performance/gimmejob/`](tests/performance/gimmejob/README.md).
 
+## Offline search-engine prototype
+
+The reproducible [Typesense/Orama comparison](examples/search-benchmark/README.md)
+uses the canonical public corpus and labelled EN/UK queries. Run it with
+`npm run benchmark:search -- --typesense-bin=/absolute/path/to/typesense-server`.
+The [search design](docs/SEARCH-DESIGN.md) records the measured trade-offs and
+remaining integration work. This prototype does not change production search.
+
 ## Quality checks
 
 During implementation:
