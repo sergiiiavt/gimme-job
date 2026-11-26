@@ -106,8 +106,8 @@ const topics: AgenticTopic[] = [
     id: "agent-projects-lab",
     label: "Projects and MCP lab",
     labelUk: "Проєкти й лабораторія MCP",
-    description: "Choosing narrow agent projects for QA, a definition of done, and a runnable lab: an MCP server, client and triage agent on the 2026-07-28 revision of the protocol.",
-    descriptionUk: "Як обрати вузький агентний проєкт для QA, визначення «готово» і практична лабораторна: MCP-сервер, клієнт і агент для розбору збоїв за ревізією протоколу 2026-07-28.",
+    description: "Example QA agent scopes, design controls, and a runnable lab: an MCP server, client and triage agent on the 2026-07-28 revision of the protocol.",
+    descriptionUk: "Приклади обсягу QA-агентів, елементи дизайну й практична лабораторна: MCP-сервер, клієнт і агент для розбору збоїв за ревізією протоколу 2026-07-28.",
   }, agentProjectsLab, agentProjectsLabUk, ["mcp-discover", "mcp-stdio", "mcp-versioning", "mcp-tools", "mcp-inspector", "anthropic-building-agents", "anthropic-writing-tools", "huggingface-agents-course"]),
   chapter({
     id: "agent-harnesses",

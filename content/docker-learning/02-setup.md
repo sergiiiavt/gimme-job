@@ -65,7 +65,7 @@ On Desktop, images and named volumes live in the Linux VM's managed storage. A m
 
 ## Summary
 
-Keep the client, daemon, context, architecture and published host port explicit. Continue when both a short process and a reachable local service work.
+The client, daemon, context, architecture and published host port describe different parts of the runtime. A process run and an HTTP response check different aspects of the installation.
 
 ## Sources
 

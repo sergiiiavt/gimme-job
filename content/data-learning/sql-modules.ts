@@ -297,7 +297,7 @@ ${END}
 
 The sample runner stores ISO-formatted dates/timestamps as text, which sort correctly when formats are consistent. Real databases usually use DATE, TIMESTAMP, TIMESTAMP WITH TIME ZONE, or vendor equivalents. Date arithmetic and truncation syntax vary significantly between engines.
 
-A robust learning rule is: understand the **concept** (comparison, extraction, interval, timezone) and then consult the documentation for your target engine's exact function.
+Comparison, extraction, interval and timezone are distinct date/time operations; their function names and exact behavior depend on the database engine.
 
 ## CAST and type conversion
 
@@ -1287,7 +1287,7 @@ Database checks are valuable when they verify a behavior that cannot be observed
     sourceIds: ["postgresql-18-tutorial", "postgresql-18-queries", "sqlite-select", "sqlite-transaction", "owasp-sql-injection"],
     markdown: String.raw`# SQL dialects & production habits
 
-Finishing a SQL tutorial does not mean every query is portable or production-safe. Real work adds dialect differences, large data volumes, concurrent transactions, permissions, migrations, monitoring, and failure recovery.
+Production SQL involves dialect differences, large data volumes, concurrent transactions, permissions, migrations, monitoring and failure recovery.
 
 ## Common dialect differences to expect
 
@@ -1304,7 +1304,7 @@ Check target-engine documentation for:
 - stored procedures/functions/triggers,
 - locking hints and isolation behavior.
 
-Do not “learn around” these differences by memorizing every vendor. Learn the relational operation first, then look up the concrete syntax.
+Relational operations can be shared across engines while their concrete syntax, types and transaction behavior differ.
 
 ## Transactions and isolation in production
 
@@ -1333,65 +1333,56 @@ Important SQL deserves the same review standards as application code:
 - migration/rollback strategy for schema changes,
 - representative tests.
 
-## Choosing a practice engine
+## Browser and server engines
 
-SQLite is ideal for this site's zero-install browser exercises and teaches a large portion of relational SQL. PostgreSQL is a strong next step for server-side practice because it exposes rich types, constraints, transactions, query plans, window functions, CTEs, JSON, roles, and production-grade concurrency behavior.
+The site's browser examples run on isolated SQLite databases. PostgreSQL, MySQL and SQL Server have their own type systems, constraints, transaction behavior and query planners, so SQLite execution alone does not establish compatibility with those engines.
 
-## What “done” looks like
+## Query correctness
 
-You should be able to solve a new data problem without searching for a copied query: define the desired grain, identify relations and keys, choose filters/joins/grouping/windows, predict NULL and duplicate behavior, produce deterministic results, and validate performance/security assumptions against the target engine.
-
-**Capstone:** write a small investigation using at least one join, one aggregate or window function, one CTE, and one integrity assertion. Explain the result grain and why your query is safe against duplicates and NULL surprises.`
+A correct query has a defined result grain, matching relationship keys, intentional NULL and duplicate handling, and deterministic ordering when the result requires it. A plausible row count alone does not establish that the selected rows or aggregate values are correct.`
   },
   {
     id: "sql-practice-roadmap",
-    label: "Practice roadmap & mastery checks",
-    navLabel: "Practice roadmap",
+    label: "SQL query patterns reference",
+    navLabel: "Query patterns",
     level: "Expert",
     count: 6,
-    description: "Convert the curriculum into deliberate practice with runnable exercises, interview-style problems, debugging tasks, and a clear definition of SQL mastery.",
+    description: "A reference to filtering, relationships, analytical queries, transactional writes and data-quality checks, with links to the detailed material.",
     sourceIds: ["sqlbolt", "w3schools-sql-syllabus", "postgresql-18-tutorial"],
-    markdown: String.raw`# Practice roadmap & mastery checks
+    markdown: String.raw`# SQL query patterns reference
 
-SQL becomes durable knowledge when you repeatedly solve unfamiliar questions against data. Reading syntax is only the first pass.
+Common SQL problems grouped by the operation and result shape involved.
 
-## Stage 1 — query fluency
+## Filtering and result shape
 
-Without notes, be able to write SELECT, WHERE, ORDER BY, aliases, DISTINCT, IN, BETWEEN, LIKE, IS NULL, CASE, and basic aggregates. Complete several variations of the same problem rather than one copied example.
+SELECT determines the output columns; WHERE selects rows; ORDER BY defines result order. DISTINCT removes duplicate output rows, not necessarily duplicate business entities. NULL tests use IS NULL or IS NOT NULL rather than equality with NULL.
 
-## Stage 2 — relational reasoning
+## Relationships and result grain
 
-Practice INNER/LEFT joins, missing relationships, many-to-many joins, GROUP BY/HAVING, EXISTS/NOT EXISTS, UNION ALL, and EXCEPT. Before each query, write down the expected output grain.
+INNER JOIN keeps matched row combinations; LEFT JOIN also retains unmatched rows from its left side. One-to-many joins can multiply rows and inflate aggregates. EXISTS and NOT EXISTS test whether related rows exist without adding their columns to the result.
 
-## Stage 3 — analytical SQL
+## Analytical queries
 
-Solve latest-row-per-group, top-N-per-group, running totals, previous/next event comparison, duplicate survivor selection, and sequence-gap detection with CTEs and window functions.
+Window functions support latest-row-per-group, top-N-per-group, running totals and previous/next event comparisons while retaining detail rows. CTEs name intermediate results. A deterministic latest-row result needs an ordering rule that resolves ties.
 
-## Stage 4 — safe data modification
+## Transactional writes
 
-In a disposable database, practice INSERT/UPDATE/DELETE inside transactions. Verify target rows before and after each mutation. Create tables with primary keys, foreign keys, uniqueness, NOT NULL, CHECK, and indexes.
+INSERT, UPDATE and DELETE change data. Transactions group changes for commit or rollback; constraints enforce rules such as keys, uniqueness and required values. The affected-row scope and concurrent transaction behavior are separate from whether a statement is syntactically valid.
 
-## Stage 5 — QA investigations
+## Data-quality checks
 
-Use the site's practical SQL tasks and interview questions to diagnose intentionally imperfect data. Good tasks have no obvious keyword in the prompt; you must decide whether the solution needs a join, aggregate, subquery, set operation, or window function.
+Orphan rows, duplicate business keys, mismatched payment totals and differences between expected and actual sets are distinct query patterns. A zero-row result represents success only when the query describes invalid states in the intended data scope.
 
-## Mastery checklist
+## Detailed references
 
-You are ready to call the core path complete when you can:
-
-- explain result grain before running a query,
-- predict INNER versus LEFT join survival,
-- reason correctly about NULL and NOT EXISTS,
-- prevent duplicate amplification in aggregates,
-- use windows for ranking/latest/running calculations,
-- compare expected and actual sets,
-- design basic constraints and indexes,
-- execute bounded writes transactionally,
-- explain why parameter binding prevents SQL injection,
-- read an execution plan at a basic level,
-- identify when syntax is SQLite/PostgreSQL/MySQL/SQL Server specific.
-
-This page is currently marked **Under review** while the new curriculum is validated against the site's runnable examples and cross-checked for dialect wording. The path is usable now; the status is intentionally between “under construction” and “review complete.”`
+| Pattern | Material |
+| --- | --- |
+| Filtering and NULL | [Filtering, boolean logic, NULL and patterns](/learn/data?track=sql&topic=filtering-null-patterns) |
+| Relationships | [JOINs and multi-table relationships](/learn/data?track=sql&topic=joins-relationships) |
+| Aggregation | [Aggregates, GROUP BY and HAVING](/learn/data?track=sql&topic=aggregates-grouping) |
+| Analytical SQL | [Window functions](/learn/data?track=sql&topic=window-functions) |
+| Writes and transactions | [INSERT, UPDATE, DELETE and transactions](/learn/data?track=sql&topic=dml-transactions) |
+| Integrity and reconciliation | [SQL for QA and data validation](/learn/data?track=sql&topic=qa-data-validation) |`
   }
 ] as const;
 

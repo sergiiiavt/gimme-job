@@ -122,9 +122,6 @@ export const desktopAutomationMethodicalIntros = {
       "",
       "The repository implements the same desktop problem in two stacks: Python + pytest + pywinauto and C# + NUnit + FlaUI/UIA3. Studying both is useful because the syntax changes while the automation concepts remain the same. The final part moves the same tests into local PowerShell orchestration and GitHub Actions, where desktop automation adds an important constraint: tests need a Windows environment capable of interacting with a real graphical session.",
       "",
-      "### How to study the example",
-      "",
-      "Read the lessons in execution order. For each code block, first understand the automation concept, then read the exact project code, then trace how execution reaches that code and what dependency or operating-system service it uses. Key points summarize the reusable idea; common pitfalls show the assumptions that usually make desktop tests fragile.",
     ].join("\n"),
     uk: [
       "## Desktop automation на прикладі реального проєкту",
@@ -155,9 +152,6 @@ export const desktopAutomationMethodicalIntros = {
       "",
       "Repository реалізує ту саму desktop задачу у двох stacks: Python + pytest + pywinauto та C# + NUnit + FlaUI/UIA3. Це корисно для навчання, тому що syntax змінюється, а automation concepts залишаються тими самими. Фінальна частина переносить ті самі tests у local PowerShell orchestration і GitHub Actions, де з'являється важливе обмеження desktop automation: tests потребують Windows environment, здатного взаємодіяти з реальною graphical session.",
       "",
-      "### Як проходити приклад",
-      "",
-      "Читайте lessons у порядку виконання. Для кожного code block спочатку зрозумійте automation concept, потім прочитайте точний project code, а далі простежте, як execution доходить до цього code і з якою dependency або operating-system service він працює. Key points фіксують reusable idea, а common pitfalls показують assumptions, через які desktop tests зазвичай стають fragile.",
     ].join("\n"),
   },
   python: {

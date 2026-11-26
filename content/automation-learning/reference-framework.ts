@@ -23,8 +23,8 @@ const sections: FrameworkSection[] = [
   {
     title: "1. Repository shape",
     titleUk: "1. Структура repository",
-    body: "Read the framework from the outside inward: project setup, pytest composition, reusable framework layers, then tests. The directory shape already tells you where responsibilities are expected to live.",
-    bodyUk: "Читайте framework ззовні всередину: project setup, pytest composition, reusable framework layers, а потім tests. Уже структура директорій показує, де мають жити різні responsibilities.",
+    body: "The repository separates project setup, pytest composition, reusable framework layers and tests. Its directory structure reflects these responsibilities.",
+    bodyUk: "Репозиторій розділяє налаштування проєкту, pytest composition, повторно використовувані шари framework і тести. Структура каталогів відображає ці зони відповідальності.",
     codeLanguage: "text",
     code: `qa-automation-python/
 ├── conftest.py

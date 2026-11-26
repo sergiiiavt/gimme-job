@@ -4,7 +4,7 @@
 
 Learn to package an application, explain its isolation boundaries, and reproduce the same environment. You need basic terminal commands, files and permissions, HTTP ports, Git, and the idea of a process. You do not need Kubernetes first. Examples use Linux containers and POSIX shell syntax; on Windows use WSL for shell examples.
 
-Follow chapters 1–5 for first principles, 6–10 for complete applications, 11–14 for verification and operations, then the ecosystem and capstone. Move on when you can explain the checkpoint, not after memorizing a command list.
+Chapters 1–5 cover foundations, 6–10 cover complete applications, 11–14 cover verification and operations, and 15–16 cover the ecosystem and example project.
 
 ## What a container actually is
 
@@ -58,7 +58,7 @@ Expect Linux and the selected image architecture, including on a Mac. The comman
 
 ## Summary
 
-Understand the process, image, runtime configuration and storage as separate concerns. Next, verify the actual Docker daemon and the platform that will run your commands.
+The process, image, runtime configuration and storage are separate concerns. The selected daemon and platform determine where a container runs.
 
 ## Sources
 
