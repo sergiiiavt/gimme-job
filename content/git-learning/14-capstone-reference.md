@@ -57,7 +57,7 @@ Commands with symbolic IDs require real inspected values. No command table can d
 
 ## Connect to the wider learning path
 
-Apply these skills to [programming](/learn/programming), [automation](/learn/automation), [Docker](/learn/docker) and [Cloud & DevOps](/learn/cloud-devops). For any change, practice one chain: identify the revision, make a coherent commit, publish to the intended branch, review the exact diff, pass relevant checks, integrate and verify delivery when required.
+Related paths: [programming](/learn/programming), [automation](/learn/automation), [Docker](/learn/docker) and [Cloud & DevOps](/learn/cloud-devops).
 
 ## Checkpoint and answer
 

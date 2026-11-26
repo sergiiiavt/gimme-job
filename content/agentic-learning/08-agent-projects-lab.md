@@ -1,14 +1,14 @@
 # Projects and MCP lab
 
-The fastest way to understand agents is to build a small one that works end to end: a narrow task, a few tools behind a real protocol, a loop with limits, a boundary a person controls, and checks that tell you whether it did the right thing. One such system teaches more than a large assistant that tries to do everything and cannot be tested.
+The runnable lab combines a narrow task, MCP tools, a bounded loop, a proposal boundary and checks of the observed result.
 
-This chapter covers how to choose a narrow project, a definition of done for agent projects, and a runnable lab: an MCP server, a client and a triage agent built for the 2026-07-28 revision of the Model Context Protocol. Systematic testing of what you build is covered in [Testing MCP servers](/learn/llm?topic=agent-testing&section=testing-mcp-servers).
+This chapter covers example project scopes and agent design controls, and a runnable lab: an MCP server, a client and a triage agent built for the 2026-07-28 revision of the Model Context Protocol. Systematic testing of what you build is covered in [Testing MCP servers](/learn/llm?topic=agent-testing&section=testing-mcp-servers).
 
 **Prerequisites:** [Model Context Protocol](/learn/agentic?topic=model-context-protocol), [Human approval and action boundaries](/learn/agentic?topic=human-approval), [Evaluating and observing agents](/learn/agentic?topic=agent-observability).
 
-## Choose a narrow project
+## Example project scopes
 
-A good first agent project has one task, two to four tools, an outcome you can check without trusting the agent, and at least one action that a person must approve. QA work is full of such tasks:
+These QA examples have different tasks, tool sets, action boundaries and observable outcomes:
 
 | Project | Tools | Boundary | How you know it worked |
 |---|---|---|---|
@@ -21,16 +21,16 @@ A good first agent project has one task, two to four tools, an outcome you can c
 
 Avoid projects whose success you cannot check ("make our QA smarter") and projects whose first version needs access to production or money.
 
-## Definition of done for an agent project
+## Agent design controls
 
-Before calling an agent project finished, check that it has:
+An agent design includes several distinct concerns:
 
 - **A one-sentence scope** that says what the agent does and what it must never do.
 - **Tools with names, descriptions and strict schemas**, classified as read, write or external communication.
 - **Permissions and approvals in code**: the agent's credentials, and which actions need a person.
 - **Limits**: a step budget, a time limit and a cost limit enforced by the loop.
 - **A trace** with every step and a stop reason.
-- **An evaluation set**: a few dozen tasks with checks on the outcome and the trajectory, run repeatedly.
+- **An evaluation set**: cases with checks on the outcome and the trajectory.
 - **A README** that explains how to run it and what it demonstrates.
 
 ## The MCP lab
@@ -124,17 +124,6 @@ The lab's agent does not quarantine every test that sometimes fails. It treats a
 
 This is the kind of rule that belongs in code, where it can be tested, rather than in a prompt. A model can still help, for example by reading the failure messages and suggesting a cause, but the decision about what may be hidden from the build stays deterministic and reviewable.
 
-## Extending the lab
-
-The lab is deliberately small. Natural next steps, each of which matches a chapter of this section:
-
-- **A real model.** Send the tool definitions from `tools/list` to a provider API and map its tool calls to `client.call_tool`, keeping the step budget and trace ([How an AI agent works](/learn/agentic?topic=how-agents-work)).
-- **An approval step.** Show a person each proposal with the exact test and reason, and only then call a separate, permission-checked quarantine API ([Human approval and action boundaries](/learn/agentic?topic=human-approval)).
-- **Cost and latency tracing.** Add token counts and timings per step and report them per task ([Evaluating and observing agents](/learn/agentic?topic=agent-observability)).
-- **HTTP transport.** Serve the same handler over Streamable HTTP, with `Origin` validation and binding to localhost ([Model Context Protocol](/learn/agentic?topic=model-context-protocol)).
-- **Systematic tests.** Add contract tests, property-based tests and fault injection ([Testing MCP servers](/learn/llm?topic=agent-testing&section=testing-mcp-servers)).
-- **A structured course.** The free [Hugging Face AI Agents Course](https://huggingface.co/learn/agents-course) takes the same ideas through smolagents, LlamaIndex and LangGraph and ends with a benchmark agent you can show. Finishing it earns a free certificate; the agent you build is worth more than the certificate.
-
 ## Common mistakes
 
 - **Starting with a general assistant.** Broad agents are hard to evaluate and easy to misuse; start with one task.
@@ -146,4 +135,4 @@ The lab is deliberately small. Natural next steps, each of which matches a chapt
 
 ## Summary
 
-Build narrow agents: one task, a few strictly described tools, a checkable outcome and an approval for anything consequential. Treat scope, permissions, limits, a trace, an evaluation set and a README as the definition of done. The lab shows a complete small system on the 2026-07-28 revision of MCP: discovery instead of a handshake, version and capabilities on every request, `resultType` on every result, strict stdio rules and a write tool that only proposes. Extend it one chapter at a time, and keep the decisions that matter in code.
+The lab demonstrates a bounded agent loop, a trace, deterministic decisions and a write tool that only proposes. Its MCP 2026-07-28 implementation uses discovery instead of a handshake, version and capabilities on every request, `resultType` on every result and separate stdio protocol/log streams.

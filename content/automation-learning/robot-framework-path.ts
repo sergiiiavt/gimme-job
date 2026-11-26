@@ -22,8 +22,8 @@ const chapters = [
     "descriptionUk": "Створюйте читабельні keyword APIs; використовуйте return, розгалуження, обробку помилок та setup/teardown.",
     "navLabel": "Keywords & control flow",
     "navLabelUk": "Keywords та control flow",
-    "introMarkdown": "### Learning sequence\n\nDefine keyword interfaces before nesting them. Work from simple values and returns to branches, exception handling and lifecycle. Each example focuses on one construct; import its dependencies when moving snippets into a project.",
-    "introMarkdownUk": "### Послідовність навчання\n\nСпочатку визначте keyword interfaces. Рухайтеся від простих аргументів і return до умов, обробки помилок та lifecycle. Фрагменти демонструють окремі конструкції; переносьте їх у проєкт разом із залежностями."
+    "introMarkdown": "### Keyword interfaces and lifecycle\n\nKeyword interfaces define arguments and return values; control flow, exception handling and setup/teardown determine execution. The examples cover these constructs and their dependencies.",
+    "introMarkdownUk": "### Keyword interfaces і lifecycle\n\nKeyword interfaces визначають аргументи та результати; control flow, обробка помилок і setup/teardown визначають виконання. Приклади охоплюють ці конструкції та їхні залежності."
   },
   {
     "id": "robot-project",
@@ -82,8 +82,8 @@ const chapters = [
     "descriptionUk": "Спроєктуйте підтримуваний framework і виконайте незалежний наскрізний приклад.",
     "navLabel": "Architecture & capstone",
     "navLabelUk": "Архітектура та проєкт",
-    "introMarkdown": "### Build instead of memorizing\n\nA complete sample lives under `examples/robot-framework/`. It runs entirely offline on Robot Framework core and standard Python. Follow test → resource keyword → Python library → result artifacts, then change a requirement and inspect a failing assertion.",
-    "introMarkdownUk": "### Навчання через реалізацію\n\nПовний приклад міститься в `examples/robot-framework/`. Він працює офлайн на Robot Framework core та стандартному Python. Пройдіть шлях test → resource keyword → Python library → result artifacts, потім змініть вимогу й дослідіть помилку."
+    "introMarkdown": "### Offline example\n\nThe sample in `examples/robot-framework/` runs offline on Robot Framework core and standard Python. Its execution path is test → resource keyword → Python library → result artifacts.",
+    "introMarkdownUk": "### Офлайн-приклад\n\nПриклад у `examples/robot-framework/` працює офлайн на Robot Framework core та стандартному Python. Шлях виконання: test → resource keyword → Python library → result artifacts."
   }
 ];
 

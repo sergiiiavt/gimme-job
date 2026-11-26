@@ -4,7 +4,7 @@
 
 Explain what Git records, where a change currently lives, and which operation can affect collaborators. You need basic file and terminal skills; programming knowledge helps with examples but is not required. The command examples use Git 2.28 or later and a POSIX shell. On Windows use Git Bash or WSL; GUI clients expose the same underlying repository model.
 
-This path is published with **Review required** status. Work through the explanations and inspect the results in a disposable repository before applying unfamiliar history-changing operations to a team project.
+This path is published with **Review required** status. Its examples use a disposable repository.
 
 ## Git and a hosting service
 
@@ -36,9 +36,9 @@ A branch is not a separate folder or a copy of every file. Multiple branch names
 
 ## Learning sequence
 
-Chapters 2–4 establish setup, intentional commits and evidence. Chapters 5–8 cover branches, synchronization and integration. Chapter 9 explains recovery before chapters 10–11 connect Git to review and delivery. Finish with diagnosis, security and the local collaboration lab.
+Chapters 2–4 cover setup, commits and history; 5–8 cover branches, synchronization and integration; 9–11 cover recovery, review and delivery; 12–14 cover diagnosis, security and the local collaboration lab.
 
-Learn the state transition first, then the command. Before an operation, identify the current branch, uncommitted changes, intended base and whether the affected history is already shared.
+A Git operation acts on the current branch, working tree, index and commit history; shared history also affects collaborators.
 
 ## A first inspection
 

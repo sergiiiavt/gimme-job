@@ -57,7 +57,7 @@ python3 examples/git-collaboration/verify_workflow.py
 
 ## Зв’язок з іншими навчальними шляхами
 
-Застосовуйте навички в [програмуванні](/learn/programming), [автоматизації](/learn/automation), [Docker](/learn/docker) та [Cloud & DevOps](/learn/cloud-devops). Для кожної зміни відпрацьовуйте ланцюг: визначити ревізію, створити цілісний коміт, опублікувати в потрібну гілку, перевірити точний diff, пройти відповідні перевірки, інтегрувати й за потреби підтвердити доставку.
+Пов’язані матеріали: [програмування](/learn/programming), [автоматизація](/learn/automation), [Docker](/learn/docker) та [Cloud & DevOps](/learn/cloud-devops).
 
 ## Контрольне запитання та відповідь
 

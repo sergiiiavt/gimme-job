@@ -112,7 +112,7 @@ Terms are used inconsistently across tools and papers. This course uses them as 
 
 ## How this course is organized
 
-The path moves from general concepts and everyday AI use to the engineering of complete systems, and then to testing and quality evaluation. The fictional store Stride's support assistant provides a recurring example. Some chapters also use the GimmeJob Learning Path Advisor.
+The path covers general concepts, everyday AI use, application engineering, testing and quality evaluation. The fictional store Stride's support assistant provides a recurring example. Some chapters also use the GimmeJob Learning Path Advisor.
 
 | Part | Topics | What you gain |
 |---|---|---|
@@ -143,4 +143,3 @@ Choose the architecture based on the job: correctness, freshness, privacy, laten
 - Generative AI creates content; LLMs are one family of generative models.
 - The model, the application and the product have different responsibilities.
 - Tokens, context, embeddings, RAG and tool use each solve different problems.
-- Learn the foundations and application architecture before evaluation, testing and operations.
