@@ -15,7 +15,7 @@ archive digest, and extract it:
 
 ```bash
 mkdir -p /tmp/gimmejob-typesense-30.2
-curl --fail --location --max-time 180 \
+curl --proto '=https' --tlsv1.2 --fail --location --max-time 180 \
   https://dl.typesense.org/releases/30.2/typesense-server-30.2-linux-amd64.tar.gz \
   --output /tmp/gimmejob-typesense-30.2/server.tar.gz
 printf '%s  %s\n' \
