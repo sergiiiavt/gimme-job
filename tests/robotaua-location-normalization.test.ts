@@ -11,6 +11,8 @@ test("location canonicalizer converts legacy Russian Ukrainian-city labels only 
   assert.equal(normalizeUkrainianLocation("Киев"), "Київ");
   assert.equal(normalizeUkrainianLocation("Львов"), "Львів");
   assert.equal(normalizeUkrainianLocation("Харьков, удаленно"), "Харків, віддалено");
+  assert.equal(normalizeUkrainianLocation("Другие страны"), "Інші країни");
+  assert.equal(normalizeUkrainianLocation("другие  страны"), "Інші країни");
   assert.equal(normalizeUkrainianLocation("Київ"), "Київ");
   assert.equal(normalizeUkrainianLocation("Warszawa (Polska)"), "Warszawa (Polska)");
 });
