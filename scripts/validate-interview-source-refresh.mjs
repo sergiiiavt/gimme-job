@@ -61,8 +61,8 @@ const kinds = new Set(["Theory", "Practical", "Troubleshooting", "Test design", 
 const prevalenceLevels = new Set(["Very common", "Common", "Occasional", "Specialist"]);
 const deprecatedTags = new Set(["defect", "risks", "audit-trail", "test-plan", "test-case", "test-condition", "state-transitions", "pipelines", "environments", "integrations", "reviews", "oracles", "browsers", "reconnection"]);
 
-assert.equal(sourceRefresh.questions.length, 8, "The audited source refresh must contain exactly 8 new canonical questions.");
-assert.equal(sourceRefreshSources.length, 12, "The audited source extension must contain exactly 12 sources.");
+assert.equal(sourceRefresh.questions.length, 14, "The audited source refresh must contain exactly 14 new canonical questions.");
+assert.equal(sourceRefreshSources.length, 24, "The audited source extension must contain exactly 24 sources.");
 assert.equal(extensionSourceIds.size, sourceRefreshSources.length, "Refresh source IDs must be unique.");
 assert.equal(new Set(sourceEvidence.map((item) => item.id)).size, sourceEvidence.length, "Evidence override IDs must be unique.");
 

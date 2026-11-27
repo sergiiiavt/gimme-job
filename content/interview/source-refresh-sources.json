@@ -94,5 +94,101 @@
     "publisher": "OWASP",
     "kind": "Testing guide",
     "role": "Mobile network inspection, interception proxies, TLS trust, certificate handling and pinning behavior"
+  },
+  {
+    "id": "outcomeschool-harness-interview-2026",
+    "title": "What is asked in a Harness Engineer interview?",
+    "url": "https://outcomeschool.com/blog/harness-engineer-interview",
+    "publisher": "Outcome School",
+    "kind": "Interview guide",
+    "role": "Round-by-round harness-engineer interview: the agent loop, stopping criteria, loop detection, self-correction through tests, evaluating harness changes and designing a team harness"
+  },
+  {
+    "id": "labuladong-agent-interview-2026",
+    "title": "AI Agent & Agentic AI Interview Questions with Answers",
+    "url": "https://labuladong.online/en/interview/agent/",
+    "publisher": "labuladong",
+    "kind": "Community question bank",
+    "role": "Frequently asked agent-engineering interview questions, including harness engineering, coding agents, loop termination and agent evaluation"
+  },
+  {
+    "id": "ai-engineering-company-wise-2026",
+    "title": "AI Engineering Interview Questions Company Wise",
+    "url": "https://github.com/pallavi-shekhar/ai-engineering-interview-questions-company-wise",
+    "publisher": "GitHub community repository",
+    "kind": "Reported interview questions",
+    "role": "Questions compiled from publicly reported AI-engineering interviews, including model versus harness for coding agents and evaluating agents rather than single responses"
+  },
+  {
+    "id": "secondtalent-ai-native-engineer-2026",
+    "title": "Top 30 AI-Native Engineer Interview Questions and Answers [2026]",
+    "url": "https://www.secondtalent.com/interview-guide/ai-native-engineer/",
+    "publisher": "Second Talent",
+    "kind": "Hiring-derived interview guidance",
+    "role": "Coding-agent workflow questions: instruction files, making project rules stick, verifying an agent's 'all tests pass', reviewing agent diffs and agent permissions"
+  },
+  {
+    "id": "prachub-ai-engineer-2026",
+    "title": "AI Engineer Interview Questions 2026: RAG, Agents, Evals, and Production Systems",
+    "url": "https://prachub.com/resources/ai-engineer-interview-questions-2026-rag-agents-evals-and-production-systems",
+    "publisher": "PracHub",
+    "kind": "Reported interview questions",
+    "role": "Candidate-reported practice prompts, including designing an agent harness and evaluation system with repeatable trials, traces and graders"
+  },
+  {
+    "id": "scrolltest-sdet-ai-era-2026",
+    "title": "SDET Interview Prep for AI-Era Hiring: 50 Questions",
+    "url": "https://scrolltest.com/sdet-interview-prep-ai-era-50-questions/",
+    "publisher": "Scrolltest",
+    "kind": "Interviewer guidance",
+    "role": "An SDET interviewer's question set, including AI copilots in the daily testing workflow and a senior-level quality strategy for agentic systems"
+  },
+  {
+    "id": "fowler-harness-engineering",
+    "title": "Harness engineering for coding agent users",
+    "url": "https://martinfowler.com/articles/harness-engineering.html",
+    "publisher": "Birgitta Böckeler, martinfowler.com",
+    "kind": "Practitioner article",
+    "role": "Builder and user harness, guides and sensors, computational and inferential controls, and keeping quality checks early"
+  },
+  {
+    "id": "openai-harness-engineering",
+    "title": "Harness engineering: leveraging Codex in an agent-first world",
+    "url": "https://openai.com/index/harness-engineering/",
+    "publisher": "OpenAI",
+    "kind": "Engineering report",
+    "role": "Short AGENTS.md as a map, invariants enforced by custom linters and structural tests, lint messages written as fix instructions"
+  },
+  {
+    "id": "langchain-deep-agents-harness",
+    "title": "Improving Deep Agents with harness engineering",
+    "url": "https://www.langchain.com/blog/improving-deep-agents-with-harness-engineering",
+    "publisher": "LangChain",
+    "kind": "Engineering report",
+    "role": "Harness-only changes with a fixed model on Terminal Bench 2.0: verification before finishing, loop detection, time budgets and the risk of overfitting harness changes"
+  },
+  {
+    "id": "anthropic-long-running-harness",
+    "title": "Effective harnesses for long-running agents",
+    "url": "https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents",
+    "publisher": "Anthropic",
+    "kind": "Engineering report",
+    "role": "Agents marking features complete without end-to-end checks, and the feature list, progress files and browser testing that prevent it"
+  },
+  {
+    "id": "claude-code-memory",
+    "title": "How Claude remembers your project",
+    "url": "https://code.claude.com/docs/en/memory",
+    "publisher": "Anthropic",
+    "kind": "Official documentation",
+    "role": "CLAUDE.md and AGENTS.md loading; instruction files are context for the agent, not enforced configuration"
+  },
+  {
+    "id": "claude-code-hooks",
+    "title": "Hooks reference",
+    "url": "https://code.claude.com/docs/en/hooks",
+    "publisher": "Anthropic",
+    "kind": "Official documentation",
+    "role": "Hook events and exit codes: feedback after a tool call and blocking the agent from stopping until a check passes"
   }
 ]

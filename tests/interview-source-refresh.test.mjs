@@ -15,6 +15,12 @@ const expectedIds = [
   "mobile-upgrade-state-migration",
   "shift-left-in-practice",
   "automation-tool-selection",
+  "agent-harness-engineering",
+  "agent-project-rule-enforcement",
+  "agent-all-tests-pass-claim",
+  "agent-stuck-loop-diagnosis",
+  "agent-harness-change-evaluation",
+  "coding-agent-team-harness",
 ];
 
 test("keeps the source refresh small, explicit, and bilingual", async () => {
