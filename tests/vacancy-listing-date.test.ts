@@ -1,12 +1,25 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
+import { registerHooks } from "node:module";
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { register } from "tsx/esm/api";
 
+// The signed-in dashboard reads its database from the Worker runtime; the test
+// installs a SQLite-backed binding on this shared object before calling it.
+const runtimeEnv = ((globalThis as { __listingDateTestEnv?: Record<string, unknown> }).__listingDateTestEnv = {});
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === "cloudflare:workers") {
+      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent("export const env = globalThis.__listingDateTestEnv;")}` };
+    }
+    return nextResolve(specifier, context);
+  },
+});
 register();
 
 const { publicVacancies, publicVacancyById, publicVacancySummaries, upsertVacancies } = await import("../app/api/_vacancy-intake.ts");
+const { dashboard } = await import("../app/api/_jobpilot.ts");
 
 type Row = Record<string, unknown>;
 
@@ -129,6 +142,16 @@ test("the catalogue orders by listed date, keeping board dates for prompt, repub
   assert.equal(listed["no-board-date"], "2026-11-24T08:00:00.000Z");
   assert.equal(listed["new-source-backlog"], "2026-10-01T09:00:00.000Z");
   assert.equal(listed.republished, "2026-11-26T20:30:00.000Z");
+});
+
+test("the signed-in dashboard applies the same listed date and order", async () => {
+  runtimeEnv.DB = await seededCatalogue();
+  const result = await dashboard();
+
+  assert.deepEqual(result.jobs.map(keyOf), ["prompt-today", "republished", "late-arrival", "same-day-board-date", "prompt-earlier", "no-board-date", "new-source-backlog"]);
+  const late = result.jobs.find((job) => keyOf(job) === "late-arrival");
+  assert.equal(late?.listedAt, "2026-11-26T15:12:55.328Z");
+  assert.equal(late?.postedAt, "2026-11-23T15:11:33.944Z");
 });
 
 test("vacancy detail carries the same listed date as the list", async () => {

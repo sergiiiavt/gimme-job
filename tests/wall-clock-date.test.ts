@@ -29,5 +29,7 @@ test("wall-clock parsing keeps explicit offsets and rejects unusable values", ()
   assert.equal(wallClockIsoDate("2026-11-23T17:11:33+01:00", KYIV), "2026-11-23T16:11:33.000Z");
   assert.equal(wallClockIsoDate("", KYIV), null);
   assert.equal(wallClockIsoDate("yesterday", KYIV), null);
+  assert.equal(wallClockIsoDate("2026-02-30T10:00:00", KYIV), null);
+  assert.equal(wallClockIsoDate("2026-11-23T24:30:00", KYIV), null);
   assert.equal(wallClockIsoDate(null, KYIV), null);
 });
