@@ -319,9 +319,13 @@ class TypesenseIntegrationTests(unittest.TestCase):
                     self.assertEqual(engine.search(SearchRequest(query="fixture", revision=snapshot(docs)["revision"]))["candidates"], [])
                     engine.settings = Settings(search_url="http://127.0.0.1:18138", search_api_key=SecretStr(key),
                         search_corpus_path=corpus, search_cache_path=folder / "cache.sqlite", openai_api_key=SecretStr("test-key"))
+                    # Full-precision values like a real embedding: serialized, the query vector is
+                    # ~10 KB, well past Typesense's 4,000-character GET query-string limit.
+                    vector = [((index * 37) % 101 - 50) / 1234.5678901 for index in range(512)]
+                    self.assertGreater(len(json.dumps(vector, separators=(",", ":"))), 4000)
                     embeddings = Mock()
-                    embeddings.embed_documents.side_effect = lambda texts: [[0.1] * 512 for _ in texts]
-                    embeddings.embed_query.return_value = [0.1] * 512
+                    embeddings.embed_documents.side_effect = lambda texts: [vector for _ in texts]
+                    embeddings.embed_query.return_value = vector
                     engine._embeddings = Mock(return_value=embeddings)
                     engine.index()
                     semantic = engine.search(SearchRequest(query="C++", revision=snapshot(docs)["revision"], semantic=True))
