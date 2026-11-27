@@ -11,7 +11,7 @@ import {
   type OperationalReasonCode,
 } from "./_operational-log";
 import { buildAnonymousVacancyDashboard } from "./_public-vacancy-dashboard.js";
-import { LISTED_AT_SQL } from "./_vacancy-listing-date.js";
+import { LISTED_AT_SQL, listedAtOf } from "./_vacancy-listing-date.js";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -232,7 +232,7 @@ function mapJob(row: Row) {
     postedAt: nullableRowText(row.posted_at),
     contactEmail: nullableRowText(row.contact_email),
     discoveredAt: rowText(row.discovered_at),
-    listedAt: rowText(row.listed_at, nullableRowText(row.posted_at) ?? rowText(row.discovered_at)),
+    listedAt: listedAtOf(row),
     updatedAt: rowText(row.updated_at),
     status: rowText(row.status),
     statusUpdatedAt: nullableRowText(row.status_updated_at),

@@ -156,8 +156,8 @@ function zoneOffsetMs(instant: number, timeZone: string): number {
     minute: "2-digit",
     second: "2-digit",
   }).formatToParts(new Date(instant));
-  const value = (type: string) => Number(parts.find((part) => part.type === type)?.value);
-  const wallClock = Date.UTC(value("year"), value("month") - 1, value("day"), value("hour"), value("minute"), value("second"));
+  const clock = Object.fromEntries(parts.map((part) => [part.type, Number(part.value)]));
+  const wallClock = Date.UTC(clock.year, clock.month - 1, clock.day, clock.hour, clock.minute, clock.second);
   return wallClock - Math.floor(instant / 1000) * 1000;
 }
 
@@ -172,12 +172,16 @@ export function wallClockIsoDate(value: unknown, timeZone: string): string | nul
   const match = WALL_CLOCK.exec(value.trim());
   if (!match) return safeIsoDate(value);
 
-  const [year, month, day, hour, minute, second] = match.slice(1, 7).map((part) => Number(part ?? 0));
+  const fields = match.slice(1, 7).map((part) => Number(part ?? 0));
+  const [year, month, day, hour, minute, second] = fields;
   const asUtc = Date.UTC(year, month - 1, day, hour, minute, second, Number((match[7] ?? "").padEnd(3, "0").slice(0, 3)));
   // Date.UTC rolls 30 February over into March; a calendar-invalid value is not a date.
-  const check = new Date(asUtc);
-  if (check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day || check.getUTCHours() !== hour
-    || check.getUTCMinutes() !== minute || check.getUTCSeconds() !== second) return null;
+  const roundTrip = new Date(asUtc);
+  const normalized = [
+    roundTrip.getUTCFullYear(), roundTrip.getUTCMonth() + 1, roundTrip.getUTCDate(),
+    roundTrip.getUTCHours(), roundTrip.getUTCMinutes(), roundTrip.getUTCSeconds(),
+  ];
+  if (normalized.some((field, index) => field !== fields[index])) return null;
   // A second pass settles values that sit next to a daylight-saving change.
   let instant = asUtc - zoneOffsetMs(asUtc, timeZone);
   instant = asUtc - zoneOffsetMs(instant, timeZone);

@@ -24,7 +24,7 @@ import {
   type VacancySourceHealth,
   type VacancySyncState,
 } from "./_vacancy-sync-state";
-import { LISTED_AT_SQL } from "./_vacancy-listing-date";
+import { LISTED_AT_SQL, listedAtOf } from "./_vacancy-listing-date";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -296,13 +296,12 @@ function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; s
 
 function mapPublicStoredJob(row: Row): IntakeJob & { id: string; discoveredAt: string; listedAt: string } {
   const job = mapStoredJob(row);
-  const discoveredAt = String(row.discovered_at);
   return {
     ...job,
     source: row.display_source ? String(row.display_source) : displaySource(job.source),
     id: String(row.id),
-    discoveredAt,
-    listedAt: row.listed_at ? String(row.listed_at) : job.postedAt ?? discoveredAt,
+    discoveredAt: String(row.discovered_at),
+    listedAt: listedAtOf(row),
     raw: {},
   };
 }

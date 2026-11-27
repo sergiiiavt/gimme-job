@@ -20,6 +20,7 @@ register();
 
 const { publicVacancies, publicVacancyById, publicVacancySummaries, upsertVacancies } = await import("../app/api/_vacancy-intake.ts");
 const { dashboard } = await import("../app/api/_jobpilot.ts");
+const { listedAtOf } = await import("../app/api/_vacancy-listing-date.ts");
 
 type Row = Record<string, unknown>;
 
@@ -162,4 +163,12 @@ test("vacancy detail carries the same listed date as the list", async () => {
 
   const detail = await publicVacancyById(late.id, db);
   assert.equal(detail?.listedAt, late.listedAt);
+});
+
+test("a row read without a listed date falls back to the board date, then discovery", () => {
+  const discoveredAt = "2026-11-26T15:12:55.328Z";
+  assert.equal(listedAtOf({ listed_at: discoveredAt, posted_at: "2026-11-23T15:11:33.944Z", discovered_at: discoveredAt }), discoveredAt);
+  assert.equal(listedAtOf({ posted_at: "2026-11-23T15:11:33.944Z", discovered_at: discoveredAt }), "2026-11-23T15:11:33.944Z");
+  assert.equal(listedAtOf({ listed_at: null, posted_at: " ", discovered_at: discoveredAt }), discoveredAt);
+  assert.equal(listedAtOf({}), "");
 });

@@ -28,3 +28,14 @@ export const LISTED_AT_SQL = `CASE
       THEN discovered_at
       ELSE COALESCE(posted_at, discovered_at)
     END`;
+
+/**
+ * A stored row's listed date. Every list query selects `listed_at`; a row read
+ * without it falls back to the board date, then to the discovery time.
+ */
+export function listedAtOf(row: { listed_at?: unknown; posted_at?: unknown; discovered_at?: unknown }): string {
+  for (const value of [row.listed_at, row.posted_at, row.discovered_at]) {
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return "";
+}
