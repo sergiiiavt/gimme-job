@@ -52,6 +52,7 @@ export function isPrivateRequest(request: Request, url = new URL(request.url)): 
   const isPublicVacancyDetail = url.pathname.startsWith("/api/public/jobs/");
   const isPublicApi = url.pathname === "/api/health"
     || url.pathname === "/api/public/jobs"
+    || url.pathname === "/api/public/search"
     || isPublicVacancyDetail
     || url.pathname === "/api/dashboard";
   return !(isRead && isPublicApi);

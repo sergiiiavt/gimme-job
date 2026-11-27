@@ -406,8 +406,8 @@ export function normalizedLearningPathResponse(value: unknown): LearningPathApiR
 
 function queryKeysAllowed(pathname: string, keys: string[]): boolean {
   const allowed = pathname.startsWith("/interview")
-    ? new Set(["question", "topic"])
-    : new Set(["topic", "section", "track"]);
+    ? new Set(["question", "topic", "lang"])
+    : new Set(["topic", "section", "track", "lang"]);
   return keys.every((key) => allowed.has(key));
 }
 
@@ -428,6 +428,7 @@ export function sourcePathToHref(sourcePath: string | null): string | null {
       if (url.origin !== base || url.hash || !safeInternalPath(url.pathname)) return null;
       const keys = [...url.searchParams.keys()];
       if (!queryKeysAllowed(url.pathname, keys)) return null;
+      if (url.searchParams.has("lang") && !["en", "uk"].includes(url.searchParams.get("lang")!)) return null;
       if ([...url.searchParams.values()].some((value) => !value.trim())) return null;
       return `${url.pathname}${url.search}`;
     } catch {

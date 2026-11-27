@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 import { useState, type ReactNode } from "react";
 import { ukrainianInterviewLabel } from "../content/interview/ukrainian-labels";
 import { contentHref } from "./content-deep-links";
@@ -93,7 +95,9 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
   questionId: string;
 }) {
   const question = catalog.questions.find((item) => item.id === questionId);
-  const [language, setLanguage] = useState<"en" | "uk">("en");
+  const searchParams = useSearchParams();
+  const [selectedLanguage, setLanguage] = useState<"en" | "uk" | null>(null);
+  const language = selectedLanguage ?? (searchParams.get("lang") === "uk" ? "uk" : "en");
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState<number | null>(null);
 

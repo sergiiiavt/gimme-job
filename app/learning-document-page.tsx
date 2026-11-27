@@ -193,7 +193,8 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
     ? canonicalTrackId
     : resolvedDefaultTrackId;
   const showTrackSwitcher = resolvedTrackOptions.length > 1;
-  const [language, setLanguage] = useState<LearningLanguage>(languages[0] ?? "en");
+  const [selectedLanguage, setLanguage] = useState<LearningLanguage | null>(null);
+  const language = selectedLanguage ?? (searchParams.get("lang") === "uk" ? "uk" : languages[0] ?? "en");
   const [mobileNav, setMobileNav] = useState(false);
 
   const selectedTrack = resolvedTrackOptions.find((option) => option.id === activeTrack) ?? resolvedTrackOptions[0];

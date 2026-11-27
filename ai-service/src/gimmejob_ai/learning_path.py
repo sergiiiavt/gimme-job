@@ -62,7 +62,7 @@ class LearningAdvisorState(TypedDict, total=False):
     language: Literal["en", "uk"]
     hits: list[RetrievalHit]
     retrieval_mode: Literal["repository", "general"]
-    retrieval_strategy: Literal["vectorize", "lexical-fallback", "none"]
+    retrieval_strategy: Literal["vectorize", "lexical-fallback", "typesense", "hybrid", "none"]
     embedding_model: str
     retrieval_result_count: int
     retrieval_top_score: float
@@ -512,13 +512,19 @@ class LearningAdvisorGraph:
                     ),
                     TraceDecision(
                         label="Semantic retrieval availability",
-                        detail="Workers AI and Vectorize bindings were available." if diagnostics.semantic_available else "Semantic bindings were unavailable, so the canonical pipeline used lexical retrieval.",
+                        detail=("Typesense canonical index with multilingual embeddings." if result.strategy in {"typesense", "hybrid"} else "Workers AI and Vectorize bindings were available.") if diagnostics.semantic_available else "Semantic retrieval was unavailable, so the canonical pipeline used lexical retrieval.",
                         status="pass" if diagnostics.semantic_available else "skip",
                         value=diagnostics.semantic_available,
                     ),
                 ]
             )
-            if diagnostics.semantic_attempted:
+            if result.strategy in {"typesense", "hybrid"}:
+                decisions.append(TraceDecision(
+                    label="Shared public search",
+                    detail=f"Retrieved canonical IDs using {result.strategy}; embedding model {result.embedding_model}. The Worker validated the corpus revision and materialized current Git content.",
+                    status="pass",
+                ))
+            if diagnostics.semantic_attempted and result.strategy == "vectorize":
                 decisions.extend(
                     [
                         TraceDecision(

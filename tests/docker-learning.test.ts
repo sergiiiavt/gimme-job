@@ -41,7 +41,7 @@ test("Docker curriculum publishes a complete ordered bilingual path with registe
 });
 
 test("every Docker chapter and section is discoverable through the canonical RAG registry", () => {
-  const documents = staticRagDocuments().filter((document) => document.metadata.catalog === "docker");
+  const documents = staticRagDocuments().filter((document) => document.metadata.catalog === "docker" && document.metadata.language === "en");
   for (const chapter of catalog.chapters) {
     const entries = documents.filter((document) => document.metadata.topic === chapter.id);
     assert.ok(entries.some((document) => !document.metadata.section), `${chapter.id}: topic document`);

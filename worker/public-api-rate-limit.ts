@@ -8,7 +8,7 @@ export type PublicApiRateLimitEnv = {
   TENANT_AI_DAILY_GLOBAL_LIMIT?: string;
 };
 
-type RouteGroup = "ai" | "database" | "tenant-ai" | "sync" | "register" | "login" | "websocket";
+type RouteGroup = "ai" | "database" | "tenant-ai" | "sync" | "register" | "login" | "websocket" | "search" | "semantic-search";
 type LimitPolicy = {
   routeGroup: RouteGroup;
   ipLimit: number;
@@ -17,6 +17,8 @@ type LimitPolicy = {
 };
 
 const DEFAULT_LIMITS: Record<RouteGroup, { ip: number; global: number | null }> = {
+  search: { ip: 600, global: 30_000 },
+  "semantic-search": { ip: 60, global: 2_000 },
   ai: { ip: 30, global: 1_000 },
   database: { ip: 120, global: 5_000 },
   // Authenticated OpenAI-backed actions: one analyze call can score up to 100 vacancies.
@@ -78,6 +80,11 @@ export function publicRateLimitPolicy(
   env: PublicApiRateLimitEnv,
 ): LimitPolicy | null {
   const pathname = new URL(request.url).pathname;
+  if (request.method === "GET" && pathname === "/api/public/search") {
+    const semantic = new URL(request.url).searchParams.get("semantic") === "1";
+    const routeGroup = semantic ? "semantic-search" : "search";
+    return { routeGroup, ipLimit: DEFAULT_LIMITS[routeGroup].ip, globalLimit: DEFAULT_LIMITS[routeGroup].global };
+  }
   const match = ROUTE_GROUPS.find((group) => group.method === request.method && group.paths.includes(pathname));
   if (!match) return null;
   // Anonymous calls are answered 401 by the auth gate and must not drain the shared budget.

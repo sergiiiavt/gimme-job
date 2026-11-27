@@ -12,43 +12,26 @@ A brand-new learning surface is registered **once** in `content/learning-rag-reg
 
 ## Data flow
 
-```text
-Git-backed learning catalog
-        |
-        v
-content/learning-rag-registry.ts
-        |
-        v
-worker/rag.ts
-  - discovers catalog items
-  - skips explicit non-published placeholders
-  - creates topic/lesson documents
-  - splits Markdown by ## section
-  - assigns canonical topic/section/track metadata
-        |
-        +----------------------+
-        |                      |
-        v                      v
-lexical fallback          Vectorize index
-                               |
-                               v
-                       semantic candidates
-        |                      |
-        +----------+-----------+
-                   v
-          canonical RAG results
-                   |
-                   v
-            Python AI service
-          validates route shape
-                   |
-                   v
-        Learning Path Advisor UI
-          validates same-origin
-          canonical link shape
-```
+Git catalogs → `content/learning-rag-registry.ts` → `worker/rag.ts` produces the
+canonical bilingual learning and question documents. The public global-search API
+and the Learning Advisor use those same documents and identities.
 
-`worker/rag.ts` remains the only retrieval implementation. Vectorize is candidate ranking for that canonical corpus; lexical retrieval is the degradation path inside the same pipeline.
+The AI image build projects that corpus into a private Typesense index. Original
+text, weighted equivalents and multilingual OpenAI embeddings provide lexical and
+semantic candidate IDs. The Worker requires a matching corpus revision and
+materializes IDs from the current Git-backed documents; index data cannot invent
+links or override public/private boundaries. Advisor requests prefer this shared
+retrieval path. If it is unavailable, existing Vectorize/BGE-M3 and basic lexical
+retrieval remain degradation paths in `worker/rag.ts`.
+
+English/Ukrainian variants are separate documents with shared canonical H2 section
+identities. `lang=uk` preserves the selected translation. Question links include the
+question ID, and answers/examples are part of their retrievable text. Authored
+placeholders remain excluded. Normal AI image/Cloudflare deployment refreshes and
+verifies the derived indexes; no manual content publishing step is introduced.
+
+See [SEARCH-DESIGN.md](SEARCH-DESIGN.md) for exact ranking, versioning, credentials,
+budgets, fallback, index replacement and rollback behavior.
 
 ## Canonical registry
 

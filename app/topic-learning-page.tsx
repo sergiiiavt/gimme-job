@@ -101,7 +101,8 @@ export default function TopicLearningPage({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [language, setLanguage] = useState<LearningLanguage>("en");
+  const [selectedLanguage, setLanguage] = useState<LearningLanguage | null>(null);
+  const language = selectedLanguage ?? (searchParams.get("lang") === "uk" ? "uk" : "en");
   const [mobileNav, setMobileNav] = useState(false);
 
   const topics = catalog.topics;

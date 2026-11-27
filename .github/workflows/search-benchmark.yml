@@ -6,7 +6,9 @@ on:
     paths:
       - "examples/search-benchmark/**"
       - "tests/search-benchmark.test.mjs"
-      - "worker/rag.ts"
+      - "worker/**"
+      - "ai-service/**"
+      - "scripts/build-search-corpus.mjs"
       - "content/**"
       - "package*.json"
       - ".github/workflows/search-benchmark.yml"
@@ -39,6 +41,15 @@ jobs:
           tar -xzf "$RUNNER_TEMP/search-typesense/server.tar.gz" -C "$RUNNER_TEMP/search-typesense"
       - name: Verify benchmark contracts
         run: node --test tests/search-benchmark.test.mjs
+      - name: Install search gateway integration test runtime
+        run: |
+          python -m pip install --only-binary :all: uv==0.12.1
+          uv sync --project ai-service --frozen --extra test --no-build --no-install-project
+      - name: Verify production Typesense gateway against the real server
+        env:
+          PYTHONPATH: ai-service/src
+          TYPESENSE_TEST_BINARY: ${{ runner.temp }}/search-typesense/typesense-server
+        run: ai-service/.venv/bin/python -m unittest discover -s ai-service/tests -p test_search.py -v
       - name: Compare actual engines on the canonical public corpus
         run: npm run benchmark:search -- --typesense-bin="$RUNNER_TEMP/search-typesense/typesense-server" --output=artifacts/search-benchmark
       - name: Retain per-query evidence and resource measurements

@@ -1,4 +1,4 @@
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { copyFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,11 +8,16 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const vinextCli = path.join(projectRoot, "node_modules", "vinext", "dist", "cli.js");
 const timeout = Number.parseInt(process.env.GIMMEJOB_BUILD_TIMEOUT_MS ?? "180000", 10);
 
+const searchOutput = execFileSync(process.execPath, [path.join(projectRoot, "scripts/build-search-corpus.mjs")], { cwd: projectRoot, encoding: "utf8", timeout });
+const searchRevision = searchOutput.match(/[a-f0-9]{64}/)?.[0];
+if (!searchRevision) throw new Error("Search corpus build did not produce a revision.");
+console.log(searchOutput.trim());
 console.log("Running bounded vinext build...");
 const result = spawnSync(process.execPath, [vinextCli, "build"], {
   cwd: projectRoot,
   env: {
     ...process.env,
+    GIMMEJOB_SEARCH_REVISION: searchRevision,
     WRANGLER_WRITE_LOGS: "false",
     WRANGLER_LOG_PATH: path.join(projectRoot, ".wrangler", "logs"),
     MINIFLARE_REGISTRY_PATH: path.join(projectRoot, ".wrangler", "registry"),

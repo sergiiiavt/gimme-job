@@ -11,7 +11,7 @@ from urllib.request import Request, urlopen
 
 from .settings import Settings
 
-RetrievalStrategy = Literal["vectorize", "lexical-fallback"]
+RetrievalStrategy = Literal["vectorize", "lexical-fallback", "typesense", "hybrid"]
 FallbackReason = Literal[
     "none",
     "empty-query",
@@ -21,7 +21,7 @@ FallbackReason = Literal[
 ]
 
 _LEARNING_ROUTE_RE = re.compile(r"^/(?:learn|reference)/[a-z0-9][a-z0-9-]*$")
-_ALLOWED_LEARNING_QUERY_KEYS = {"topic", "section", "track"}
+_ALLOWED_LEARNING_QUERY_KEYS = {"topic", "section", "track", "lang"}
 _ALLOWED_QUESTION_ROUTES = {"/interview", "/interview/python"}
 _RAG_USER_AGENT = "curl/8.10.1 GimmeJob-AI/1.0"
 
@@ -181,6 +181,8 @@ def _validated_learning_source_path(value: object, route_path: str) -> str:
     params = parse_qs(parsed.query, keep_blank_values=True)
     if set(params) - _ALLOWED_LEARNING_QUERY_KEYS:
         raise ValueError("Canonical RAG returned an unsupported learning source query.")
+    if params.get("lang") and params["lang"] not in [["en"], ["uk"]]:
+        raise ValueError("Canonical RAG returned an unsupported content language.")
     if not params.get("topic") and not params.get("section"):
         raise ValueError("Canonical RAG learning source must identify a topic or section.")
     if any(len(values) != 1 or not values[0].strip() for values in params.values()):
@@ -195,7 +197,10 @@ def _ui_source_path(kind: str, ref_id: str, route: str | None, canonical_source_
     if kind == "question":
         if route_path not in _ALLOWED_QUESTION_ROUTES:
             raise ValueError("Canonical RAG returned a question route that the UI does not allow-list.")
-        return f"{route_path}?question={quote(ref_id, safe='')}"
+        source = urlparse(str(canonical_source_path or ""))
+        language = parse_qs(source.query).get("lang")
+        suffix = "&lang=uk" if language == ["uk"] else ""
+        return f"{route_path}?question={quote(ref_id, safe='')}{suffix}"
     if not _LEARNING_ROUTE_RE.fullmatch(route_path):
         raise ValueError("Canonical RAG returned an invalid learning route.")
     return _validated_learning_source_path(canonical_source_path, route_path)
@@ -338,7 +343,7 @@ class CanonicalRagClient:
         if not isinstance(value, dict) or value.get("ok") is not True:
             raise RuntimeError("Canonical RAG returned an unsuccessful response.")
         strategy = value.get("retrieval")
-        if strategy not in {"vectorize", "lexical-fallback"}:
+        if strategy not in {"vectorize", "lexical-fallback", "typesense", "hybrid"}:
             raise RuntimeError("Canonical RAG returned an unknown retrieval strategy.")
         embedding_model = _required_text(value.get("embeddingModel"), "embeddingModel", 300)
         results = value.get("results")

@@ -54,3 +54,6 @@ next-env.d.ts
 /data/*
 !/data/manual-jobs.example.json
 !/data/.gitkeep
+
+# Generated from the canonical public corpus during the AI image build
+/ai-service/search-corpus.json

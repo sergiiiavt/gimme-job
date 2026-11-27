@@ -1,0 +1,13 @@
+import { register } from "node:module";
+import { mkdir, writeFile } from "node:fs/promises";
+import { register as registerTsx } from "tsx/esm/api";
+registerTsx();
+register("../tests/helpers/raw-markdown-loader.mjs", import.meta.url);
+const { staticRagDocuments } = await import("../worker/rag.ts");
+const { searchIndexDocuments, searchCorpusRevision } = await import("../worker/search-corpus.ts");
+const documents = staticRagDocuments();
+const snapshot = { revision: await searchCorpusRevision(documents), documents: searchIndexDocuments(documents) };
+if (new Set(snapshot.documents.map((document) => document.id)).size !== snapshot.documents.length) throw new Error("Search IDs must be unique.");
+await mkdir(new URL("../ai-service/", import.meta.url), { recursive: true });
+await writeFile(new URL("../ai-service/search-corpus.json", import.meta.url), JSON.stringify(snapshot));
+console.log(`Canonical search snapshot: ${snapshot.documents.length} documents, ${snapshot.revision}`);

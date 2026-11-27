@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import secrets
 from uuid import uuid4
@@ -27,6 +28,7 @@ from .schemas import (
     WorkflowStep,
 )
 from .settings import Settings, langfuse_configured
+from .search import PublicSearch, SearchRequest
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +160,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail=_RAG_NOT_CONFIGURED_DETAIL,
             )
+
+    search_engine = PublicSearch(runtime)
+
+    @app.get("/v1/search/health", dependencies=[Depends(require_auth)])
+    async def search_health():
+        try:
+            return await asyncio.to_thread(search_engine.health)
+        except Exception as error:
+            raise HTTPException(status_code=503, detail="Search index is unavailable.") from error
+
+    @app.post("/v1/search", dependencies=[Depends(require_auth)])
+    async def search_public_content(request: SearchRequest):
+        try:
+            return await asyncio.to_thread(search_engine.search, request)
+        except Exception as error:
+            logger.warning("Search unavailable: %s", type(error).__name__)
+            raise HTTPException(status_code=503, detail="Search index is unavailable.") from error
 
     @app.post(
         "/v1/chat",
