@@ -216,7 +216,8 @@ jobs:
           docker compose --profile ai up -d typesense
           # The new image owns a full canonical snapshot. Index before replacing the gateway.
           # Typesense retains the prior collection and atomically switches its alias after validation.
-          docker compose --profile ai run --rm --no-deps gimmejob-ai /app/.venv/bin/python -m gimmejob_ai.search
+          # Non-interactive indexing must not consume the remaining SSH script from stdin.
+          docker compose --profile ai run --rm --no-deps gimmejob-ai /app/.venv/bin/python -m gimmejob_ai.search </dev/null
           docker compose --profile ai up -d gimmejob-ai caddy
           # This script arrives on ssh's stdin; without </dev/null, exec would swallow the rest of it.
           docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile </dev/null
@@ -245,6 +246,19 @@ jobs:
             echo "Last health response: $last_body" >&2
           fi
           exit 1
+
+      - name: Verify search gateway after restart
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --proto '=https' --tlsv1.2 --fail --silent --show-error --max-time 20 \
+            --header "Authorization: Bearer $GIMMEJOB_AI_SERVICE_TOKEN" \
+            "$AI_URL/v1/search/health" | python -c '
+          import json, sys
+          health = json.load(sys.stdin)
+          if health.get("semanticAvailable") is not True or not isinstance(health.get("count"), int) or health["count"] <= 0:
+              raise SystemExit("Search gateway did not expose a complete semantic index after restart.")
+          print("Authenticated search gateway is ready after restart.")'
 
       - name: Verify canonical RAG from Hetzner
         shell: bash

@@ -28,7 +28,12 @@ Translated variants are deduplicated and at most two sections per parent chapter
 are returned. Semantic distance is capped at 0.55: an initial operational threshold,
 not a claim of calibrated precision. Query embeddings have a bounded process cache;
 index embeddings are persisted in SQLite by model/dimensions/text hash. Unchanged
-content does not need embedding again on every deployment.
+content does not need embedding again on every deployment. Indexing retries transient
+provider rate limits with bounded exponential waits (5–60 seconds, up to eight
+attempts per batch). Billing exhaustion and non-rate errors fail immediately.
+Each successful batch is committed before requesting the next, so interrupted
+initial indexing resumes from cached progress. Interactive search keeps its short
+timeout/fallback instead of using these bulk-index waits.
 
 Typing starts lexical search after 450 ms. Enter also requests semantic search.
 The shared navigation and Ctrl/Cmd K open a native accessible modal. Escape closes
