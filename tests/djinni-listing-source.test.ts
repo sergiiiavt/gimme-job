@@ -55,6 +55,19 @@ test("Djinni listing parser keeps the vacancy's expiry date for lifecycle use", 
   assert.equal(Number.isNaN(Date.parse(raw.validThrough)), false);
 });
 
+test("Djinni listing parser reads offset-less JobPosting dates as Kyiv time", () => {
+  const jobs = parseDjinniListing(LISTING_FIXTURE, "djinni:djinni-qa");
+  const raw = jobs[0].raw as { validThrough?: string | null };
+
+  // The fixture's "2026-09-16T19:03:11.962623" is Kyiv summer time (UTC+3).
+  assert.equal(jobs[0].postedAt, "2026-09-16T16:03:11.962Z");
+  // "2026-10-16T19:03:11.962623" is still before the October clock change.
+  assert.equal(raw.validThrough, "2026-10-16T16:03:11.962Z");
+
+  const winter = LISTING_FIXTURE.replace("2026-09-16T19:03:11.962623", "2026-11-23T17:11:33.944623");
+  assert.equal(parseDjinniListing(winter, "djinni:djinni-qa")[0].postedAt, "2026-11-23T15:11:33.944Z");
+});
+
 test("Djinni listing parser ignores malformed metadata instead of failing the source", () => {
   const jobs = parseDjinniListing(
     `<script type="application/ld+json">{ not json </script>${LISTING_FIXTURE}`,

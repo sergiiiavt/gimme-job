@@ -21,13 +21,13 @@ Do not stretch individual inner cards just to fill a row.
 ### Personal view
 
 ```text
-[select] | Vacancy | Company | Location | Source | Conditions | Salary | Match | Posted | Status
+[select] | Vacancy | Company | Location | Source | Conditions | Salary | Match | Date | Status
 ```
 
 ### Public view
 
 ```text
-Vacancy | Company | Location | Source | Conditions | Salary | Posted
+Vacancy | Company | Location | Source | Conditions | Salary | Date
 ```
 
 Only the Vacancy column should receive most of the flexible width. Other columns stay compact and consistent between rows.
@@ -83,7 +83,9 @@ Do not create separate permanent columns for every future condition. Add another
 - otherwise show `—`;
 - do not invent, normalize, or estimate salary in the UI.
 
-### Posted
+### Date
+
+The listed date, which is also what "Newest first", "Oldest first" and the date filter use. It is the board's posted date, except for a vacancy GimmeJob first found more than a day (and at most two weeks) after that date: such a late arrival is listed on the day it was found, so it is not buried under vacancies the reader has already seen. The server owns the rule (`app/api/_vacancy-listing-date.ts`) and sends it as `listedAt`; the client does not recompute it.
 
 Use a compact desktop label such as:
 
@@ -91,7 +93,7 @@ Use a compact desktop label such as:
 15 Aug
 ```
 
-Keep the full date in semantic metadata/title where useful.
+Keep the full date in semantic metadata/title. For a late arrival the title names both dates ("Found 26 Nov 2026 · posted 23 Nov 2026"); the detail panel keeps separate Posted and Found facts.
 
 ---
 
@@ -138,7 +140,7 @@ It may show:
 - source;
 - conditions;
 - salary;
-- posted date;
+- listed date;
 - search;
 - one compact header line: Vacancies | Collected X ago (only when known) | contextual text link to sign in for tracking and analysis;
 - vacancy detail text;
@@ -287,7 +289,7 @@ After every vacancies-page change verify:
 
 - [ ] Desktop uses strict columns.
 - [ ] Company, Location, Source, Conditions, Salary are separate columns.
-- [ ] Personal view additionally has checkbox, Match, Posted, Status.
+- [ ] Personal view additionally has checkbox, Match, Date, Status.
 - [ ] Public view has no personal workflow columns or controls.
 - [ ] Public mode fails closed when authentication cannot be confirmed.
 - [ ] Existing GimmeJob font and styling are preserved.

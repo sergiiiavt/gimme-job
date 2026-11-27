@@ -11,6 +11,7 @@ import {
   type OperationalReasonCode,
 } from "./_operational-log";
 import { buildAnonymousVacancyDashboard } from "./_public-vacancy-dashboard.js";
+import { LISTED_AT_SQL } from "./_vacancy-listing-date.js";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -231,6 +232,7 @@ function mapJob(row: Row) {
     postedAt: nullableRowText(row.posted_at),
     contactEmail: nullableRowText(row.contact_email),
     discoveredAt: rowText(row.discovered_at),
+    listedAt: rowText(row.listed_at, nullableRowText(row.posted_at) ?? rowText(row.discovered_at)),
     updatedAt: rowText(row.updated_at),
     status: rowText(row.status),
     statusUpdatedAt: nullableRowText(row.status_updated_at),
@@ -362,10 +364,11 @@ export async function dashboard(request?: Request) {
       url, apply_url, substr(description, 1, 360) AS description,
       CASE WHEN length(description) <= 360 THEN 1 ELSE 0 END AS description_complete,
       CASE WHEN instr(lower(description), 'бронюван') > 0 THEN 1 ELSE 0 END AS reservation,
-      salary_text, posted_at, contact_email, discovered_at, updated_at, status, status_updated_at
+      salary_text, posted_at, contact_email, discovered_at, updated_at, status, status_updated_at,
+      ${LISTED_AT_SQL} AS listed_at
       FROM jobs
       WHERE relevant = 1
-      ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC
+      ORDER BY listed_at DESC, discovered_at DESC
       LIMIT 500`).all<Row>(),
     database.prepare("SELECT job_id, payload_json FROM analyses").all<Row>(),
     database.prepare(`SELECT job_id, markdown,
