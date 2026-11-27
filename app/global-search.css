@@ -4,9 +4,13 @@
 .site-search-mobile { align-items:center; background:#f8faf6; border:1px solid #dce3da; border-radius:7px; color:#435049; display:flex; justify-content:center; min-height:36px; min-width:36px; position:fixed; right:18px; top:10px; z-index:51; }
 body:has(.site-search-trigger) .site-search-mobile { display:none; }
 body:has(.site-search-dialog[open]) { overflow:hidden; }
-.site-search-dialog { background:#fff; border:1px solid #dce3da; border-radius:15px; box-shadow:0 24px 100px #101e2d40; color:#24322b; margin:8vh auto auto; max-height:84vh; max-height:84dvh; padding:0; width:min(720px,calc(100vw - 32px)); }
+.site-search-dialog { background:#fff; border:1px solid #dce3da; border-radius:15px; box-shadow:0 24px 100px #101e2d40; color:#24322b; margin:8vh auto auto; max-height:84vh; max-height:84dvh; overflow:hidden; padding:0; width:min(720px,calc(100vw - 32px)); }
+/* Only the open dialog becomes a flex column: a display rule on the closed one would override the UA's display:none. */
+.site-search-dialog[open] { display:flex; flex-direction:column; }
 .site-search-dialog::backdrop { background:#101e2d75; backdrop-filter:blur(3px); }
-.site-search-content { padding:22px; }
+/* The header, query and filters stay pinned; only the result list scrolls, inside the rounded frame. */
+.site-search-content { display:flex; flex:1 1 auto; flex-direction:column; min-height:0; padding:22px; }
+.site-search-content > header, .site-search-content > form, .site-search-status { flex-shrink:0; }
 .site-search-content header { align-items:center; display:flex; gap:12px; justify-content:space-between; margin-bottom:14px; }
 .site-search-content h2 { font-size:20px; line-height:1.3; margin:0; }
 .site-search-content header button { background:transparent; border:0; border-radius:5px; color:inherit; font-size:20px; min-height:38px; min-width:38px; }
@@ -22,7 +26,7 @@ body:has(.site-search-dialog[open]) { overflow:hidden; }
 .site-search-filters label { color:#66716a; display:flex; flex:1; flex-direction:column; font-size:11px; gap:4px; min-width:0; }
 .site-search-filters select { background:#f8faf7; border:1px solid #dce3da; border-radius:6px; color:#35433b; font:inherit; font-size:13px; max-width:100%; min-height:36px; padding:5px; }
 .site-search-status { color:#69756d; font-size:12px; margin:17px 0 10px; }
-.site-search-results { display:grid; gap:8px; list-style:none; margin:0; padding:0; }
+.site-search-results { align-content:start; display:grid; gap:8px; list-style:none; margin:0 -10px -4px -3px; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:3px 10px 4px 3px; scrollbar-color:#c3cdbf transparent; scrollbar-width:thin; }
 .site-search-results a { border:1px solid #e5eae2; border-radius:9px; color:inherit; display:block; overflow-wrap:anywhere; padding:13px; text-decoration:none; }
 .site-search-results a:hover,.site-search-results a:focus-visible { background:#f3f7ef; border-color:#9ab58b; outline:2px solid #759d63; outline-offset:1px; }
 .site-search-meta { align-items:center; color:#74806f; display:flex; font-size:10px; gap:8px; margin-bottom:6px; }
@@ -37,3 +41,8 @@ body:has(.site-search-dialog[open]) { overflow:hidden; }
   .site-search-content { padding:15px; }
 }
 @media(max-width:380px) { .site-search-mobile { right:138px; } .site-search-filters { gap:8px; } }
+/* Too short to pin the form above a usable result area (landscape phones): scroll the content as one column. */
+@media(max-height:520px) {
+  .site-search-content { overflow-y:auto; overscroll-behavior:contain; scrollbar-color:#c3cdbf transparent; scrollbar-width:thin; }
+  .site-search-results { flex-shrink:0; overflow:visible; }
+}
