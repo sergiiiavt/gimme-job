@@ -251,14 +251,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          health_file="$RUNNER_TEMP/gimmejob-search-health.json"
           curl --proto '=https' --tlsv1.2 --fail --silent --show-error --max-time 20 \
             --header "Authorization: Bearer $GIMMEJOB_AI_SERVICE_TOKEN" \
-            "$AI_URL/v1/search/health" | python -c '
+            --output "$health_file" "$AI_URL/v1/search/health"
+          python - "$health_file" <<'PY'
           import json, sys
-          health = json.load(sys.stdin)
+          with open(sys.argv[1], encoding="utf-8") as source:
+              health = json.load(source)
           if health.get("semanticAvailable") is not True or not isinstance(health.get("count"), int) or health["count"] <= 0:
               raise SystemExit("Search gateway did not expose a complete semantic index after restart.")
-          print("Authenticated search gateway is ready after restart.")'
+          print("Authenticated search gateway is ready after restart.")
+          PY
 
       - name: Verify canonical RAG from Hetzner
         shell: bash
