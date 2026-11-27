@@ -24,6 +24,7 @@ import {
   type VacancySourceHealth,
   type VacancySyncState,
 } from "./_vacancy-sync-state";
+import { LISTED_AT_SQL, listedAtOf } from "./_vacancy-listing-date";
 
 type Json = Record<string, unknown>;
 type Row = Record<string, unknown>;
@@ -293,13 +294,14 @@ function mapExisting(row: Row): IntakeJob & { id: string; fingerprint: string; s
   };
 }
 
-function mapPublicStoredJob(row: Row): IntakeJob & { id: string; discoveredAt: string } {
+function mapPublicStoredJob(row: Row): IntakeJob & { id: string; discoveredAt: string; listedAt: string } {
   const job = mapStoredJob(row);
   return {
     ...job,
     source: row.display_source ? String(row.display_source) : displaySource(job.source),
     id: String(row.id),
     discoveredAt: String(row.discovered_at),
+    listedAt: listedAtOf(row),
     raw: {},
   };
 }
@@ -760,11 +762,12 @@ export function compactDashboardPayload<T extends { jobs?: unknown }>(payload: T
 export async function publicVacancyById(
   jobId: string,
   databaseOverride?: D1DatabaseLike,
-): Promise<(IntakeJob & { id: string; discoveredAt: string }) | null> {
+): Promise<(IntakeJob & { id: string; discoveredAt: string; listedAt: string }) | null> {
   const db = await database(databaseOverride);
   const row = await db.prepare(`SELECT
     id, fingerprint, source, display_source, external_id, title, company, location, remote, url, apply_url, description,
-    salary_text, posted_at, contact_email, discovered_at, raw_json, relevant
+    salary_text, posted_at, contact_email, discovered_at, raw_json, relevant,
+    ${LISTED_AT_SQL} AS listed_at
     FROM jobs
     WHERE id = ?
     LIMIT 1`)
@@ -782,6 +785,7 @@ export async function publicVacancySummaries(databaseOverride?: D1DatabaseLike):
   jobs: Array<IntakeJob & {
     id: string;
     discoveredAt: string;
+    listedAt: string;
     descriptionComplete: boolean;
     reservation: boolean;
   }>;
@@ -793,10 +797,11 @@ export async function publicVacancySummaries(databaseOverride?: D1DatabaseLike):
     substr(description, 1, ${DASHBOARD_DESCRIPTION_PREVIEW_LIMIT}) AS description,
     CASE WHEN length(description) <= ${DASHBOARD_DESCRIPTION_PREVIEW_LIMIT} THEN 1 ELSE 0 END AS description_complete,
     CASE WHEN instr(lower(description), 'бронюван') > 0 THEN 1 ELSE 0 END AS reservation,
-    salary_text, posted_at, contact_email, discovered_at
+    salary_text, posted_at, contact_email, discovered_at,
+    ${LISTED_AT_SQL} AS listed_at
     FROM jobs
     WHERE relevant = 1
-    ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC
+    ORDER BY listed_at DESC, discovered_at DESC
     LIMIT 500`).all<Row>();
 
   const jobs = result.results.map((row) => ({
@@ -810,16 +815,17 @@ export async function publicVacancySummaries(databaseOverride?: D1DatabaseLike):
 }
 
 export async function publicVacancies(databaseOverride?: D1DatabaseLike): Promise<{
-  jobs: Array<IntakeJob & { id: string; discoveredAt: string }>;
+  jobs: Array<IntakeJob & { id: string; discoveredAt: string; listedAt: string }>;
   generatedAt: string;
 }> {
   const db = await database(databaseOverride);
   const result = await db.prepare(`SELECT
     id, source, display_source, external_id, title, company, location, remote, url, apply_url, description,
-    salary_text, posted_at, contact_email, discovered_at
+    salary_text, posted_at, contact_email, discovered_at,
+    ${LISTED_AT_SQL} AS listed_at
     FROM jobs
     WHERE relevant = 1
-    ORDER BY COALESCE(posted_at, discovered_at) DESC, discovered_at DESC
+    ORDER BY listed_at DESC, discovered_at DESC
     LIMIT 500`).all<Row>();
   return {
     jobs: result.results.map(mapPublicStoredJob),

@@ -21,7 +21,7 @@ test("vacancy routes use the auth-aware cache resolver", () => {
 });
 
 test("desktop vacancy table uses strict data columns", () => {
-  for (const label of ["Vacancy", "Company", "Location", "Source", "Conditions", "Salary", "Posted"]) {
+  for (const label of ["Vacancy", "Company", "Location", "Source", "Conditions", "Salary", "Date"]) {
     assert.match(source, new RegExp(`>${label}<`));
   }
   assert.match(source, />Match</);

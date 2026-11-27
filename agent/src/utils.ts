@@ -142,6 +142,52 @@ export function safeIsoDate(value: unknown): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
+const WALL_CLOCK = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?)?$/;
+
+/** Milliseconds the zone's clock is ahead of UTC at `instant`. */
+function zoneOffsetMs(instant: number, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(new Date(instant));
+  const clock = Object.fromEntries(parts.map((part) => [part.type, Number(part.value)]));
+  const wallClock = Date.UTC(clock.year, clock.month - 1, clock.day, clock.hour, clock.minute, clock.second);
+  return wallClock - Math.floor(instant / 1000) * 1000;
+}
+
+/**
+ * Reads a timestamp that carries no UTC offset as wall-clock time in
+ * `timeZone`. A Worker runs in UTC, so `new Date()` on a board's local
+ * "2026-11-23T17:11:33" silently shifts it by the zone's offset. Values that do
+ * state an offset are read as written.
+ */
+export function wallClockIsoDate(value: unknown, timeZone: string): string | null {
+  if (typeof value !== "string") return safeIsoDate(value);
+  const match = WALL_CLOCK.exec(value.trim());
+  if (!match) return safeIsoDate(value);
+
+  const fields = match.slice(1, 7).map((part) => Number(part ?? 0));
+  const [year, month, day, hour, minute, second] = fields;
+  const asUtc = Date.UTC(year, month - 1, day, hour, minute, second, Number((match[7] ?? "").padEnd(3, "0").slice(0, 3)));
+  // Date.UTC rolls 30 February over into March; a calendar-invalid value is not a date.
+  const roundTrip = new Date(asUtc);
+  const normalized = [
+    roundTrip.getUTCFullYear(), roundTrip.getUTCMonth() + 1, roundTrip.getUTCDate(),
+    roundTrip.getUTCHours(), roundTrip.getUTCMinutes(), roundTrip.getUTCSeconds(),
+  ];
+  if (normalized.some((field, index) => field !== fields[index])) return null;
+  // A second pass settles values that sit next to a daylight-saving change.
+  let instant = asUtc - zoneOffsetMs(asUtc, timeZone);
+  instant = asUtc - zoneOffsetMs(instant, timeZone);
+  return new Date(instant).toISOString();
+}
+
 export function extractEmail(value: string): string | null {
   const match = value.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
   if (!match) return null;

@@ -1,10 +1,13 @@
 import type { JobInput } from "../domain.js";
 import { normalizeVacancyDescription } from "../vacancy-content.js";
-import { canonicalizeUrl, isRemoteText, safeIsoDate } from "../utils.js";
+import { canonicalizeUrl, isRemoteText, wallClockIsoDate } from "../utils.js";
 import { fetchText } from "./http.js";
 import type { JobSource } from "./types.js";
 
 const ORIGIN = "https://djinni.co";
+// JSON-LD dates arrive without an offset, e.g. "2026-11-23T17:11:33.944623",
+// in the board's own Kyiv time. Read as UTC they ran two or three hours late.
+const DJINNI_TIME_ZONE = "Europe/Kyiv";
 const MAX_PAGES = 20;
 const BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36";
 
@@ -99,14 +102,14 @@ export function parseDjinniListing(html: string, source: string): JobInput[] {
       applyUrl: url,
       description,
       salaryText: salaryText(posting),
-      postedAt: safeIsoDate(text(posting.datePosted)),
+      postedAt: wallClockIsoDate(text(posting.datePosted), DJINNI_TIME_ZONE),
       contactEmail: null,
       raw: {
         discovery: "djinni-listing",
         companySource: "jsonld",
         descriptionSource: "jsonld",
         employmentType: text(posting.employmentType) || null,
-        validThrough: safeIsoDate(text(posting.validThrough)),
+        validThrough: wallClockIsoDate(text(posting.validThrough), DJINNI_TIME_ZONE),
       },
     }];
   });

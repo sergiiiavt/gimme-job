@@ -53,6 +53,8 @@ interface Job {
   salaryText: string | null;
   postedAt: string | null;
   discoveredAt: string;
+  /** The date the list files the vacancy under; the server moves late arrivals to when they were found. */
+  listedAt?: string | null;
   status: JobStatus;
   statusUpdatedAt?: string | null;
   analysis: JobAnalysis | null;
@@ -127,8 +129,9 @@ const PERSONAL_SORT_OPTIONS: Array<{ value: JobSort; label: string }> = [
   { value: "SCORE_LOW", label: "Lowest score first" },
 ];
 
-// v6 snapshots carry the public/private boundary plus catalogue freshness and source-health metadata.
-const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v6";
+// v7 snapshots carry the public/private boundary, catalogue freshness, source-health metadata, and each
+// vacancy's listed date. Older snapshots lack the listed date and would keep the previous order.
+const VACANCY_CACHE_KEY = "gimmejob:vacancies-cache:v7";
 const VACANCY_WORKSPACE_KEY = "gimmejob:vacancy-workspace:v1";
 const VACANCY_VIEW_KEY = "gimmejob:vacancy-view:v1";
 // A cached catalogue older than this is revalidated — but against the sync
@@ -234,8 +237,19 @@ function sourceLabel(source: string) {
   return source.replace(/^\w+:/, "");
 }
 
+function jobListedAt(job: Job) {
+  return job.listedAt ?? job.postedAt ?? job.discoveredAt;
+}
+
 function jobDate(job: Job) {
-  return new Date(job.postedAt ?? job.discoveredAt);
+  return new Date(jobListedAt(job));
+}
+
+function listedDateTitle(job: Job) {
+  const listedAt = jobListedAt(job);
+  return job.postedAt && listedAt !== job.postedAt
+    ? `Found ${formatDate(listedAt)} · posted ${formatDate(job.postedAt)}`
+    : formatDate(listedAt);
 }
 
 function jobDateKey(job: Job) {
@@ -1099,7 +1113,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
               <span>Conditions</span>
               <span>Salary</span>
               {isPersonal && <span className="vacancy-workflow-head">Match</span>}
-              <span>Posted</span>
+              <span>Date</span>
               {isPersonal && <span>Status</span>}
             </div>
 
@@ -1133,7 +1147,7 @@ export default function VacanciesWorkspace({ mode }: { mode: VacancyViewMode }) 
                 {isPersonal && <div className={`vacancy-cell vacancy-match${typeof job.analysis?.score === "number" ? ` has-score score-${scoreTone(job.analysis?.score ?? 0)}` : " no-score"}`} data-label="Match">
                   {typeof job.analysis?.score === "number" ? <><strong>{formatScore(job.analysis?.score ?? 0)}</strong><span>{verdictLabel(job.analysis.verdict)}</span></> : <><strong>—</strong><span>Not analyzed</span></>}
                 </div>}
-                <time className="vacancy-cell vacancy-posted" data-label="Posted" dateTime={job.postedAt ?? job.discoveredAt} title={formatDate(job.postedAt ?? job.discoveredAt)}>{formatCompactDate(job.postedAt ?? job.discoveredAt)}</time>
+                <time className="vacancy-cell vacancy-posted" data-label="Date" dateTime={jobListedAt(job)} title={listedDateTitle(job)}>{formatCompactDate(jobListedAt(job))}</time>
                 {isPersonal && <div className="vacancy-cell vacancy-status-cell" data-label="Status">
                   <span className={`status status-${job.status.toLowerCase().replace("_", "-")}`}>{statusLabel(job.status)}</span>
                 </div>}
