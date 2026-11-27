@@ -10,13 +10,13 @@ function SearchIcon() {
   return <svg aria-hidden="true" fill="none" height="18" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24" width="18"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>;
 }
 
-export function GlobalSearchTrigger({ mobile = false }: { mobile?: boolean }) {
+export function GlobalSearchTrigger({ mobile = false }: Readonly<{ mobile?: boolean }>) {
   return <button aria-haspopup="dialog" aria-label="Search all learning material and questions" className={mobile ? "site-search-mobile" : "site-search-trigger"} onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))} type="button">
     <SearchIcon/>{!mobile && <><span>Search the site</span><kbd>⌘ / Ctrl K</kbd></>}
   </button>;
 }
 
-export function SearchHighlights({ text, query }: { text: string; query: string }) {
+export function SearchHighlights({ text, query }: Readonly<{ text: string; query: string }>) {
   const terms = [...new Set(query.toLowerCase().match(/[\p{L}\p{N}+#.]{2,}/gu) ?? [])].slice(0, 12);
   const parts: ReactNode[] = [];
   let cursor = 0;
@@ -26,14 +26,13 @@ export function SearchHighlights({ text, query }: { text: string; query: string 
       .sort((a, b) => a.index - b.index || b.term.length - a.term.length);
     const match = matches[0];
     if (!match) { parts.push(text.slice(cursor)); break; }
-    parts.push(text.slice(cursor, match.index));
-    parts.push(<mark key={match.index}>{text.slice(match.index, match.index + match.term.length)}</mark>);
+    parts.push(text.slice(cursor, match.index), <mark key={match.index}>{text.slice(match.index, match.index + match.term.length)}</mark>);
     cursor = match.index + match.term.length;
   }
   return <>{parts}</>;
 }
 
-export function SearchResultList({ results, query, onNavigate }: { results: SearchResult[]; query: string; onNavigate?: () => void }) {
+export function SearchResultList({ results, query, onNavigate }: Readonly<{ results: SearchResult[]; query: string; onNavigate?: () => void }>) {
   return <ol className="site-search-results" id="site-search-results">
     {results.map((result) => <li key={result.id}>
       <a href={result.href} onClick={onNavigate} onKeyDown={(event) => {
@@ -50,6 +49,18 @@ export function SearchResultList({ results, query, onNavigate }: { results: Sear
       </a>
     </li>)}
   </ol>;
+}
+
+export function searchStatus({ valid, busy, error, response, semantic }: Readonly<{ valid: boolean; busy: boolean; error: string | null; response: SearchResponse | null; semantic: boolean }>): string {
+  if (!valid) return "Type at least 2 characters. Enter also searches by meaning.";
+  if (busy) return "Searching…";
+  if (error) return error;
+  if (!response?.results.length) return "No results. Try another phrase or language.";
+  let message = `${response.results.length} results`;
+  if (response.mode === "hybrid") message += " · including matches by meaning";
+  if (response.mode === "fallback") message += " · basic search, full index is temporarily unavailable";
+  else if (semantic && !response.semanticAvailable) message += " · search by meaning is temporarily unavailable";
+  return message;
 }
 
 export default function GlobalSearch() {
@@ -84,9 +95,21 @@ export default function GlobalSearch() {
         event.preventDefault(); show();
       }
     };
+    const modal = dialog.current;
+    const dismissBackdrop = (event: MouseEvent) => { if (event.target === modal) modal?.close(); };
+    const dismissEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); modal?.close(); }
+    };
+    modal?.addEventListener("click", dismissBackdrop);
+    modal?.addEventListener("keydown", dismissEscape);
     window.addEventListener(OPEN_EVENT, show);
     document.addEventListener("keydown", shortcut);
-    return () => { window.removeEventListener(OPEN_EVENT, show); document.removeEventListener("keydown", shortcut); };
+    return () => {
+      window.removeEventListener(OPEN_EVENT, show);
+      document.removeEventListener("keydown", shortcut);
+      modal?.removeEventListener("click", dismissBackdrop);
+      modal?.removeEventListener("keydown", dismissEscape);
+    };
   }, []);
 
   useEffect(() => {
@@ -111,7 +134,7 @@ export default function GlobalSearch() {
   const close = () => dialog.current?.close();
   return <>
     <GlobalSearchTrigger mobile/>
-    <dialog onKeyDown={(event) => { if (event.key === "Escape") { event.preventDefault(); close(); } }} aria-labelledby="site-search-title" className="site-search-dialog" onClick={(event) => { if (event.target === event.currentTarget) close(); }} onClose={() => { setOpen(false); opener.current?.focus(); }} ref={dialog}>
+    <dialog aria-labelledby="site-search-title" className="site-search-dialog" onClose={() => { setOpen(false); opener.current?.focus(); }} ref={dialog}>
       <div className="site-search-content">
         <header><h2 id="site-search-title">Search GimmeJob</h2><button aria-label="Close search" onClick={close} type="button">✕</button></header>
         <form onSubmit={(event) => { event.preventDefault(); if (valid) { setSemantic(true); setAttempt((value) => value + 1); } }} role="search">
@@ -125,7 +148,7 @@ export default function GlobalSearch() {
           </div>
         </form>
         <div aria-live="polite" className="site-search-status" role="status">
-          {!valid ? "Type at least 2 characters. Enter also searches by meaning." : busy ? "Searching…" : currentError ?? (current?.results.length ? `${current.results.length} results${current.mode === "hybrid" ? " · including matches by meaning" : ""}${current.mode === "fallback" ? " · basic search, full index is temporarily unavailable" : semantic && !current.semanticAvailable ? " · search by meaning is temporarily unavailable" : ""}` : "No results. Try another phrase or language.")}
+          {searchStatus({ valid, busy, error: currentError, response: current, semantic })}
         </div>
         {current && <SearchResultList onNavigate={close} query={normalized} results={current.results}/>}
       </div>

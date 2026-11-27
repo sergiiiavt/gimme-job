@@ -14,8 +14,14 @@ export const SEARCH_EQUIVALENTS = [
   ["prompt injection", "ін'єкція промпту", "ін’єкція промпту"],
 ] as const;
 
+function trimTrailingDots(token: string): string {
+  let end = token.length;
+  while (end > 0 && token[end - 1] === ".") end -= 1;
+  return token.slice(0, end);
+}
+
 export function searchTokens(text: string): string[] {
-  return text.toLocaleLowerCase("en").normalize("NFKC").match(/[\p{L}\p{N}_+#.]+/gu)?.map((token) => token.replace(/\.+$/, "")).filter((token) => /[\p{L}\p{N}]/u.test(token)) ?? [];
+  return text.toLocaleLowerCase("en").normalize("NFKC").match(/[\p{L}\p{N}_+#.]+/gu)?.map(trimTrailingDots).filter((token) => /[\p{L}\p{N}]/u.test(token)) ?? [];
 }
 
 export function protectedSearchTerms(text: string): string[] {

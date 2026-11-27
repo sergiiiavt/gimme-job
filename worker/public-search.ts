@@ -1,9 +1,31 @@
 import { ragSourcePath, searchRagDocuments, staticRagDocuments, type RagEnv } from "./rag";
 import { searchService } from "./search-client";
 
+function stripSearchMarkdown(text: string): string {
+  let fenced = false;
+  const lines: string[] = [];
+  for (const line of text.split("\n")) {
+    if (line.trimStart().startsWith("```")) fenced = !fenced;
+    else if (!fenced) lines.push(line.replace(/^#{1,6}\s+/, ""));
+  }
+  const value = lines.join(" ");
+  const parts: string[] = [];
+  let cursor = 0;
+  while (cursor < value.length) {
+    const open = value.indexOf("[", cursor);
+    if (open < 0) { parts.push(value.slice(cursor)); break; }
+    parts.push(value.slice(cursor, open));
+    const end = value.indexOf("](", open + 1);
+    const close = end < 0 ? -1 : value.indexOf(")", end + 2);
+    if (close < 0) { parts.push(value.slice(open)); break; }
+    parts.push(value.slice(open + 1, end));
+    cursor = close + 1;
+  }
+  return parts.join("").replace(/[*`>|]/g, "").replace(/\s+/g, " ").trim();
+}
+
 export function searchSnippet(text: string, query: string): string {
-  const plain = text.replace(/```[^\n]*\n[\s\S]*?```/g, " ").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/[#*`>|]/g, "").replace(/\s+/g, " ").trim();
+  const plain = stripSearchMarkdown(text);
   const terms = query.toLowerCase().match(/[\p{L}\p{N}+#.]{3,}/gu) ?? [];
   const first = terms.map((term) => plain.toLowerCase().indexOf(term)).filter((index) => index >= 0).sort((a, b) => a - b)[0] ?? 0;
   const start = Math.max(0, first - 65);

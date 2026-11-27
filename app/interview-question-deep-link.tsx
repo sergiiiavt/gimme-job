@@ -96,7 +96,7 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
 }) {
   const question = catalog.questions.find((item) => item.id === questionId);
   const searchParams = useSearchParams();
-  const [selectedLanguage, setLanguage] = useState<"en" | "uk" | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<"en" | "uk" | null>(null);
   const language = selectedLanguage ?? (searchParams.get("lang") === "uk" ? "uk" : "en");
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState<number | null>(null);
@@ -183,8 +183,8 @@ export default function InterviewQuestionDeepLink({ backHref, catalog, eyebrow, 
           <h1>{displayQuestion}</h1>
           {question.questionUk && (
             <div className={styles.language} role="group" aria-label={showUk ? "Мова питання" : "Question language"}>
-              <button className={language === "en" ? styles.activeLanguage : ""} onClick={() => setLanguage("en")} type="button">EN</button>
-              <button className={language === "uk" ? styles.activeLanguage : ""} onClick={() => setLanguage("uk")} type="button">UA</button>
+              <button className={language === "en" ? styles.activeLanguage : ""} onClick={() => setSelectedLanguage("en")} type="button">EN</button>
+              <button className={language === "uk" ? styles.activeLanguage : ""} onClick={() => setSelectedLanguage("uk")} type="button">UA</button>
             </div>
           )}
         </header>

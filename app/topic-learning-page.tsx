@@ -101,7 +101,7 @@ export default function TopicLearningPage({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [selectedLanguage, setLanguage] = useState<LearningLanguage | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<LearningLanguage | null>(null);
   const language = selectedLanguage ?? (searchParams.get("lang") === "uk" ? "uk" : "en");
   const [mobileNav, setMobileNav] = useState(false);
 
@@ -125,7 +125,7 @@ export default function TopicLearningPage({
   };
 
   const href = sectionNavigationHref(activeSection, mode);
-  const rail = { language, onLanguageChange: setLanguage };
+  const rail = { language, onLanguageChange: setSelectedLanguage };
   let content: ReactNode;
   if (activeSupplement) {
     content = <SupplementView eyebrow={secondaryTitle} supplement={activeSupplement} {...rail}/>;

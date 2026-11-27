@@ -1,8 +1,19 @@
-import { register } from "node:module";
+import { registerHooks } from "node:module";
+import { readFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { register as registerTsx } from "tsx/esm/api";
 registerTsx();
-register("../tests/helpers/raw-markdown-loader.mjs", import.meta.url);
+registerHooks({
+  load(url, context, nextLoad) {
+    const path = new URL(url);
+    if (path.protocol === "file:" && path.pathname.endsWith(".md")) {
+      path.search = "";
+      path.hash = "";
+      return { format: "module", shortCircuit: true, source: `export default ${JSON.stringify(readFileSync(path, "utf8"))};` };
+    }
+    return nextLoad(url, context);
+  },
+});
 const { staticRagDocuments } = await import("../worker/rag.ts");
 const { searchIndexDocuments, searchCorpusRevision } = await import("../worker/search-corpus.ts");
 const documents = staticRagDocuments();

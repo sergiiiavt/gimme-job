@@ -502,6 +502,11 @@ class LearningAdvisorGraph:
         decisions: list[TraceDecision] = []
         payloads = [_bounded_payload("Canonical retrieval query", "text", query)]
         if diagnostics is not None:
+            availability_detail = "Semantic retrieval was unavailable, so the canonical pipeline used lexical retrieval."
+            if diagnostics.semantic_available:
+                availability_detail = "Workers AI and Vectorize bindings were available."
+                if result.strategy in {"typesense", "hybrid"}:
+                    availability_detail = "Typesense canonical index with multilingual embeddings."
             decisions.extend(
                 [
                     TraceDecision(
@@ -512,7 +517,7 @@ class LearningAdvisorGraph:
                     ),
                     TraceDecision(
                         label="Semantic retrieval availability",
-                        detail=("Typesense canonical index with multilingual embeddings." if result.strategy in {"typesense", "hybrid"} else "Workers AI and Vectorize bindings were available.") if diagnostics.semantic_available else "Semantic retrieval was unavailable, so the canonical pipeline used lexical retrieval.",
+                        detail=availability_detail,
                         status="pass" if diagnostics.semantic_available else "skip",
                         value=diagnostics.semantic_available,
                     ),

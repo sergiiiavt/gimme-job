@@ -193,7 +193,7 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
     ? canonicalTrackId
     : resolvedDefaultTrackId;
   const showTrackSwitcher = resolvedTrackOptions.length > 1;
-  const [selectedLanguage, setLanguage] = useState<LearningLanguage | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<LearningLanguage | null>(null);
   const language = selectedLanguage ?? (searchParams.get("lang") === "uk" ? "uk" : languages[0] ?? "en");
   const [mobileNav, setMobileNav] = useState(false);
 
@@ -417,7 +417,7 @@ export default function LearningDocumentPage({ activeExternalId, curriculum, def
                   />
                 </div>
 
-                <LearningRail headings={headings} language={language} languages={languages} onLanguageChange={setLanguage}/>
+                <LearningRail headings={headings} language={language} languages={languages} onLanguageChange={setSelectedLanguage}/>
               </div>
             </>
           )}

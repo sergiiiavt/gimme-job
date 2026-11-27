@@ -245,8 +245,9 @@ function learningDocuments(): RagDocument[] {
         kind: "learning", refId, title: title.slice(0, 500), catalog: key, route, language,
         ...(topic ? { topic } : {}), ...(track ? { track } : {}), snippet: text.slice(0, 900),
       };
+      const lessonSuffix = lessonSection ? ":" + lessonSection : "";
       const documents: RagDocument[] = [{
-        id: compactVectorId("l", `${key}:${refId}${lessonSection ? `:${lessonSection}` : ""}${languageSuffix}`),
+        id: compactVectorId("l", `${key}:${refId}${lessonSuffix}${languageSuffix}`),
         kind: "learning", refId, title, text,
         metadata: { ...commonMetadata, ...(lessonSection ? { section: lessonSection } : {}) },
       }];
@@ -570,20 +571,7 @@ function baseDiagnostics(selectedKinds: RagKind[], limit: number, corpusDocument
   };
 }
 
-export async function searchRagDocuments(
-  env: RagEnv,
-  query: string,
-  kinds: RagKind[] = ["learning", "question"],
-  requestedLimit = 8,
-): Promise<RagSearchResponse> {
-  const normalizedQuery = query.trim().slice(0, 2_000);
-  const limit = Math.max(1, Math.min(25, Math.trunc(requestedLimit) || 8));
-  const normalizedKinds = [...new Set(kinds)].filter((kind): kind is RagKind => ["job", "learning", "question"].includes(kind));
-  const selectedKinds: RagKind[] = normalizedKinds.length ? normalizedKinds : ["learning", "question"];
-  const documents = await documentsForKinds(env, selectedKinds);
-  const semanticAvailable = ragAvailable(env);
-  const diagnostics = baseDiagnostics(selectedKinds, limit, documents.length, semanticAvailable);
-
+async function sharedRagResponse(env: RagEnv, documents: RagDocument[], normalizedQuery: string, selectedKinds: RagKind[], limit: number, diagnostics: RagSearchDiagnostics): Promise<RagSearchResponse | null> {
   if (normalizedQuery && !selectedKinds.includes("job")) {
     const external = await searchService(env, staticRagDocuments(), normalizedQuery.slice(0, 240), {
       semantic: true, limit, kind: selectedKinds.length === 1 ? selectedKinds[0] : undefined,
@@ -604,6 +592,10 @@ export async function searchRagDocuments(
     }
   }
 
+  return null;
+}
+
+async function vectorRagResponse(env: RagEnv, documents: RagDocument[], normalizedQuery: string, selectedKinds: RagKind[], limit: number, diagnostics: RagSearchDiagnostics, semanticAvailable: boolean): Promise<RagSearchResponse | null> {
   if (normalizedQuery && semanticAvailable) {
     diagnostics.semanticAttempted = true;
     try {
@@ -627,6 +619,28 @@ export async function searchRagDocuments(
   } else {
     diagnostics.fallbackReason = "bindings-unavailable";
   }
+
+  return null;
+}
+
+export async function searchRagDocuments(
+  env: RagEnv,
+  query: string,
+  kinds: RagKind[] = ["learning", "question"],
+  requestedLimit = 8,
+): Promise<RagSearchResponse> {
+  const normalizedQuery = query.trim().slice(0, 2_000);
+  const limit = Math.max(1, Math.min(25, Math.trunc(requestedLimit) || 8));
+  const normalizedKinds = [...new Set(kinds)].filter((kind): kind is RagKind => ["job", "learning", "question"].includes(kind));
+  const selectedKinds: RagKind[] = normalizedKinds.length ? normalizedKinds : ["learning", "question"];
+  const documents = await documentsForKinds(env, selectedKinds);
+  const semanticAvailable = ragAvailable(env);
+  const diagnostics = baseDiagnostics(selectedKinds, limit, documents.length, semanticAvailable);
+
+  const shared = await sharedRagResponse(env, documents, normalizedQuery, selectedKinds, limit, diagnostics);
+  if (shared) return shared;
+  const vector = await vectorRagResponse(env, documents, normalizedQuery, selectedKinds, limit, diagnostics, semanticAvailable);
+  if (vector) return vector;
 
   const lexicalStarted = performance.now();
   const lexical = normalizedQuery

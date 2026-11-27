@@ -8,7 +8,6 @@ import re
 import sqlite3
 import time
 from functools import lru_cache
-from pathlib import Path
 from typing import Literal
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -21,6 +20,7 @@ from .settings import Settings
 
 logger = logging.getLogger(__name__)
 ALIAS = "gimmejob_public"
+COLLECTIONS_PATH = "/collections/"
 MODEL = "text-embedding-3-small"
 DIMENSIONS = 512
 # Bump when changing model, dimensions, or index field semantics.
@@ -87,11 +87,16 @@ def _fuse(lexical: list[dict], semantic: list[dict], limit: int, language: str =
 class PublicSearch:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
+        self._query_embedding = lru_cache(maxsize=256)(self._embed_query)
 
     def _request(self, path: str, *, method: str = "GET", body=None, timeout: int = 12):
         if not self.settings.search_url or not self.settings.search_api_key:
             raise SearchUnavailable("Search is not configured.")
-        payload = body.encode() if isinstance(body, str) else json.dumps(body).encode() if body is not None else None
+        payload = None
+        if isinstance(body, str):
+            payload = body.encode()
+        elif body is not None:
+            payload = json.dumps(body).encode()
         request = Request(self.settings.search_url.rstrip("/") + path, data=payload, method=method,
                           headers={"X-TYPESENSE-API-KEY": self.settings.search_api_key.get_secret_value(),
                                    "Content-Type": "application/json"})
@@ -101,7 +106,7 @@ class PublicSearch:
 
     def health(self) -> dict:
         alias = self._request(f"/aliases/{ALIAS}")
-        collection = self._request("/collections/" + alias["collection_name"])
+        collection = self._request(COLLECTIONS_PATH + alias["collection_name"])
         return {"revision": collection["metadata"]["revision"], "count": collection["num_documents"],
                 "semanticAvailable": collection["metadata"]["semantic"], "engine": "typesense"}
 
@@ -111,8 +116,7 @@ class PublicSearch:
         return OpenAIEmbeddings(model=MODEL, dimensions=DIMENSIONS, api_key=self.settings.openai_api_key,
                                 request_timeout=12, max_retries=1, chunk_size=64)
 
-    @lru_cache(maxsize=256)
-    def _query_embedding(self, query: str) -> tuple[float, ...]:
+    def _embed_query(self, query: str) -> tuple[float, ...]:
         return tuple(self._embeddings().embed_query(query))
 
     def search(self, request: SearchRequest) -> dict:
@@ -165,7 +169,7 @@ class PublicSearch:
                 result.extend(json.loads(cached[key][0]) for key in keys)
         return result
 
-    def index(self) -> dict:
+    def _wait_ready(self) -> None:
         for attempt in range(30):
             try:
                 if self._request("/health").get("ok"):
@@ -175,6 +179,9 @@ class PublicSearch:
             if attempt == 29:
                 raise SearchUnavailable("Typesense did not become ready.")
             time.sleep(1)
+
+    def index(self) -> dict:
+        self._wait_ready()
         snapshot = json.loads(self.settings.search_corpus_path.read_text())
         documents = snapshot["documents"]
         revision = hashlib.sha256(json.dumps(documents, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
@@ -183,7 +190,7 @@ class PublicSearch:
         semantic = self.settings.openai_configured
         name = f"public_{SCHEMA_VERSION}_{revision[:24]}_{'vector' if semantic else 'lexical'}"
         try:
-            collection = self._request("/collections/" + name)
+            collection = self._request(COLLECTIONS_PATH + name)
             complete = collection["num_documents"] == len(documents)
         except HTTPError as error:
             if error.code != 404:
@@ -197,7 +204,7 @@ class PublicSearch:
         previous = sorted((item for item in collections if item["name"].startswith("public_") and item["name"] != name),
                           key=lambda item: item["created_at"], reverse=True)
         for obsolete in previous[1:]:
-            self._request("/collections/" + obsolete["name"], method="DELETE")
+            self._request(COLLECTIONS_PATH + obsolete["name"], method="DELETE")
         return self.health()
 
     def _build_collection(self, name: str, revision: str, documents: list[dict], semantic: bool) -> None:
@@ -210,7 +217,7 @@ class PublicSearch:
             if error.code != 404:
                 raise
         try:
-            self._request("/collections/" + name, method="DELETE")
+            self._request(COLLECTIONS_PATH + name, method="DELETE")
         except HTTPError as error:
             if error.code != 404:
                 raise
@@ -231,7 +238,7 @@ class PublicSearch:
                                      body="\n".join(json.dumps(doc, ensure_ascii=False) for doc in batch), timeout=60)
             if any(not json.loads(line).get("success") for line in imported.splitlines()):
                 raise SearchUnavailable("Search import failed; the previous index remains active.")
-        if self._request("/collections/" + name)["num_documents"] != len(documents):
+        if self._request(COLLECTIONS_PATH + name)["num_documents"] != len(documents):
             raise SearchUnavailable("Search import is incomplete.")
 
 

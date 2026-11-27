@@ -415,6 +415,13 @@ function safeInternalPath(pathname: string): boolean {
   return SAFE_INTERVIEW_PATHS.has(pathname) || CANONICAL_LEARNING_PATH.test(pathname);
 }
 
+function sourceQueryAllowed(url: URL): boolean {
+  const language = url.searchParams.get("lang");
+  return queryKeysAllowed(url.pathname, [...url.searchParams.keys()])
+    && (!language || ["en", "uk"].includes(language))
+    && [...url.searchParams.values()].every((value) => Boolean(value.trim()));
+}
+
 export function sourcePathToHref(sourcePath: string | null): string | null {
   if (!sourcePath) return null;
   const trimmed = sourcePath.trim();
@@ -426,10 +433,7 @@ export function sourcePathToHref(sourcePath: string | null): string | null {
       const base = "https://gimme-job.invalid";
       const url = new URL(trimmed, base);
       if (url.origin !== base || url.hash || !safeInternalPath(url.pathname)) return null;
-      const keys = [...url.searchParams.keys()];
-      if (!queryKeysAllowed(url.pathname, keys)) return null;
-      if (url.searchParams.has("lang") && !["en", "uk"].includes(url.searchParams.get("lang")!)) return null;
-      if ([...url.searchParams.values()].some((value) => !value.trim())) return null;
+      if (!sourceQueryAllowed(url)) return null;
       return `${url.pathname}${url.search}`;
     } catch {
       return null;

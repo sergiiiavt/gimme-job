@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import hashlib
-import io
 import json
 import os
 import secrets
 import subprocess
 import tempfile
-import time
 import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -108,8 +106,9 @@ class SearchTests(unittest.TestCase):
                 result = engine._request(path, body=body)
                 self.assertIsNotNone(result)
                 self.assertEqual(opened.call_args.args[0].get_header("X-typesense-api-key"), "private-key")
+        unconfigured = PublicSearch(Settings())
         with self.assertRaises(SearchUnavailable):
-            PublicSearch(Settings())._embeddings()
+            unconfigured._embeddings()
         with patch("gimmejob_ai.search.OpenAIEmbeddings") as embeddings:
             PublicSearch(Settings(openai_api_key=SecretStr("test-key")))._embeddings()
             self.assertEqual(embeddings.call_args.kwargs["dimensions"], 512)

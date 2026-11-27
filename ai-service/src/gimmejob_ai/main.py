@@ -163,14 +163,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     search_engine = PublicSearch(runtime)
 
-    @app.get("/v1/search/health", dependencies=[Depends(require_auth)])
+    @app.get("/v1/search/health", dependencies=[Depends(require_auth)], responses={503: {"description": "Search index is unavailable."}})
     async def search_health():
         try:
             return await asyncio.to_thread(search_engine.health)
         except Exception as error:
             raise HTTPException(status_code=503, detail="Search index is unavailable.") from error
 
-    @app.post("/v1/search", dependencies=[Depends(require_auth)])
+    @app.post("/v1/search", dependencies=[Depends(require_auth)], responses={503: {"description": "Search index is unavailable."}})
     async def search_public_content(request: SearchRequest):
         try:
             return await asyncio.to_thread(search_engine.search, request)

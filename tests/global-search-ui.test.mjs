@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 register();
 globalThis.React = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-const { default: GlobalSearch, GlobalSearchTrigger, SearchHighlights, SearchResultList } = await import("../app/global-search.tsx");
+const { default: GlobalSearch, GlobalSearchTrigger, SearchHighlights, SearchResultList, searchStatus } = await import("../app/global-search.tsx");
 const result = { id: "one", title: "Pytest fixtures <script>", snippet: "A fixture controls setup & teardown", href: "/learn/automation?topic=pytest&section=fixtures", kind: "learning", language: "en", category: "automation" };
 
 test("search results render safe highlights, labels and canonical anchors", () => {
@@ -20,6 +20,13 @@ test("search results render safe highlights, labels and canonical anchors", () =
   assert.match(html, /UA/);
   assert.match(html, /href="\/learn\/automation\?topic=pytest&amp;section=fixtures"/);
   assert.equal(renderToStaticMarkup(React.createElement(SearchHighlights, { text: "", query: "" })), "");
+});
+
+test("search status distinguishes empty results, semantic degradation and basic fallback", () => {
+  const base = { valid: true, busy: false, error: null, semantic: true };
+  assert.match(searchStatus({ ...base, response: null }), /No results/);
+  assert.match(searchStatus({ ...base, response: { results: [result], mode: "fallback", semanticAvailable: false } }), /basic search/);
+  assert.match(searchStatus({ ...base, response: { results: [result], mode: "typesense", semanticAvailable: false } }), /meaning is temporarily unavailable/);
 });
 
 test("global search opens, debounces, aborts stale requests, filters, submits semantics and restores focus", async () => {

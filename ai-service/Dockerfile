@@ -5,7 +5,6 @@ RUN npm ci --ignore-scripts
 COPY content ./content
 COPY worker ./worker
 COPY scripts/build-search-corpus.mjs ./scripts/build-search-corpus.mjs
-COPY tests/helpers/raw-markdown-loader.mjs ./tests/helpers/raw-markdown-loader.mjs
 RUN node scripts/build-search-corpus.mjs
 
 FROM python:3.13-slim

@@ -80,7 +80,7 @@ export function publicRateLimitPolicy(
   env: PublicApiRateLimitEnv,
 ): LimitPolicy | null {
   const pathname = new URL(request.url).pathname;
-  if (request.method === "GET" && pathname === "/api/public/search") {
+  if ((request.method === "GET" || request.method === "HEAD") && pathname === "/api/public/search") {
     const semantic = new URL(request.url).searchParams.get("semantic") === "1";
     const routeGroup = semantic ? "semantic-search" : "search";
     return { routeGroup, ipLimit: DEFAULT_LIMITS[routeGroup].ip, globalLimit: DEFAULT_LIMITS[routeGroup].global };

@@ -56,11 +56,21 @@ test("public search validates filters and returns only canonical public fields i
   assert.match(searchSnippet("# Heading\n```python\nsecret code\n```\n" + "a".repeat(320) + " useful needle", "needle"), /….*needle/);
 });
 
+test("snippets remove code fences and link targets without pathological regex matching", () => {
+  assert.equal(searchSnippet("# C# and C++\n.NET stays.", ".NET"), "C# and C++ .NET stays.");
+  assert.equal(searchSnippet("See [the reference](https://example.test/private-path) now.", "reference"), "See the reference now.");
+  assert.equal(searchSnippet("An unmatched [label", "label"), "An unmatched [label");
+  assert.equal(searchSnippet("A [label](without-close", "label"), "A [label](without-close");
+  assert.ok(searchSnippet("[".repeat(12_000), "anything").length <= 281);
+  assert.deepEqual(protectedSearchTerms(".NET. C++. HTTP 403."), ["dotnet", "cplusplus", "status403"]);
+});
+
 test("search requests have separate lexical and paid semantic budgets", () => {
   const normal = publicRateLimitPolicy(new Request("https://example.test/api/public/search?q=pytest"), {});
   const semantic = publicRateLimitPolicy(new Request("https://example.test/api/public/search?q=pytest&semantic=1"), {});
   assert.equal(normal?.routeGroup, "search");
   assert.equal(semantic?.routeGroup, "semantic-search");
+  assert.equal(publicRateLimitPolicy(new Request("https://example.test/api/public/search?q=pytest&semantic=1", { method: "HEAD" }), {})?.routeGroup, "semantic-search");
   assert.ok(normal!.ipLimit > semantic!.ipLimit);
 });
 

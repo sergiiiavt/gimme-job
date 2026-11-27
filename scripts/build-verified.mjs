@@ -9,7 +9,7 @@ const vinextCli = path.join(projectRoot, "node_modules", "vinext", "dist", "cli.
 const timeout = Number.parseInt(process.env.GIMMEJOB_BUILD_TIMEOUT_MS ?? "180000", 10);
 
 const searchOutput = execFileSync(process.execPath, [path.join(projectRoot, "scripts/build-search-corpus.mjs")], { cwd: projectRoot, encoding: "utf8", timeout });
-const searchRevision = searchOutput.match(/[a-f0-9]{64}/)?.[0];
+const searchRevision = /[a-f0-9]{64}/.exec(searchOutput)?.[0];
 if (!searchRevision) throw new Error("Search corpus build did not produce a revision.");
 console.log(searchOutput.trim());
 console.log("Running bounded vinext build...");
