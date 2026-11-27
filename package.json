@@ -48,7 +48,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.69.1",
+    "@cloudflare/vite-plugin": "1.70.1",
     "@orama/orama": "3.1.18",
     "@orama/stemmers": "3.1.18",
     "@tailwindcss/postcss": "4.3.5",
@@ -69,7 +69,7 @@
     "typescript": "6.0.3",
     "vinext": "1.4.6",
     "vite": "8.3.8",
-    "wrangler": "4.163.0"
+    "wrangler": "4.167.0"
   },
   "type": "module",
   "displayName": "GimmeJob",
