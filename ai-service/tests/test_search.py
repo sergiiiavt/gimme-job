@@ -119,11 +119,23 @@ class SearchTests(unittest.TestCase):
         engine = PublicSearch(Settings())
         health = {"revision": "a" * 64, "semanticAvailable": True}
         engine.health = Mock(return_value=health)
-        engine._request = Mock(return_value={"hits": [{"document": document()}]})
+        hits = {"hits": [{"document": document()}]}
+        engine._request = Mock(side_effect=lambda path, **_: {"results": [hits]} if path == "/multi_search" else hits)
         engine._query_embedding = Mock(return_value=(0.1, 0.2))
         request = SearchRequest(query="фікстура", revision="a" * 64, semantic=True)
         self.assertEqual(engine.search(request)["mode"], "hybrid")
-        self.assertIn("distance_threshold", engine._request.call_args.args[0])
+        # The vector query travels in a POST body; a GET query string cannot hold a real embedding.
+        path, kwargs = engine._request.call_args.args[0], engine._request.call_args.kwargs
+        self.assertEqual((path, kwargs["method"]), ("/multi_search", "POST"))
+        self.assertIn("distance_threshold", kwargs["body"]["searches"][0]["vector_query"])
+        self.assertNotIn("filter_by", kwargs["body"]["searches"][0])
+        engine.search(SearchRequest(query="HTTP 401", revision="a" * 64, semantic=True))
+        self.assertEqual(engine._request.call_args.kwargs["body"]["searches"][0]["filter_by"], "technical:=status401")
+        # multi_search reports a rejected search inside a 200 response.
+        engine._request.side_effect = lambda path, **_: {"results": [{"code": 400, "error": "rejected"}]} if path == "/multi_search" else hits
+        result = engine.search(request)
+        self.assertEqual((result["mode"], result["semanticAvailable"]), ("typesense", False))
+        engine._request.side_effect = lambda path, **_: {"results": [hits]} if path == "/multi_search" else hits
         engine._query_embedding.side_effect = RuntimeError("private provider error")
         self.assertEqual(engine.search(request)["mode"], "typesense")
         engine.health.return_value = {**health, "semanticAvailable": False}
