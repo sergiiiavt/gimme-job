@@ -406,13 +406,20 @@ export function normalizedLearningPathResponse(value: unknown): LearningPathApiR
 
 function queryKeysAllowed(pathname: string, keys: string[]): boolean {
   const allowed = pathname.startsWith("/interview")
-    ? new Set(["question", "topic"])
-    : new Set(["topic", "section", "track"]);
+    ? new Set(["question", "topic", "lang"])
+    : new Set(["topic", "section", "track", "lang"]);
   return keys.every((key) => allowed.has(key));
 }
 
 function safeInternalPath(pathname: string): boolean {
   return SAFE_INTERVIEW_PATHS.has(pathname) || CANONICAL_LEARNING_PATH.test(pathname);
+}
+
+function sourceQueryAllowed(url: URL): boolean {
+  const language = url.searchParams.get("lang");
+  return queryKeysAllowed(url.pathname, [...url.searchParams.keys()])
+    && (!language || ["en", "uk"].includes(language))
+    && [...url.searchParams.values()].every((value) => Boolean(value.trim()));
 }
 
 export function sourcePathToHref(sourcePath: string | null): string | null {
@@ -426,9 +433,7 @@ export function sourcePathToHref(sourcePath: string | null): string | null {
       const base = "https://gimme-job.invalid";
       const url = new URL(trimmed, base);
       if (url.origin !== base || url.hash || !safeInternalPath(url.pathname)) return null;
-      const keys = [...url.searchParams.keys()];
-      if (!queryKeysAllowed(url.pathname, keys)) return null;
-      if ([...url.searchParams.values()].some((value) => !value.trim())) return null;
+      if (!sourceQueryAllowed(url)) return null;
       return `${url.pathname}${url.search}`;
     } catch {
       return null;

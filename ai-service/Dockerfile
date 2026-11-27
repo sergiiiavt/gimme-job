@@ -1,3 +1,12 @@
+FROM node:22.22.0-slim AS search-corpus
+WORKDIR /source
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+COPY content ./content
+COPY worker ./worker
+COPY scripts/build-search-corpus.mjs ./scripts/build-search-corpus.mjs
+RUN node scripts/build-search-corpus.mjs
+
 FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -15,8 +24,9 @@ COPY ai-service/src /app/src
 RUN UV_PYTHON_DOWNLOADS=never uv sync --frozen --no-dev --no-build --no-install-project
 
 COPY content /app/content
+COPY --from=search-corpus /source/ai-service/search-corpus.json /app/search-corpus.json
 
-RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
+RUN mkdir -p /app/search-cache && useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
 USER appuser
 
 RUN /app/.venv/bin/python -c "import gimmejob_ai.application"

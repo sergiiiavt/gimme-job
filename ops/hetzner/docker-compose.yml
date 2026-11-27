@@ -48,6 +48,18 @@ services:
     networks:
       - n8n_internal
 
+  typesense:
+    image: typesense/typesense:30.2
+    restart: unless-stopped
+    profiles: [ai]
+    env_file: [./search.env]
+    command: ["--data-dir=/data", "--enable-cors=false", "--thread-pool-size=4", "--max-indexing-concurrency=2", "--cache-num-entries=256"]
+    mem_limit: 768m
+    cpus: 1.0
+    expose: ["8108"]
+    volumes: [search_data:/data]
+    networks: [n8n_internal]
+
   gimmejob-ai:
     image: ghcr.io/sergiiiavt/gimme-job-ai:latest
     restart: unless-stopped
@@ -55,6 +67,9 @@ services:
       - ai
     env_file:
       - ./ai.env
+      - ./search.env
+    volumes:
+      - search_cache:/app/search-cache
     expose:
       - "8000"
     networks:
@@ -194,6 +209,8 @@ services:
       - n8n_internal
 
 volumes:
+  search_data:
+  search_cache:
   n8n_postgres_data:
   n8n_data:
   mysql_lab_data:

@@ -62,6 +62,14 @@ jobs:
           PUBLIC_DB_HOURLY_IP_LIMIT: ${{ vars.PUBLIC_DB_HOURLY_IP_LIMIT }}
         run: node scripts/deploy-cloudflare.mjs
 
+      - name: Verify current public search index
+        env:
+          GIMMEJOB_AI_URL: ${{ vars.GIMMEJOB_AI_URL || 'https://ai.gimme-job.com' }}
+          GIMMEJOB_AI_SERVICE_TOKEN: ${{ secrets.GIMMEJOB_AI_SERVICE_TOKEN }}
+        run: |
+          node scripts/build-search-corpus.mjs
+          node scripts/verify-search-release.mjs
+
       - name: Verify production
         shell: bash
         run: |

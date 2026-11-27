@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { GlobalSearchTrigger } from "./global-search";
 import AuthStatusControl from "./auth-status-control";
 import DesignModeSwitcher from "./design-mode-switcher";
 import {
@@ -469,6 +470,7 @@ export function SiteSidebar({ activeExternalId, activeSection, activeSubsection,
           <strong style={brandWordmarkStyle}>Gimme<span style={brandJobStyle}>Job</span></strong>
         </Link>
 
+        <GlobalSearchTrigger/>
         <nav className="kb-nav-list" aria-label="GimmeJob sections">
           {renderItem(navigationIntroItem, true)}
           {navigationGroups.map((group) => (

@@ -45,7 +45,7 @@ test("Git publishes an ordered bilingual path with explicit review status and pr
 });
 
 test("canonical RAG discovers every Git chapter and section despite its pending content review", () => {
-  const documents = staticRagDocuments().filter((document) => document.metadata.catalog === "git");
+  const documents = staticRagDocuments().filter((document) => document.metadata.catalog === "git" && document.metadata.language === "en");
   for (const chapter of catalog.chapters) {
     const entries = documents.filter((document) => document.metadata.topic === chapter.id);
     assert.ok(entries.some((document) => !document.metadata.section), `${chapter.id}: topic document`);

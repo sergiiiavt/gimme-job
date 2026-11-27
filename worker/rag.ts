@@ -1,10 +1,11 @@
+import { searchService, type SearchServiceEnv } from "./search-client";
 import interviewCatalog from "../content/interview/catalog";
 import learningRagSources, { learningCatalogItems, learningTopicTrack } from "../content/learning-rag-registry";
 import pythonInterviewCatalog from "../content/python-interview/catalog";
 
 type Json = Record<string, unknown>;
 export type RagKind = "job" | "learning" | "question";
-export type RagRetrievalMode = "vectorize" | "lexical-fallback";
+export type RagRetrievalMode = "vectorize" | "lexical-fallback" | "typesense" | "hybrid";
 export type RagFallbackReason = "none" | "empty-query" | "bindings-unavailable" | "semantic-error" | "no-matches-above-threshold";
 
 export type RagDocument = {
@@ -107,7 +108,7 @@ type LexicalScore = {
   minimumMatches: number;
 };
 
-export type RagEnv = {
+export type RagEnv = SearchServiceEnv & {
   DB: D1Database;
   AI?: { run(model: string, input: { text: string[] }): Promise<unknown> };
   RAG_INDEX?: {
@@ -192,7 +193,7 @@ function markdownSlug(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-function markdownSections(markdown: string): Array<{ id: string; title: string; text: string }> {
+function markdownSections(markdown: string, canonicalIds: string[] = []): Array<{ id: string; title: string; text: string }> {
   const lines = markdown.replace(/\r\n/g, "\n").split("\n");
   const sections: Array<{ id: string; title: string; text: string }> = [];
   for (let index = 0; index < lines.length; index += 1) {
@@ -201,7 +202,7 @@ function markdownSections(markdown: string): Array<{ id: string; title: string; 
     let end = index + 1;
     while (end < lines.length && !/^##\s+/.test(lines[end])) end += 1;
     const title = markdownPlainText(heading[1]);
-    const id = markdownSlug(heading[1]);
+    const id = canonicalIds[sections.length] || markdownSlug(heading[1]);
     const text = compactText([title, lines.slice(index + 1, end).join("\n")]);
     if (id && text) sections.push({ id, title, text });
     index = end - 1;
@@ -209,96 +210,86 @@ function markdownSections(markdown: string): Array<{ id: string; title: string; 
   return sections;
 }
 
+/** Keep code and shared fields while selecting each authored translation before truncation. */
+function localizedItem(value: unknown, language: "en" | "uk"): unknown {
+  if (Array.isArray(value)) return value.map((item) => localizedItem(item, language));
+  if (!value || typeof value !== "object") return value;
+  const record = value as Json;
+  return Object.fromEntries(Object.entries(record).filter(([key]) => !key.endsWith("Uk"))
+    .map(([key, item]) => [key, localizedItem(language === "uk" ? record[`${key}Uk`] ?? item : item, language)]));
+}
+
+function hasTranslation(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  return Object.entries(value).some(([key, item]) => key.endsWith("Uk") && Boolean(item) || hasTranslation(item));
+}
+
 function learningDocuments(): RagDocument[] {
-  return learningRagSources.flatMap((source) => learningCatalogItems(source.value).flatMap((item, index) => {
+  return learningRagSources.flatMap((source) => learningCatalogItems(source.value).flatMap((original, index) => {
     const { key, route } = source;
-    const status = clean(item.status, 100);
+    const status = clean(original.status, 100);
     if (status && status !== "published") return [];
-
-    const refId = clean(item.id, 300) || `${key}-${index + 1}`;
-    const title = learningTitle(item);
-    const text = compactText([title, ...collectStrings(item)]);
-    const topic = clean(item.moduleId || item.id, 300);
+    const refId = clean(original.id, 300) || `${key}-${index + 1}`;
+    const topic = clean(original.moduleId || original.id, 300);
     const track = topic ? learningTopicTrack(source, topic) : source.track;
-    const markdown = clean(item.markdown, 60_000);
-    const lessonSection = !markdown && item.moduleId ? markdownSlug(clean(item.title, 500)) : "";
-    const commonMetadata: Record<string, string | number | boolean> = {
-      kind: "learning",
-      refId,
-      title: title.slice(0, 500),
-      catalog: key,
-      route,
-      ...(topic ? { topic } : {}),
-      ...(track ? { track } : {}),
-      snippet: text.slice(0, 900),
-    };
-
-    const documents: RagDocument[] = [{
-      id: compactVectorId("l", `${key}:${refId}${lessonSection ? `:${lessonSection}` : ""}`),
-      kind: "learning",
-      refId,
-      title,
-      text,
-      metadata: {
-        ...commonMetadata,
-        ...(lessonSection ? { section: lessonSection } : {}),
-      },
-    }];
-
-    for (const section of markdownSections(markdown)) {
-      const sectionRefId = `${refId}#${section.id}`;
-      const sectionText = compactText([title, section.title, section.text]);
-      documents.push({
-        id: compactVectorId("l", `${key}:${sectionRefId}`),
-        kind: "learning",
-        refId: sectionRefId,
-        title: section.title,
-        text: sectionText,
-        metadata: {
-          ...commonMetadata,
-          refId: sectionRefId,
-          title: section.title.slice(0, 500),
-          section: section.id,
-          snippet: sectionText.slice(0, 900),
-        },
-      });
-    }
-
-    return documents;
+    const canonicalSections = markdownSections(clean(original.markdown, 1_000_000)).map((section) => section.id);
+    const languages: Array<"en" | "uk"> = hasTranslation(original) ? ["en", "uk"] : ["en"];
+    return languages.flatMap((language) => {
+      const item = localizedItem(original, language) as Json;
+      const title = learningTitle(item);
+      const text = compactText([title, ...collectStrings(item)]);
+      const markdown = clean(item.markdown, 1_000_000);
+      const lessonSection = !markdown && item.moduleId ? markdownSlug(clean(original.title, 500)) : "";
+      const languageSuffix = language === "uk" ? ":uk" : "";
+      const commonMetadata: Record<string, string | number | boolean> = {
+        kind: "learning", refId, title: title.slice(0, 500), catalog: key, route, language,
+        ...(topic ? { topic } : {}), ...(track ? { track } : {}), snippet: text.slice(0, 900),
+      };
+      const lessonSuffix = lessonSection ? ":" + lessonSection : "";
+      const documents: RagDocument[] = [{
+        id: compactVectorId("l", `${key}:${refId}${lessonSuffix}${languageSuffix}`),
+        kind: "learning", refId, title, text,
+        metadata: { ...commonMetadata, ...(lessonSection ? { section: lessonSection } : {}) },
+      }];
+      for (const section of markdownSections(markdown, language === "uk" ? canonicalSections : [])) {
+        const sectionRefId = `${refId}#${section.id}`;
+        const sectionText = compactText([title, section.title, section.text]);
+        documents.push({
+          id: compactVectorId("l", `${key}:${sectionRefId}${languageSuffix}`), kind: "learning",
+          refId: sectionRefId, title: section.title, text: sectionText,
+          metadata: { ...commonMetadata, refId: sectionRefId, title: section.title.slice(0, 500),
+            section: section.id, snippet: sectionText.slice(0, 900) },
+        });
+      }
+      return documents;
+    });
   }));
 }
 
 function questionDocuments(): RagDocument[] {
-  return questionCatalogs.flatMap(({ key, route, track, questions }) => questions.map((question) => {
-    const refId = clean(question.id, 300);
-    const title = clean(question.question || question.title, 1_000) || refId;
-    const text = compactText([
-      title,
-      clean(question.category, 500),
-      clean(question.answer, 8_000),
-      ...collectStrings(question.tags),
-      ...collectStrings(question.signals),
-      ...collectStrings(question.codeExamples),
-    ]);
-    return {
-      id: compactVectorId("q", `${key}:${refId}`),
-      kind: "question" as const,
-      refId,
-      title,
-      text,
-      metadata: {
-        kind: "question",
-        refId,
-        title: title.slice(0, 500),
-        catalog: key,
-        track,
-        category: clean(question.category, 300),
-        prevalence: clean(question.prevalence, 100),
-        route,
-        snippet: text.slice(0, 900),
-      },
-    };
-  }));
+  return questionCatalogs.flatMap(({ key, route, track, questions }) => {
+    // Direct question pages select the first occurrence. Mirror that authority without changing public IDs.
+    const seen = new Set<string>();
+    return questions.flatMap((original) => {
+      const refId = clean(original.id, 300);
+      if (seen.has(refId)) return [];
+      seen.add(refId);
+      const languages: Array<"en" | "uk"> = hasTranslation(original) ? ["en", "uk"] : ["en"];
+      return languages.map((language) => {
+        const question = localizedItem(original, language) as Json;
+        const title = clean(question.question || question.title, 1_000) || refId;
+        const text = compactText([title, clean(question.category, 500), clean(question.shortAnswer || question.answer, 8_000),
+          clean(question.example, 8_000), ...collectStrings(question.tags), ...collectStrings(question.strongAnswerSignals),
+          ...collectStrings(question.codeExamples)]);
+        return {
+          id: compactVectorId("q", `${key}:${refId}${language === "uk" ? ":uk" : ""}`),
+          kind: "question" as const, refId, title, text,
+          metadata: { kind: "question", refId, title: title.slice(0, 500), catalog: key, track, language,
+            category: clean(question.category, 300), prevalence: clean(question.prevalence, 100), route, snippet: text.slice(0, 900) },
+        };
+      });
+    });
+  });
 }
 
 let cachedStaticDocuments: RagDocument[] | null = null;
@@ -468,8 +459,10 @@ async function documentsForKinds(env: RagEnv, kinds: RagKind[]): Promise<RagDocu
 export function ragSourcePath(document: RagDocument): string {
   const route = clean(document.metadata.route, 1_000);
   if (!route.startsWith("/") || route.startsWith("//")) return "/";
-  if (document.kind !== "learning") return route;
+  if (document.kind === "job") return route;
   const params = new URLSearchParams();
+  if (document.kind === "question") params.set("question", document.refId);
+  if (document.metadata.language === "uk") params.set("lang", "uk");
   const topic = clean(document.metadata.topic, 300);
   const section = clean(document.metadata.section, 300);
   const track = clean(document.metadata.track, 300);
@@ -578,20 +571,31 @@ function baseDiagnostics(selectedKinds: RagKind[], limit: number, corpusDocument
   };
 }
 
-export async function searchRagDocuments(
-  env: RagEnv,
-  query: string,
-  kinds: RagKind[] = ["learning", "question"],
-  requestedLimit = 8,
-): Promise<RagSearchResponse> {
-  const normalizedQuery = query.trim().slice(0, 2_000);
-  const limit = Math.max(1, Math.min(25, Math.trunc(requestedLimit) || 8));
-  const normalizedKinds = [...new Set(kinds)].filter((kind): kind is RagKind => ["job", "learning", "question"].includes(kind));
-  const selectedKinds: RagKind[] = normalizedKinds.length ? normalizedKinds : ["learning", "question"];
-  const documents = await documentsForKinds(env, selectedKinds);
-  const semanticAvailable = ragAvailable(env);
-  const diagnostics = baseDiagnostics(selectedKinds, limit, documents.length, semanticAvailable);
+async function sharedRagResponse(env: RagEnv, documents: RagDocument[], normalizedQuery: string, selectedKinds: RagKind[], limit: number, diagnostics: RagSearchDiagnostics): Promise<RagSearchResponse | null> {
+  if (normalizedQuery && !selectedKinds.includes("job")) {
+    const external = await searchService(env, staticRagDocuments(), normalizedQuery.slice(0, 240), {
+      semantic: true, limit, kind: selectedKinds.length === 1 ? selectedKinds[0] : undefined,
+    });
+    if (external) {
+      const byId = new Map(documents.map((document) => [document.id, document]));
+      const results = external.candidates.flatMap((candidate) => {
+        const document = byId.get(candidate.id);
+        return document ? [presentDocument(document, candidate.score)] : [];
+      });
+      diagnostics.semanticAvailable = external.semanticAvailable;
+      diagnostics.semanticAttempted = external.mode === "hybrid";
+      diagnostics.embeddingInputChars = diagnostics.semanticAttempted ? normalizedQuery.length : 0;
+      diagnostics.embeddingDimension = diagnostics.semanticAttempted ? 512 : null;
+      diagnostics.lexicalCandidateCount = documents.length;
+      diagnostics.lexicalScoredCount = results.length;
+      return { query: normalizedQuery, retrieval: external.mode, embeddingModel: "text-embedding-3-small", count: results.length, results, diagnostics };
+    }
+  }
 
+  return null;
+}
+
+async function vectorRagResponse(env: RagEnv, documents: RagDocument[], normalizedQuery: string, selectedKinds: RagKind[], limit: number, diagnostics: RagSearchDiagnostics, semanticAvailable: boolean): Promise<RagSearchResponse | null> {
   if (normalizedQuery && semanticAvailable) {
     diagnostics.semanticAttempted = true;
     try {
@@ -615,6 +619,28 @@ export async function searchRagDocuments(
   } else {
     diagnostics.fallbackReason = "bindings-unavailable";
   }
+
+  return null;
+}
+
+export async function searchRagDocuments(
+  env: RagEnv,
+  query: string,
+  kinds: RagKind[] = ["learning", "question"],
+  requestedLimit = 8,
+): Promise<RagSearchResponse> {
+  const normalizedQuery = query.trim().slice(0, 2_000);
+  const limit = Math.max(1, Math.min(25, Math.trunc(requestedLimit) || 8));
+  const normalizedKinds = [...new Set(kinds)].filter((kind): kind is RagKind => ["job", "learning", "question"].includes(kind));
+  const selectedKinds: RagKind[] = normalizedKinds.length ? normalizedKinds : ["learning", "question"];
+  const documents = await documentsForKinds(env, selectedKinds);
+  const semanticAvailable = ragAvailable(env);
+  const diagnostics = baseDiagnostics(selectedKinds, limit, documents.length, semanticAvailable);
+
+  const shared = await sharedRagResponse(env, documents, normalizedQuery, selectedKinds, limit, diagnostics);
+  if (shared) return shared;
+  const vector = await vectorRagResponse(env, documents, normalizedQuery, selectedKinds, limit, diagnostics, semanticAvailable);
+  if (vector) return vector;
 
   const lexicalStarted = performance.now();
   const lexical = normalizedQuery

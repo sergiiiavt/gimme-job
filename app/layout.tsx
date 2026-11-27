@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import GlobalSearch from "./global-search";
 import InterviewNavigationState from "./interview-navigation-state";
 import PrimaryNavScrollState from "./primary-nav-scroll-state";
 import JsonLd from "./json-ld";
@@ -27,6 +28,7 @@ import "./vacancy-responsive-stats.css";
 import "./http-status-accordion.css";
 import "./site-code-blocks.css";
 import "./new-design.css";
+import "./global-search.css";
 
 const DESIGN_STORAGE_KEY = "gimmejob-design";
 
@@ -120,6 +122,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <VacancyScrollState/>
         <VacancyPopoverLayer/>
         <ToTopButton/>
+        <GlobalSearch/>
         {children}
       </body>
     </html>

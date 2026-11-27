@@ -373,3 +373,5 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full security and ser
 This README describes the current product at a durable capability level. It intentionally avoids hard-coding fast-changing totals such as exact numbers of questions, lessons, topics, or sources.
 
 Catalog validators use non-regression floors, not product maximums. When exact current counts matter, the live site and Git-versioned content are the source of truth.
+
+Global public search: [architecture and operations](docs/SEARCH-DESIGN.md). Open it from the shared navigation or Ctrl/Cmd K. Typing searches text; Enter also searches by meaning.

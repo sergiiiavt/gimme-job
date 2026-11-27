@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import unittest
-from unittest.mock import patch
+from dataclasses import replace
+from unittest.mock import AsyncMock, patch
 
 from gimmejob_ai.learning_path import LearningAdvisorGraph
-from gimmejob_ai.retrieval import RetrievalHit, RetrievalResult
+from gimmejob_ai.retrieval import RetrievalDiagnostics, RetrievalHit, RetrievalResult
 
 
 class _CountingRetriever:
@@ -71,6 +72,27 @@ class LearningAdvisorObservabilityTests(unittest.IsolatedAsyncioTestCase):
             "language": "en",
             "workflow_steps": [],
         }
+
+    async def test_shared_hybrid_trace_identifies_the_actual_retrieval_provider(self) -> None:
+        retriever = _CountingRetriever()
+        base = await retriever.search("Python parallelism", "en")
+        diagnostics = RetrievalDiagnostics(
+            selected_kinds=("learning", "question"), requested_limit=8, corpus_document_count=6267,
+            semantic_available=True, semantic_attempted=True, embedding_input_chars=18,
+            embedding_dimension=512, embedding_duration_ms=0, vector_top_k=None, vector_query_duration_ms=0,
+            raw_vector_match_count=0, kind_filtered_match_count=0, score_threshold=0.45,
+            threshold_passed_match_count=0, fallback_reason="none", lexical_tokens=(), removed_stop_words=(),
+            lexical_candidate_count=6267, lexical_scored_count=1, lexical_duration_ms=0, result_diagnostics=(),
+        )
+        retriever.search = AsyncMock(return_value=replace(base, strategy="hybrid", embedding_model="text-embedding-3-small", diagnostics=diagnostics))
+        advisor = self._advisor(retriever)
+        with patch("gimmejob_ai.learning_path.langfuse_configured", return_value=False):
+            result = await advisor._retrieve_canonical_rag(self._state())
+        self.assertEqual(result["retrieval_strategy"], "hybrid")
+        decisions = result["workflow_steps"][-1].decisions
+        self.assertTrue(any(item.label == "Shared public search" for item in decisions))
+        self.assertTrue(any("Typesense" in item.detail for item in decisions))
+        self.assertFalse(any(item.label == "Vectorize candidate search" for item in decisions))
 
     async def test_observation_update_failure_does_not_repeat_retrieval(self) -> None:
         retriever = _CountingRetriever()

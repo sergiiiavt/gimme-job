@@ -34,6 +34,7 @@ export default defineConfig(async () => {
 
   return {
     define: {
+      __GIMMEJOB_SEARCH_REVISION__: JSON.stringify(process.env.GIMMEJOB_SEARCH_REVISION ?? ""),
       "import.meta.env.VITE_JOB_AGENT_PORT": JSON.stringify(localAgentPort),
       "import.meta.env.VITE_JOB_AGENT_INSTANCE_ID": JSON.stringify(localAgentId),
     },

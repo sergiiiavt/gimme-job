@@ -5,6 +5,8 @@ on:
     paths:
       - ai-service/**
       - content/**
+      - worker/**
+      - scripts/build-search-corpus.mjs
       - .github/workflows/ai-image.yml
       - ops/hetzner/**
   push:
@@ -13,6 +15,8 @@ on:
     paths:
       - ai-service/**
       - content/**
+      - worker/**
+      - scripts/build-search-corpus.mjs
       - .github/workflows/ai-image.yml
       - ops/hetzner/**
   workflow_dispatch:
@@ -91,7 +95,7 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     environment: production
     env:
       DEPLOY_HOST: n8n.gimme-job.com
@@ -195,7 +199,24 @@ jobs:
           mv -f gimmejob-ai.env ai.env
           chmod 600 ai.env
           chmod 644 docker-compose.yml Caddyfile
-          docker compose --profile ai pull gimmejob-ai caddy
+          if [[ ! -s search.env ]]; then
+            umask 077
+            search_key="$(openssl rand -hex 32)"
+            printf 'TYPESENSE_API_KEY=%s\nGIMMEJOB_AI_SEARCH_API_KEY=%s\nGIMMEJOB_AI_SEARCH_URL=http://typesense:8108\n' "$search_key" "$search_key" >search.env
+          fi
+          chmod 600 search.env
+          echo "Host memory before search rollout:"
+          free -m
+          available_kb="$(awk '/MemAvailable:/ {print $2}' /proc/meminfo)"
+          if (( available_kb < 1048576 )); then
+            echo "::error::Search rollout requires at least 1 GiB available host RAM."
+            exit 1
+          fi
+          docker compose --profile ai pull gimmejob-ai typesense caddy
+          docker compose --profile ai up -d typesense
+          # The new image owns a full canonical snapshot. Index before replacing the gateway.
+          # Typesense retains the prior collection and atomically switches its alias after validation.
+          docker compose --profile ai run --rm --no-deps gimmejob-ai /app/.venv/bin/python -m gimmejob_ai.search
           docker compose --profile ai up -d gimmejob-ai caddy
           # This script arrives on ssh's stdin; without </dev/null, exec would swallow the rest of it.
           docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile </dev/null

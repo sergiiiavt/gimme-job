@@ -170,7 +170,7 @@ test("new certification practice and worked sections are derived with canonical 
   const documents = staticRagDocuments().filter((item) => item.kind === "learning");
   for (const catalog of [...istqbCertificationCatalogs, ...aiEngineeringCertificationCatalogs]) {
     for (const chapter of catalog.taxonomy) {
-      const sections = documents.filter((item) => item.metadata.track === catalog.trackId && item.metadata.topic === chapter.id && typeof item.metadata.section === "string");
+      const sections = documents.filter((item) => item.metadata.language === "en" && item.metadata.track === catalog.trackId && item.metadata.topic === chapter.id && typeof item.metadata.section === "string");
       assert.equal(sections.length, (chapter.markdown.match(/^## /gm) ?? []).length, `${catalog.trackId}/${chapter.id} publishes every section`);
       assert.equal(new Set(sections.map((item) => item.metadata.section)).size, sections.length);
     }

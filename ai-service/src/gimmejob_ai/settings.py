@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     service_token: SecretStr | None = None
     content_root: Path = Path("../content")
     request_timeout_seconds: float = 45.0
+    search_url: str | None = None
+    search_api_key: SecretStr | None = None
+    search_corpus_path: Path = Path("/app/search-corpus.json")
+    search_cache_path: Path = Path("/app/search-cache/embeddings.sqlite")
     rag_url: str | None = None
     rag_service_token: SecretStr | None = None
 
