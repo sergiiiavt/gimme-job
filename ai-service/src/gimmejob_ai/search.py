@@ -138,15 +138,26 @@ class PublicSearch:
         semantic_available = health["semanticAvailable"]
         if request.semantic and health["semanticAvailable"]:
             try:
-                vector = json.dumps(self._query_embedding(request.query), separators=(",", ":"))
-                semantic_params = {"q": "*", "vector_query": f"embedding:({vector}, k:40, distance_threshold:0.55)",
-                                   "per_page": 40, "include_fields": "id,parent,canonical,language", "filter_by": _filters(request)}
-                semantic = self._request(f"/collections/{ALIAS}/documents/search?" + urlencode(semantic_params))["hits"]
+                semantic = self._vector_search(self._query_embedding(request.query), _filters(request))
             except Exception as error:
                 semantic_available = False
-                logger.warning("Semantic search unavailable: %s", type(error).__name__)
+                logger.warning("Semantic search unavailable: %s %s", type(error).__name__, getattr(error, "code", ""))
         return {"revision": request.revision, "mode": "hybrid" if semantic else "typesense",
                 "semanticAvailable": semantic_available, "candidates": _fuse(lexical, semantic, request.limit, "uk" if re.search(r"[А-Яа-яІіЇїЄєҐґ]", request.query) else "en")}
+
+    def _vector_search(self, embedding: tuple[float, ...], filter_by: str) -> list[dict]:
+        """A 512-dimension query embedding serializes to ~10 KB, past Typesense's 4,000-character GET
+        query-string limit, so the vector query travels in a POST multi_search body."""
+        vector = json.dumps(embedding, separators=(",", ":"))
+        search = {"collection": ALIAS, "q": "*", "vector_query": f"embedding:({vector}, k:40, distance_threshold:0.55)",
+                  "per_page": 40, "include_fields": "id,parent,canonical,language"}
+        if filter_by:
+            search["filter_by"] = filter_by
+        result = self._request("/multi_search", method="POST", body={"searches": [search]})["results"][0]
+        # multi_search answers 200 and reports a failed search inside its result.
+        if "error" in result:
+            raise SearchUnavailable(f"Vector search failed with status {result.get('code')}.")
+        return result["hits"]
 
     def _embed_index_batch(self, model: OpenAIEmbeddings, texts: list[str]) -> list[list[float]]:
         attempt = 0
