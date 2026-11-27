@@ -14,6 +14,7 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from langchain_openai import OpenAIEmbeddings
+from openai import RateLimitError
 from pydantic import BaseModel, Field
 
 from .settings import Settings
@@ -147,6 +148,19 @@ class PublicSearch:
         return {"revision": request.revision, "mode": "hybrid" if semantic else "typesense",
                 "semanticAvailable": semantic_available, "candidates": _fuse(lexical, semantic, request.limit, "uk" if re.search(r"[А-Яа-яІіЇїЄєҐґ]", request.query) else "en")}
 
+    def _embed_index_batch(self, model: OpenAIEmbeddings, texts: list[str]) -> list[list[float]]:
+        attempt = 0
+        while True:
+            try:
+                return model.embed_documents(texts)
+            except RateLimitError as error:
+                if error.code in {"insufficient_quota", "billing_hard_limit_reached"} or attempt >= 7:
+                    raise
+                delay = min(60, 5 * (2 ** attempt))
+                attempt += 1
+                logger.warning("Embedding index rate limited; retry %d of 7 in %d seconds.", attempt, delay)
+                time.sleep(delay)
+
     def _cached_embeddings(self, documents: list[dict]) -> list[list[float]]:
         cache = self.settings.search_cache_path
         cache.parent.mkdir(parents=True, exist_ok=True)
@@ -161,7 +175,7 @@ class PublicSearch:
                 missing = list(dict.fromkeys(key for key in keys if not cached[key]))
                 if missing:
                     lookup = dict(zip(keys, texts))
-                    vectors = model.embed_documents([lookup[key] for key in missing])
+                    vectors = self._embed_index_batch(model, [lookup[key] for key in missing])
                     database.executemany("INSERT OR REPLACE INTO embeddings VALUES (?, ?)",
                                          [(key, json.dumps(vector)) for key, vector in zip(missing, vectors, strict=True)])
                     database.commit()

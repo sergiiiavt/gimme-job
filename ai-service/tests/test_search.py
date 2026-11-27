@@ -14,6 +14,8 @@ from urllib.parse import parse_qs, urlsplit
 
 from fastapi.testclient import TestClient
 from pydantic import SecretStr, ValidationError
+import httpx
+from openai import RateLimitError
 
 from gimmejob_ai.main import create_app
 from gimmejob_ai.search import ALIAS, PublicSearch, SearchRequest, SearchUnavailable, _filters, _fuse
@@ -143,6 +145,70 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(engine._query_embedding("pytest"), (0.1, 0.2))
         engine._query_embedding("pytest")
         embeddings.embed_query.assert_called_once()
+
+    @staticmethod
+    def _rate_limit(code="rate_limit_exceeded"):
+        response = httpx.Response(429, request=httpx.Request("POST", "https://api.openai.com/v1/embeddings"))
+        return RateLimitError("Provider limit", response=response, body={"code": code})
+
+    def test_index_embeddings_wait_and_retry_transient_rate_limits(self):
+        engine = PublicSearch(Settings())
+        model = Mock()
+        model.embed_documents.side_effect = [self._rate_limit(), [[0.1, 0.2]]]
+        with patch("gimmejob_ai.search.time.sleep") as sleep:
+            self.assertEqual(engine._embed_index_batch(model, ["public lesson"]), [[0.1, 0.2]])
+        self.assertEqual(model.embed_documents.call_count, 2)
+        sleep.assert_called_once_with(5)
+
+    def test_index_embedding_retries_are_bounded_and_back_off(self):
+        engine = PublicSearch(Settings())
+        model = Mock()
+        model.embed_documents.side_effect = self._rate_limit()
+        with patch("gimmejob_ai.search.time.sleep") as sleep:
+            with self.assertRaises(RateLimitError):
+                engine._embed_index_batch(model, ["public lesson"])
+        self.assertEqual(model.embed_documents.call_count, 8)
+        self.assertEqual([call.args[0] for call in sleep.call_args_list], [5, 10, 20, 40, 60, 60, 60])
+
+    def test_index_does_not_retry_billing_exhaustion(self):
+        engine = PublicSearch(Settings())
+        model = Mock()
+        model.embed_documents.side_effect = self._rate_limit("insufficient_quota")
+        with patch("gimmejob_ai.search.time.sleep") as sleep:
+            with self.assertRaises(RateLimitError):
+                engine._embed_index_batch(model, ["public lesson"])
+        sleep.assert_not_called()
+        model.embed_documents.assert_called_once()
+
+    def test_index_does_not_retry_non_rate_errors(self):
+        engine = PublicSearch(Settings())
+        model = Mock()
+        model.embed_documents.side_effect = ValueError("invalid input")
+        with patch("gimmejob_ai.search.time.sleep") as sleep:
+            with self.assertRaises(ValueError):
+                engine._embed_index_batch(model, ["public lesson"])
+        sleep.assert_not_called()
+
+    def test_index_resumes_saved_batches_after_provider_failure(self):
+        with tempfile.TemporaryDirectory() as directory:
+            settings = Settings(search_cache_path=Path(directory) / "cache.sqlite")
+            engine = PublicSearch(settings)
+            docs = [document(str(index), title=f"Unique lesson {index}") for index in range(65)]
+            first_model = Mock()
+            first_model.embed_documents.side_effect = [[[0.1, 0.2]] * 64, self._rate_limit("insufficient_quota")]
+            engine._embeddings = Mock(return_value=first_model)
+            with self.assertRaises(RateLimitError):
+                engine._cached_embeddings(docs)
+            resumed = PublicSearch(settings)
+            second_model = Mock()
+            second_model.embed_documents.return_value = [[0.3, 0.4]]
+            resumed._embeddings = Mock(return_value=second_model)
+            vectors = resumed._cached_embeddings(docs)
+            self.assertEqual(len(vectors), 65)
+            self.assertEqual(vectors[:64], [[0.1, 0.2]] * 64)
+            self.assertEqual(vectors[-1], [0.3, 0.4])
+            self.assertEqual(len(second_model.embed_documents.call_args.args[0]), 1)
+            second_model.embed_documents.assert_called_once()
 
     def test_complete_atomic_index_import_cache_reuse_and_retention(self):
         with tempfile.TemporaryDirectory() as directory:
