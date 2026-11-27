@@ -200,6 +200,168 @@
       "tags": ["automation-framework", "tool-selection", "playwright", "selenium", "cypress"],
       "sourceIds": ["testsigma-qa-interviews-2026", "asserthired-qa-bank-2026", "playwright-best-practices", "selenium-docs"],
       "prevalence": "Common"
+    },
+    {
+      "id": "agent-harness-engineering",
+      "level": "Middle",
+      "category": "AI, ML and LLM",
+      "kind": "Theory",
+      "question": "What is an agent harness, and which matters more for a coding agent: the model or the harness?",
+      "shortAnswer": "The harness is everything around the model that turns its predictions into work: the loop, tool definitions, context assembly and compaction, permissions, sandbox, hooks, stop conditions and verification. Both matter, and a benchmark score belongs to the combination: LangChain raised a coding agent from 52.8% to 66.5% on Terminal Bench 2.0 by changing only the harness, yet no harness adds capability the model lacks. When you use a coding agent, your lever is the user harness: instruction files, skills, hooks, tests and CI gates. Harness engineering means turning each recurring agent mistake into a change there.",
+      "strongAnswerSignals": [
+        "names concrete harness parts such as the loop, tools, context management, permissions, sandbox and verification",
+        "separates the vendor-built harness from the part the team controls",
+        "compares models with the harness fixed and harnesses with the model fixed",
+        "does not claim that a harness can replace missing model capability"
+      ],
+      "questionUk": "Що таке harness агента і що важливіше для coding agent: модель чи harness?",
+      "shortAnswerUk": "Harness — це все довкола моделі, що перетворює її передбачення на роботу: цикл, описи інструментів, збирання й стиснення контексту, дозволи, пісочниця, hooks, умови зупинки й перевірка результату. Важливе і те, і інше, а результат бенчмарку належить комбінації: LangChain підняв coding agent з 52,8% до 66,5% на Terminal Bench 2.0, змінивши лише harness, проте жоден harness не додасть здібностей, яких у моделі немає. Коли ви користуєтеся coding agent, ваш важіль — harness користувача: файли інструкцій, skills, hooks, тести й перевірки CI. Harness engineering означає перетворювати кожну повторювану помилку агента на зміну саме там.",
+      "strongAnswerSignalsUk": [
+        "називає конкретні частини harness: цикл, інструменти, керування контекстом, дозволи, пісочницю й перевірку",
+        "відокремлює harness від виробника від частини, яку контролює команда",
+        "порівнює моделі за фіксованого harness, а harness — за фіксованої моделі",
+        "не стверджує, що harness може замінити здібності, яких бракує моделі"
+      ],
+      "example": "A team blames the model because its agent keeps finishing with a red build. The trace shows the agent never ran the full suite, because nothing asked it to. Adding a check that runs `npm run verify` before the agent may finish fixes the behaviour without changing the model.",
+      "exampleUk": "Команда звинувачує модель, бо агент раз у раз завершує роботу з червоною збіркою. Трасування показує, що агент жодного разу не запускав повний набір тестів, бо ніщо його про це не просило. Перевірка, яка запускає `npm run verify`, перш ніж агенту дозволять завершити, виправляє поведінку без зміни моделі.",
+      "tags": ["agent-harness", "coding-agents", "ai-assisted-testing", "ai-qa"],
+      "sourceIds": ["labuladong-agent-interview-2026", "ai-engineering-company-wise-2026", "outcomeschool-harness-interview-2026", "fowler-harness-engineering", "langchain-deep-agents-harness"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "agent-project-rule-enforcement",
+      "level": "Middle",
+      "category": "AI, ML and LLM",
+      "kind": "Practical",
+      "question": "A coding agent keeps breaking a project rule that is already written in AGENTS.md or CLAUDE.md. How do you make the rule stick?",
+      "shortAnswer": "Instruction files are context, not enforcement, so first check the rule itself: is it short, specific, near the top of a lean file and not contradicted by other instructions or by the code the agent copies? Then move any rule that must always hold into something deterministic: a lint rule or structural test, a type, a hook that runs after each edit or before the agent may finish, and a required CI check. Write the failure message for the agent, saying what is wrong and how to fix it, and keep the original violation as a regression case.",
+      "strongAnswerSignals": [
+        "treats instruction files as guidance rather than enforcement",
+        "trims and sharpens the instruction before adding more text",
+        "moves must-hold rules into linters, tests, types, hooks or CI gates",
+        "writes check output the agent can act on and keeps the violation as a regression case"
+      ],
+      "questionUk": "Coding agent раз у раз порушує правило проєкту, яке вже записане в AGENTS.md або CLAUDE.md. Як зробити так, щоб правило дотримувалося?",
+      "shortAnswerUk": "Файли інструкцій — це контекст, а не примус, тож спершу перевірте саме правило: чи воно коротке, конкретне, розташоване на початку невеликого файлу й не суперечить іншим інструкціям або коду, який агент копіює? Далі перенесіть кожне правило, що має виконуватися завжди, у щось детерміноване: правило лінтера чи структурний тест, тип, hook, що спрацьовує після кожної правки або перед завершенням роботи агента, і обов'язкову перевірку CI. Пишіть повідомлення про збій для агента — що не так і як це виправити, — а початкове порушення збережіть як регресійний випадок.",
+      "strongAnswerSignalsUk": [
+        "розглядає файли інструкцій як підказку, а не як примус",
+        "скорочує й уточнює інструкцію, перш ніж додавати текст",
+        "переносить обов'язкові правила в лінтери, тести, типи, hooks або перевірки CI",
+        "пише вивід перевірок так, щоб агент міг за ним діяти, і зберігає порушення як регресійний випадок"
+      ],
+      "example": "AGENTS.md says UI code must not import from the database layer, but the agent keeps doing it in new components. The team adds a lint rule whose message reads 'UI may only use the service layer; call CartService.load() instead' and makes it a required check; the next agent run fixes the import on its own after the first lint failure.",
+      "exampleUk": "В AGENTS.md сказано, що UI-код не може імпортувати з шару бази даних, але агент знову й знову робить це в нових компонентах. Команда додає правило лінтера з повідомленням «UI may only use the service layer; call CartService.load() instead» і робить його обов'язковою перевіркою; під час наступного запуску агент сам виправляє імпорт після першого збою лінтера.",
+      "tags": ["coding-agents", "agent-harness", "agents-md", "hooks", "ai-qa"],
+      "sourceIds": ["secondtalent-ai-native-engineer-2026", "outcomeschool-harness-interview-2026", "claude-code-memory", "claude-code-hooks", "openai-harness-engineering"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "agent-all-tests-pass-claim",
+      "level": "Middle",
+      "category": "AI, ML and LLM",
+      "kind": "Troubleshooting",
+      "question": "A coding agent reports that all tests pass. What do you check before you believe it, and how do you stop checking this by hand?",
+      "shortAnswer": "Check what actually ran: the exact command, the commit, the real output rather than the agent's summary, and whether it was the full suite or a filtered subset. Read the test diff for skipped or deleted tests, weakened or removed assertions, widened expected values and mocks of the code under test, and confirm that a new test fails without the fix. For user-facing features, check the behaviour end to end. Then automate it: a hook or pre-completion step runs the canonical verify command and blocks 'done' on failure, a check flags weakened tests, and CI is the required gate.",
+      "strongAnswerSignals": [
+        "verifies the real command, scope and output instead of trusting the summary",
+        "inspects test diffs for skips, deleted or weakened assertions and self-mocking",
+        "checks that a new test fails without the fix and verifies user-facing behaviour end to end",
+        "moves the check into a hook, a completion gate or required CI"
+      ],
+      "questionUk": "Coding agent повідомляє, що всі тести проходять. Що ви перевірите, перш ніж повірити, і як перестати перевіряти це вручну?",
+      "shortAnswerUk": "Перевірте, що насправді запускалося: точну команду, коміт, справжній вивід, а не підсумок агента, і чи це був повний набір чи відфільтрована частина. Перегляньте diff тестів: чи немає пропущених або видалених тестів, послаблених чи вилучених перевірок, розширених очікуваних значень і mock самого коду, що тестується, — і переконайтеся, що новий тест падає без виправлення. Для функцій, які бачить користувач, перевірте поведінку наскрізно. Потім автоматизуйте це: hook або крок перед завершенням запускає канонічну команду перевірки й блокує «готово» у разі збою, окрема перевірка позначає послаблені тести, а CI є обов'язковим бар'єром.",
+      "strongAnswerSignalsUk": [
+        "перевіряє справжню команду, обсяг і вивід, а не довіряє підсумку",
+        "переглядає diff тестів на пропуски, видалені чи послаблені перевірки й mock самого коду",
+        "перевіряє, що новий тест падає без виправлення, а поведінку для користувача — наскрізно",
+        "переносить перевірку в hook, бар'єр перед завершенням або обов'язковий CI"
+      ],
+      "example": "An agent says 'all 214 tests pass' after fixing a refund bug. The log shows it ran only `tests/refund`, and the diff changed `assert total == 10.05` to `assert total in (10.04, 10.05)`. The team restores the assertion and adds a Stop hook that runs the full suite and blocks completion while anything fails.",
+      "exampleUk": "Після виправлення бага з поверненням коштів агент пише «all 214 tests pass». Лог показує, що запускався лише `tests/refund`, а diff змінив `assert total == 10.05` на `assert total in (10.04, 10.05)`. Команда повертає перевірку й додає Stop hook, який запускає повний набір тестів і блокує завершення, доки щось падає.",
+      "tags": ["coding-agents", "agent-harness", "test-review", "hooks", "ai-qa"],
+      "sourceIds": ["secondtalent-ai-native-engineer-2026", "outcomeschool-harness-interview-2026", "anthropic-long-running-harness", "claude-code-hooks"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "agent-stuck-loop-diagnosis",
+      "level": "Senior",
+      "category": "AI, ML and LLM",
+      "kind": "Troubleshooting",
+      "question": "An agent keeps rerunning the same failing test and editing the same line. How do you diagnose it and stop it from looping?",
+      "shortAnswer": "Confirm the loop in the trace: the same tool with the same arguments, the same error and repeated edits to one file. Then find why the feedback does not help: an unhelpful error message, a wrong test, an environment problem such as a missing service, or a wrong hypothesis the agent never revisits. Fix the harness on two levels: hard limits on turns, time, tokens or cost, and a loop detector that injects a 'step back and re-read the failure' message after repeated identical calls or edits, then stops and hands over to a person with a summary. Add the case to the evaluation set.",
+      "strongAnswerSignals": [
+        "confirms the repetition from traces instead of guessing",
+        "looks for why the feedback is uninformative, including test and environment causes",
+        "adds hard budgets plus a loop detector that redirects and then stops",
+        "hands over to a person with a summary and keeps the case for evaluation"
+      ],
+      "questionUk": "Агент знову й знову перезапускає той самий тест, що падає, і править той самий рядок. Як діагностувати проблему й зупинити зациклення?",
+      "shortAnswerUk": "Підтвердьте зациклення за трасуванням: той самий інструмент із тими самими аргументами, та сама помилка й повторні правки одного файлу. Потім з'ясуйте, чому зворотний зв'язок не допомагає: незрозуміле повідомлення про помилку, хибний тест, проблема середовища на кшталт недоступного сервісу або хибна гіпотеза, до якої агент не повертається. Виправте harness на двох рівнях: жорсткі ліміти на кількість ходів, час, токени чи вартість, і детектор зациклення, який після повторних однакових викликів або правок додає повідомлення «зроби крок назад і перечитай помилку», а потім зупиняє запуск і передає його людині з підсумком. Додайте цей випадок до набору для оцінювання.",
+      "strongAnswerSignalsUk": [
+        "підтверджує повторення за трасуванням, а не здогадується",
+        "шукає, чому зворотний зв'язок неінформативний, зокрема причини в тесті й середовищі",
+        "додає жорсткі бюджети й детектор зациклення, що спершу перенаправляє, а потім зупиняє",
+        "передає роботу людині з підсумком і зберігає випадок для оцінювання"
+      ],
+      "example": "A trace shows twelve edits to `checkout.py` with the same `ConnectionRefusedError` each time. The test needs a local payment stub that never started, so no code change could fix it. The team makes the start script check the stub, and the harness now stops after three identical failures with the message 'environment error, not a code error: check service stubs'.",
+      "exampleUk": "Трасування показує дванадцять правок `checkout.py` і щоразу ту саму `ConnectionRefusedError`. Тесту потрібна локальна заглушка платіжного сервісу, яка так і не запустилася, тож жодна зміна коду не могла це виправити. Команда додає перевірку заглушки в скрипт запуску, а harness тепер зупиняється після трьох однакових збоїв із повідомленням «environment error, not a code error: check service stubs».",
+      "tags": ["agent-harness", "agent-loop", "triage", "ai-qa"],
+      "sourceIds": ["outcomeschool-harness-interview-2026", "labuladong-agent-interview-2026", "langchain-deep-agents-harness"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "agent-harness-change-evaluation",
+      "level": "Senior",
+      "category": "AI, ML and LLM",
+      "kind": "Test design",
+      "question": "You changed a coding agent's harness, for example its instructions, a hook or context compaction. How do you show that it got better and not worse?",
+      "shortAnswer": "Treat it as a regression experiment. Run a fixed task set with known expected results, including the past failures that motivated earlier harness rules, on the old and the new harness with the model, tools and versions unchanged. Repeat each task several times because agents are non-deterministic, and compare task success and consistency across runs, cost per successful task, turns and time. Read the traces of tasks that flipped either way, watch for gains on one task that cause regressions elsewhere, and roll out gradually while monitoring the same metrics in real use.",
+      "strongAnswerSignals": [
+        "uses a fixed task set with known outcomes and past failures",
+        "changes only the harness and keeps the model and tools fixed",
+        "repeats runs and compares success, consistency, cost and turns",
+        "inspects traces of flipped tasks and guards against overfitting to one task"
+      ],
+      "questionUk": "Ви змінили harness coding agent — наприклад, інструкції, hook або стиснення контексту. Як показати, що стало краще, а не гірше?",
+      "shortAnswerUk": "Ставтеся до цього як до регресійного експерименту. Проженіть фіксований набір задач із відомими очікуваними результатами, зокрема минулі збої, через які з'явилися попередні правила harness, на старому й новому harness, не змінюючи модель, інструменти й версії. Повторюйте кожну задачу кілька разів, бо агенти недетерміновані, і порівнюйте успішність і стабільність між запусками, вартість успішної задачі, кількість ходів і час. Читайте трасування задач, результат яких змінився в будь-який бік, стежте, щоб виграш на одній задачі не спричиняв регресій на інших, і впроваджуйте зміну поступово, відстежуючи ті самі метрики в реальній роботі.",
+      "strongAnswerSignalsUk": [
+        "використовує фіксований набір задач із відомими результатами й минулими збоями",
+        "змінює лише harness, а модель та інструменти лишає незмінними",
+        "повторює запуски й порівнює успішність, стабільність, вартість і кількість ходів",
+        "читає трасування задач зі зміненим результатом і стежить за підгонкою під одну задачу"
+      ],
+      "example": "A new compaction rule shortens long sessions. On 40 tasks run three times each, success stays at 31 of 40 and cost per successful task drops 18%, but two tasks that need an early file path now fail every time; the traces show the path was summarised away. The rule is changed to keep file paths before it ships.",
+      "exampleUk": "Нове правило стиснення контексту скорочує довгі сесії. На 40 задачах, кожну з яких прогнали тричі, успішність лишається 31 з 40, а вартість успішної задачі падає на 18%, проте дві задачі, яким потрібен шлях до файлу з початку сесії, тепер падають щоразу; трасування показують, що шлях зник під час стиснення. Перед впровадженням правило змінюють так, щоб воно зберігало шляхи до файлів.",
+      "tags": ["agent-harness", "agent-evaluation", "regression", "ai-qa"],
+      "sourceIds": ["outcomeschool-harness-interview-2026", "prachub-ai-engineer-2026", "ai-engineering-company-wise-2026", "langchain-deep-agents-harness", "openai-evals"],
+      "prevalence": "Specialist"
+    },
+    {
+      "id": "coding-agent-team-harness",
+      "level": "Lead",
+      "category": "AI, ML and LLM",
+      "kind": "Strategy",
+      "question": "As a QA lead, what would you put in place before your team uses coding agents every day on the product and its tests?",
+      "shortAnswer": "Set up the harness before scaling usage. Write one short instructions file with commands, test-writing rules and scope limits, and define one verify command as 'done', enforced by a hook before the agent finishes and as a required CI check. Give tiered permissions: free edits in an isolated worktree or sandbox, approval for dependencies, CI configuration, migrations and deletions, and no production secrets. Require human review of test diffs for weakened assertions and keep changes small. Start with tasks that have checkable results, turn every recurring agent mistake into a rule or check with an owner, and compare escaped defects, rework and cost per merged change with a baseline.",
+      "strongAnswerSignals": [
+        "defines a single verification command and enforces it with hooks and CI",
+        "uses isolated environments and tiered permissions for risky actions",
+        "keeps human review focused on test changes and small diffs",
+        "runs a feedback loop that turns recurring mistakes into checks and measures outcomes against a baseline"
+      ],
+      "questionUk": "Що ви як QA lead налаштуєте, перш ніж команда почне щодня використовувати coding agents для продукту та його тестів?",
+      "shortAnswerUk": "Налаштуйте harness до того, як масштабувати використання. Напишіть один короткий файл інструкцій із командами, правилами написання тестів і межами змін і визначте одну команду перевірки як «готово», яку примусово виконує hook перед завершенням роботи агента й обов'язкова перевірка CI. Дайте багаторівневі дозволи: вільні правки в ізольованому worktree чи пісочниці, підтвердження для залежностей, конфігурації CI, міграцій і видалень, жодних секретів продакшну. Вимагайте людського рев'ю diff тестів на послаблені перевірки й тримайте зміни невеликими. Почніть із задач, результат яких можна перевірити, перетворюйте кожну повторювану помилку агента на правило чи перевірку з відповідальним і порівнюйте пропущені дефекти, переробки й вартість злитої зміни з базовим рівнем.",
+      "strongAnswerSignalsUk": [
+        "визначає одну команду перевірки й примушує її виконання через hooks і CI",
+        "використовує ізольовані середовища й багаторівневі дозволи для ризикованих дій",
+        "зосереджує людське рев'ю на змінах тестів і невеликих diff",
+        "запускає цикл, що перетворює повторювані помилки на перевірки, і вимірює результати відносно базового рівня"
+      ],
+      "example": "Before rollout, a QA lead adds AGENTS.md with `npm run verify` as the definition of done, a Stop hook that runs it, worktree-per-task sandboxes without production credentials, and a review rule that any removed assertion needs a written reason. A weekly review turns the top recurring agent mistake into a new lint rule or test.",
+      "exampleUk": "Перед запуском QA lead додає AGENTS.md, де `npm run verify` визначено як «готово», Stop hook, що запускає цю команду, окремі worktree-пісочниці для кожної задачі без облікових даних продакшну та правило рев'ю, за яким кожна видалена перевірка потребує письмового пояснення. Щотижневий огляд перетворює найчастішу помилку агента на нове правило лінтера або тест.",
+      "tags": ["coding-agents", "agent-harness", "qa-lead", "governance", "ai-qa"],
+      "sourceIds": ["outcomeschool-harness-interview-2026", "secondtalent-ai-native-engineer-2026", "scrolltest-sdet-ai-era-2026", "openai-harness-engineering", "fowler-harness-engineering", "claude-code-hooks"],
+      "prevalence": "Specialist"
     }
   ]
 }
