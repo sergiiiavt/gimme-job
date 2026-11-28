@@ -9,9 +9,10 @@ export type CampaignLink = Readonly<{ path: string; tags: UtmTags }>;
  * once published: change the target, never reuse a slug for another campaign.
  */
 export const CAMPAIGN_LINKS: ReadonlyMap<string, CampaignLink> = new Map<string, CampaignLink>([
-  ["ig", { path: "/uk/interview", tags: { source: "instagram", medium: "organic_social", campaign: "profile", content: "bio" } }],
-  ["threads", { path: "/uk/interview", tags: { source: "threads", medium: "organic_social", campaign: "profile", content: "bio" } }],
-  ["yt", { path: "/uk/interview", tags: { source: "youtube", medium: "organic_social", campaign: "profile", content: "bio" } }],
+  // Profile bios open the home page, like the full tagged bio links.
+  ["ig", { path: "/", tags: { source: "instagram", medium: "organic_social", campaign: "profile", content: "bio" } }],
+  ["threads", { path: "/", tags: { source: "threads", medium: "organic_social", campaign: "profile", content: "bio" } }],
+  ["yt", { path: "/", tags: { source: "youtube", medium: "organic_social", campaign: "profile", content: "bio" } }],
   ["tg", { path: "/uk/interview", tags: { source: "telegram", medium: "organic_social", campaign: "tg_daily" } }],
   ["dou", { path: "/uk/interview", tags: { source: "dou", medium: "community", campaign: "dou_resource" } }],
 ]);

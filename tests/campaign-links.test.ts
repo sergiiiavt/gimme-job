@@ -25,6 +25,14 @@ test("the DOU resource link lands on the Ukrainian interview index", () => {
   );
 });
 
+test("profile bio short links open the home page", () => {
+  for (const slug of ["ig", "threads", "yt"]) {
+    const link = resolveCampaignLink(slug);
+    assert.equal(new URL(link?.href ?? "", "https://gimme-job.com").pathname, "/", slug);
+    assert.equal(link?.tags.content, "bio", slug);
+  }
+});
+
 test("unknown and inherited slugs do not resolve", () => {
   for (const slug of ["", "missing", "DOU", "constructor", "__proto__", "toString", "dou/extra"]) {
     assert.equal(resolveCampaignLink(slug), null, `expected ${JSON.stringify(slug)} to be unknown`);
