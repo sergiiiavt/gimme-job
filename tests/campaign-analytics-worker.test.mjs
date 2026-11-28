@@ -67,15 +67,29 @@ test("built Worker does not count an untagged page", async () => {
   assert.deepEqual(points, []);
 });
 
-test("built Worker counts a redirected launch bio link once, on the page it lands on", async () => {
+test("built Worker counts a tagged home-page visit once", async () => {
   const worker = await loadWorker();
   const { env, context, points, settled } = harness();
 
-  const hop = await worker.fetch(get("/?utm_source=instagram&utm_medium=organic_social&utm_campaign=qa_launch&utm_content=bio"), env, context);
+  const response = await worker.fetch(get("/?utm_source=instagram&utm_medium=organic_social&utm_campaign=profile&utm_content=bio"), env, context);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type") ?? "", /^text\/html/);
+  await response.arrayBuffer();
+  await settled();
+
+  assert.equal(points.length, 1);
+  assert.deepEqual(points[0].blobs.slice(0, 5), ["instagram", "organic_social", "profile", "bio", "/"]);
+});
+
+test("built Worker counts a redirected tagged link once, on the page it lands on", async () => {
+  const worker = await loadWorker();
+  const { env, context, points, settled } = harness();
+
+  const hop = await worker.fetch(get("/uk?utm_source=threads&utm_medium=organic_social&utm_campaign=profile&utm_content=bio"), env, context);
   assert.ok(hop.status >= 300 && hop.status < 400, `expected a redirect, got ${hop.status}`);
   const landing = new URL(hop.headers.get("location") ?? "", "https://gimme-job.com");
   assert.equal(landing.pathname, "/uk/interview");
-  assert.equal(landing.searchParams.get("utm_campaign"), "qa_launch");
+  await hop.arrayBuffer();
   await settled();
   assert.deepEqual(points, [], "the redirect hop itself must not be counted");
 
@@ -85,7 +99,7 @@ test("built Worker counts a redirected launch bio link once, on the page it land
   await page.arrayBuffer();
   await settled();
   assert.equal(points.length, 1);
-  assert.deepEqual(points[0].blobs.slice(0, 5), ["instagram", "organic_social", "qa_launch", "bio", "/uk/interview"]);
+  assert.deepEqual(points[0].blobs.slice(0, 5), ["threads", "organic_social", "profile", "bio", "/uk/interview"]);
 });
 
 test("built Worker serves /go short links before the app and counts the click", async () => {
