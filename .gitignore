@@ -21,6 +21,9 @@ __pycache__/
 /.next/
 /out/
 
+# vinext build and dev-server cache (holds the server-actions encryption key)
+/.vinext/
+
 # misc
 .DS_Store
 *.pem

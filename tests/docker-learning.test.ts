@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { register as registerLoader } from "node:module";
 import test from "node:test";
 import { register as registerTsx } from "tsx/esm/api";
+import { findPython, runPython } from "./helpers/python-interpreter.mjs";
 
 registerTsx();
 registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
@@ -55,8 +55,10 @@ test("every Docker chapter and section is discoverable through the canonical RAG
   }
 });
 
-test("Docker capstone checks real application behavior without requiring a local daemon", () => {
-  const result = spawnSync("python3", ["-m", "unittest", "discover", "-s", "examples/docker-learning", "-p", "test_*.py", "-v"], {
+const python = findPython();
+
+test("Docker capstone checks real application behavior without requiring a local daemon", { skip: python.skip }, () => {
+  const result = runPython(python, ["-m", "unittest", "discover", "-s", "examples/docker-learning", "-p", "test_*.py", "-v"], {
     cwd: new URL("../", import.meta.url),
     encoding: "utf8",
     timeout: 30_000,
