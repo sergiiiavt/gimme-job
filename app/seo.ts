@@ -12,6 +12,13 @@ export const DEFAULT_OG_IMAGE = {
   height: 630,
   alt: "GimmeJob — QA interview questions, learning paths, and career tools",
 } as const;
+/** Same layout as the default image, with Ukrainian copy for /uk link previews. */
+export const UKRAINIAN_OG_IMAGE = {
+  url: "/og-image-uk.png",
+  width: 1200,
+  height: 630,
+  alt: "GimmeJob: питання на співбесіду QA з відповідями",
+} as const;
 
 export type SeoPage = Readonly<{
   title: string;
@@ -260,6 +267,7 @@ function openGraphLocale(path: string) {
 export function createPageMetadata(page: SeoPage, languages?: SeoLanguageAlternates): Metadata {
   const fullTitle = page.absoluteTitle ?? `${page.title} | ${SITE_NAME}`;
   const locale = openGraphLocale(page.path);
+  const image = locale === "uk_UA" ? UKRAINIAN_OG_IMAGE : DEFAULT_OG_IMAGE;
   return {
     title: fullTitle,
     description: page.description,
@@ -276,13 +284,13 @@ export function createPageMetadata(page: SeoPage, languages?: SeoLanguageAlterna
       url: page.path,
       locale,
       ...(languages ? { alternateLocale: locale === "uk_UA" ? "en_US" : "uk_UA" } : {}),
-      images: [DEFAULT_OG_IMAGE],
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
       description: page.description,
-      images: [DEFAULT_OG_IMAGE.url],
+      images: [image.url],
     },
   };
 }

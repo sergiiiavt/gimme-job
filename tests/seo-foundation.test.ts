@@ -3,6 +3,7 @@ import test from "node:test";
 import robots from "../app/robots.ts";
 import {
   DEFAULT_OG_IMAGE,
+  UKRAINIAN_OG_IMAGE,
   HOME_TITLE,
   LEARNING_SEO,
   PUBLIC_SITEMAP_PATHS,
@@ -55,6 +56,8 @@ test("page metadata always carries a large social preview image", () => {
   assert.equal(openGraphField(metadata, "locale"), "en_US");
   assert.equal(openGraphField(ukrainian, "locale"), "uk_UA");
   assert.equal(openGraphField(ukrainian, "alternateLocale"), "en_US");
+  assert.deepEqual(ukrainian.openGraph?.images, [UKRAINIAN_OG_IMAGE]);
+  assert.deepEqual(ukrainian.twitter?.images, [UKRAINIAN_OG_IMAGE.url]);
 });
 
 test("under-construction pages stay crawlable but are not indexed", () => {

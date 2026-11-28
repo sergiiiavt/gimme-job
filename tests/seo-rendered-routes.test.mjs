@@ -99,6 +99,25 @@ test("interview question pages are self-canonical, bilingual, and titled by the 
   assert.equal(canonicalOf(await ukrainian.text()), `${ORIGIN}/uk/interview/sql?question=relational-versus-nonrelational-databases`);
 });
 
+test("Ukrainian interview pages link the social profiles and let readers share one question", async () => {
+  const question = await (await fetchRoute("/uk/interview?question=severity-versus-priority")).text();
+  assert.match(question, /<nav aria-label="Поділитися питанням"/);
+  assert.match(question, /href="https:\/\/t\.me\/share\/url\?url=https%3A%2F%2Fgimme-job\.com%2Fuk%2Finterview%3Fquestion%3Dseverity-versus-priority%26utm_source%3Dtelegram%26utm_medium%3Dshare/);
+  assert.match(question, /href="https:\/\/www\.threads\.com\/intent\/post\?text=/);
+  assert.match(question, /href="https:\/\/www\.linkedin\.com\/sharing\/share-offsite\/\?url=/);
+  for (const profile of ["https://www.instagram.com/gimmejob_qa/", "https://www.threads.com/@gimmejob_qa", "https://www.youtube.com/@gimmejob_qa"]) {
+    assert.ok(question.includes(`href="${profile}"`), profile);
+  }
+
+  // The list view has no single question to share, but still points at the profiles.
+  const list = await (await fetchRoute("/uk/interview/sql")).text();
+  assert.doesNotMatch(list, /aria-label="Поділитися питанням"/);
+  assert.match(list, /<aside aria-label="GimmeJob у соцмережах"/);
+
+  const home = await (await fetchRoute("/")).text();
+  assert.match(home, /"sameAs":\["https:\/\/www\.instagram\.com\/gimmejob_qa\/","https:\/\/www\.threads\.com\/@gimmejob_qa","https:\/\/www\.youtube\.com\/@gimmejob_qa"\]/);
+});
+
 test("unknown questions and learning sections return 404 instead of indexable soft pages", async () => {
   for (const path of [
     "/interview?question=unknown-question",
@@ -156,7 +175,8 @@ test("search and social crawlers receive canonical and language links in the hea
     assert.equal(alternateHrefOf(head, "en"), ORIGIN + question);
     assert.equal(alternateHrefOf(head, "uk"), ORIGIN + ukrainianQuestion);
     assert.equal(alternateHrefOf(head, "x-default"), ORIGIN + question);
-    assert.match(head, /<meta[^>]+property="og:image"[^>]+content="https:\/\/gimme-job\.com\/og-image\.png"/);
+    const image = path.startsWith("/uk/") ? "og-image-uk" : "og-image";
+    assert.match(head, new RegExp(`<meta[^>]+property="og:image"[^>]+content="https://gimme-job\\.com/${image}\\.png"`));
   }
 
   for (const path of ["/learn/git?topic=conflict-resolution", "/reference/qa-fundamentals"]) {
