@@ -80,4 +80,13 @@ curl "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/analy
 
 `SUM(_sample_interval)` is used instead of `COUNT()` because Analytics Engine may sample busy datasets, and the sample interval weights each stored point back up. Replace `blob8 = 'page'` with `blob8 = 'go'` to count short-link clicks, or group by `blob3` (campaign) or `blob5` (path) instead. `SHOW TABLES` lists the dataset once the first point is written. Data is kept for three months.
 
+### Test traffic
+
+Analytics Engine cannot delete rows, so keep test clicks out of the data instead:
+
+- Check a short link with `curl -I https://gimme-job.com/go/<slug>`. A `HEAD` request gets the same `302` but is not counted.
+- Tag a test page view with `utm_source=deploy_check` and add `AND blob1 != 'deploy_check'` to report queries.
+
+The #663 deployment check wrote three rows on 2026-11-28 between 11:09:36 and 11:09:38 UTC, before this rule existed: a `go` row each for `/go/dou` and `/go/ig` with an empty referrer, and a `page` row with `utm_source=deploy_check`. Exclude them with `AND timestamp NOT BETWEEN toDateTime('2026-11-28 11:09:00') AND toDateTime('2026-11-28 11:10:00')` until they expire at the end of February 2027.
+
 The Free plan includes 100,000 writes and 10,000 read queries a day ([pricing](https://developers.cloudflare.com/analytics/analytics-engine/pricing/)).

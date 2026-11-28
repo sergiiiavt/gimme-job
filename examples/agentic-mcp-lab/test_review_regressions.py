@@ -50,7 +50,7 @@ class ReviewRegressions(unittest.TestCase):
     def test_english_and_ukrainian_teaching_budget_is_exact_and_retains_latest_request(self):
         for suffix in ['', '.uk']:
             path=Path(__file__).resolve().parents[2]/f'content/agentic-learning/04-state-memory-rag{suffix}.md'
-            source=re.search(r'```python\n(.*?)\n```',path.read_text(),re.S)[1]
+            source=re.search(r'```python\n(.*?)\n```',path.read_text(encoding='utf-8'),re.S)[1]
             namespace={}
             with contextlib.redirect_stdout(io.StringIO()):exec(compile(source,str(path),'exec'),namespace)
             for budget in [90,160,1000]:

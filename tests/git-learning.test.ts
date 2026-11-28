@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { register as registerTsx } from "tsx/esm/api";
+import { findPython, runPython } from "./helpers/python-interpreter.mjs";
 
 registerTsx();
 registerLoader("./helpers/raw-markdown-loader.mjs", import.meta.url);
@@ -88,8 +89,10 @@ test("the published conflict walkthrough produces and resolves a real two-parent
   }
 });
 
-test("the offline collaboration lab verifies real Git state, recovery, leases and bisect", () => {
-  const result = spawnSync("python3", ["examples/git-collaboration/verify_workflow.py"], {
+const python = findPython();
+
+test("the offline collaboration lab verifies real Git state, recovery, leases and bisect", { skip: python.skip }, () => {
+  const result = runPython(python, ["examples/git-collaboration/verify_workflow.py"], {
     cwd: new URL("../", import.meta.url), encoding: "utf8", timeout: 30_000,
   });
   assert.ifError(result.error);
