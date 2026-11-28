@@ -108,6 +108,11 @@ function legacyCanonicalPath(url: URL): string | null {
   // Keep the query string so tagged social links survive the hop.
   if (url.pathname === "/uk" || url.pathname === "/uk/") return `/uk/interview${url.search}`;
 
+  // The first @gimmejob_qa bios pointed at the English home page with utm_campaign=qa_launch.
+  // Instagram lets the bio link change only from the phone app, so send those visitors to the
+  // Ukrainian question bank here and keep their tags for attribution.
+  if (url.pathname === "/" && url.searchParams.get("utm_campaign") === "qa_launch") return `/uk/interview${url.search}`;
+
   const direct: Record<string, string> = {
     "/workspace": "/vacancies",
     "/learn/about": "/about",
