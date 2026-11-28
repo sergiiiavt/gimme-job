@@ -153,6 +153,24 @@ test("the bare Ukrainian root redirects to the Ukrainian interview index and kee
   assert.equal(calls.length, 1);
 });
 
+test("launch-campaign bio links on the home page land on the Ukrainian interview index", async () => {
+  const { worker: core, calls } = fakeCore();
+  const boundary = createMultiUserBoundary(core);
+  const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(false).db };
+  const bio = "/?utm_source=instagram&utm_medium=organic_social&utm_campaign=qa_launch&utm_content=bio";
+
+  const redirected = await boundary.fetch(new Request(`https://example.com${bio}`), env, undefined);
+  assert.equal(redirected.status, 308);
+  assert.equal(redirected.headers.get("location"), `/uk/interview${bio.slice(1)}`);
+  assert.equal(calls.length, 0);
+
+  for (const path of ["/", "/?utm_source=instagram&utm_campaign=profile"]) {
+    const home = await boundary.fetch(new Request(`https://example.com${path}`), env, undefined);
+    assert.equal(home.status, 200, path);
+  }
+  assert.equal(calls.length, 2);
+});
+
 test("QA Fundamentals topic links from Advisor resolve to the long-form learning page", async () => {
   const { worker: core, calls } = fakeCore();
   const boundary = createMultiUserBoundary(core);
