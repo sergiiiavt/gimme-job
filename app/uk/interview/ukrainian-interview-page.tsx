@@ -6,6 +6,7 @@ import { canonicalInterviewDomainPath, interviewDomainRouteById } from "@/conten
 import { UKRAINIAN_INTERVIEW_DOMAIN_ROUTES, UK_PYTHON_INTERVIEW, ukrainianInterviewPath } from "@/content/interview/ukrainian-routes";
 import { questionDeepLinkHref } from "../../content-deep-links";
 import { splitPythonPracticalExample } from "../../interview-practical-formatting";
+import { SOCIAL_PROFILES, shareLinks } from "../../social-profiles";
 import { ukrainianPlural } from "../../source-count-label";
 import styles from "./ukrainian-interview-page.module.css";
 
@@ -274,8 +275,25 @@ export default function UkrainianInterviewPage({
                 sources={sources}
               />
             ))}
+            {selectedQuestion ? (
+              <nav aria-label="Поділитися питанням" className={styles.share}>
+                <span>Поділитися</span>
+                {shareLinks(questionDeepLinkHref(questionListPath, selectedQuestion.id), normalizeQuestionText(selectedQuestion).question).map((link) => (
+                  <a href={link.href} key={link.id} rel="noopener" target="_blank">{link.label}</a>
+                ))}
+              </nav>
+            ) : null}
           </section>
         )}
+
+        <aside aria-label="GimmeJob у соцмережах" className={styles.follow}>
+          <p>Розбираємо реальні баги з продакшну і жартуємо про айті.</p>
+          <div>
+            {SOCIAL_PROFILES.map((profile) => (
+              <a href={profile.url} key={profile.id} rel="noopener" target="_blank">{profile.label}</a>
+            ))}
+          </div>
+        </aside>
       </div>
     </main>
   );

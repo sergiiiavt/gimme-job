@@ -4,6 +4,7 @@ import InterviewNavigationState from "./interview-navigation-state";
 import PrimaryNavScrollState from "./primary-nav-scroll-state";
 import JsonLd from "./json-ld";
 import { DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE, HOME_TITLE, SITE_NAME, SITE_ORIGIN } from "./seo";
+import { SOCIAL_PROFILES } from "./social-profiles";
 import ToTopButton from "./to-top-button";
 import VacancyPopoverLayer from "./vacancy-popover-layer";
 import VacancyScrollState from "./vacancy-scroll-state";
@@ -107,6 +108,7 @@ const websiteJsonLd = {
     name: SITE_NAME,
     url: SITE_ORIGIN,
     logo: `${SITE_ORIGIN}/gimmejob-logo.png`,
+    sameAs: SOCIAL_PROFILES.map((profile) => profile.url),
   },
 };
 

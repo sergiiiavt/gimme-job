@@ -132,6 +132,27 @@ test("legacy personal URLs collapse to canonical public routes before auth", asy
   assert.equal(calls.length, 0);
 });
 
+test("the bare Ukrainian root redirects to the Ukrainian interview index and keeps tags", async () => {
+  const { worker: core, calls } = fakeCore();
+  const boundary = createMultiUserBoundary(core);
+  const env: FakeEnv = { MULTI_USER_ENABLED: "true", DB: fakeSessionDb(false).db };
+
+  for (const [path, location] of [
+    ["/uk", "/uk/interview"],
+    ["/uk/", "/uk/interview"],
+    ["/uk?utm_source=instagram&utm_medium=organic_social", "/uk/interview?utm_source=instagram&utm_medium=organic_social"],
+  ] as const) {
+    const response = await boundary.fetch(new Request(`https://example.com${path}`), env, undefined);
+    assert.equal(response.status, 308, path);
+    assert.equal(response.headers.get("location"), location, path);
+  }
+  assert.equal(calls.length, 0);
+
+  const index = await boundary.fetch(new Request("https://example.com/uk/interview"), env, undefined);
+  assert.equal(index.status, 200);
+  assert.equal(calls.length, 1);
+});
+
 test("QA Fundamentals topic links from Advisor resolve to the long-form learning page", async () => {
   const { worker: core, calls } = fakeCore();
   const boundary = createMultiUserBoundary(core);

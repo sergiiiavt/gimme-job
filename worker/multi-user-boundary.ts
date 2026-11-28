@@ -104,6 +104,10 @@ function legacyCanonicalPath(url: URL): string | null {
     }
   }
 
+  // Ukrainian content starts at the interview index; bare /uk is typed and shared as the language root.
+  // Keep the query string so tagged social links survive the hop.
+  if (url.pathname === "/uk" || url.pathname === "/uk/") return `/uk/interview${url.search}`;
+
   const direct: Record<string, string> = {
     "/workspace": "/vacancies",
     "/learn/about": "/about",
