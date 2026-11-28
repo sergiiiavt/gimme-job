@@ -15,6 +15,7 @@ import {
 import { runVacancyCatalogBackstop } from "./vacancy-sync-backstop";
 import { withSecurityHeaders } from "./security-headers";
 import { withWebAnalytics, type WebAnalyticsEnv } from "./web-analytics";
+import { campaignLinkResponse, recordCampaignVisit, type CampaignAnalyticsEnv } from "./campaign-analytics";
 import { SITE_ORIGIN } from "../app/seo";
 import { emailAutomationPausedResponse } from "../app/email-automation";
 import { n8nIntegrationPausedResponse } from "../app/n8n-integration";
@@ -24,7 +25,8 @@ type HttpWorkerFetch = typeof httpWorker.fetch;
 type HttpWorkerEnv = Parameters<HttpWorkerFetch>[1]
   & Parameters<typeof handleDatabasePlayground>[1]
   & PublicApiRateLimitEnv
-  & WebAnalyticsEnv;
+  & WebAnalyticsEnv
+  & CampaignAnalyticsEnv;
 type HttpWorkerContext = Parameters<HttpWorkerFetch>[2];
 
 const PRODUCTION_HOST = new URL(SITE_ORIGIN).host;
@@ -64,6 +66,9 @@ const worker = {
     const redirect = httpsRedirect(request);
     if (redirect) return redirect;
 
+    const campaignLink = campaignLinkResponse(request, env, ctx);
+    if (campaignLink) return withSecurityHeaders(campaignLink);
+
     const rateLimitResponse = await enforcePublicApiRateLimit(request, env);
     if (rateLimitResponse) return withSecurityHeaders(rateLimitResponse);
 
@@ -82,11 +87,9 @@ const worker = {
     }
 
     const routedRequest = withPublicAiSessionScope(request);
-    const response = withWebAnalytics(
-      request,
-      withDocumentLanguage(request, await httpWorker.fetch(routedRequest, env, ctx)),
-      env,
-    );
+    const appResponse = withDocumentLanguage(request, await httpWorker.fetch(routedRequest, env, ctx));
+    recordCampaignVisit(request, appResponse, env, ctx);
+    const response = withWebAnalytics(request, appResponse, env);
     return withSecurityHeaders(requiresFreshReferenceDocument(request) ? preventStaleReferenceCaching(response) : response);
   },
   scheduled(_controller: unknown, env: HttpWorkerEnv, ctx: HttpWorkerContext): void {

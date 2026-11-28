@@ -128,6 +128,8 @@ async function writeDeployConfig(id, multiUserEnabled = false, aiService = { con
   deployConfig.name = "gimmejob";
   deployConfig.topLevelName = "gimmejob";
   deployConfig.images = { binding: "IMAGES" };
+  // utm_* and /go/<slug> campaign counts (worker/campaign-analytics.ts). The dataset is created on first write.
+  deployConfig.analytics_engine_datasets = [{ binding: "CAMPAIGN_ANALYTICS", dataset: "gimmejob_campaigns" }];
   // GitHub Actions refreshes hourly at :17. This :47 trigger is a backstop and
   // the Worker itself skips it while the catalogue is less than three hours old.
   deployConfig.triggers = { crons: ["47 * * * *"] };
