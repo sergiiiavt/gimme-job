@@ -67,18 +67,18 @@ test("built Worker does not count an untagged page", async () => {
   assert.deepEqual(points, []);
 });
 
-test("built Worker counts a tagged home-page visit once", async () => {
+test("built Worker counts a launch bio visit to the home page once", async () => {
   const worker = await loadWorker();
   const { env, context, points, settled } = harness();
 
-  const response = await worker.fetch(get("/?utm_source=instagram&utm_medium=organic_social&utm_campaign=profile&utm_content=bio"), env, context);
+  const response = await worker.fetch(get("/?utm_source=instagram&utm_medium=organic_social&utm_campaign=qa_launch&utm_content=bio"), env, context);
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html/);
   await response.arrayBuffer();
   await settled();
 
   assert.equal(points.length, 1);
-  assert.deepEqual(points[0].blobs.slice(0, 5), ["instagram", "organic_social", "profile", "bio", "/"]);
+  assert.deepEqual(points[0].blobs.slice(0, 5), ["instagram", "organic_social", "qa_launch", "bio", "/"]);
 });
 
 test("built Worker counts a redirected tagged link once, on the page it lands on", async () => {
